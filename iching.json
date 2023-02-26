@@ -2,53 +2,106 @@
     "2":
     [
         {
-            "sign": "",
-            "name": ""
+            "bin": "0",
+            "sign": "⚋",
+            "name": "yin",
+            "judgement": "don't"
         },
         {
-            "sign": "",
-            "name": ""
+            "bin": "1",
+            "sign": "⚊",
+            "name": "yang",
+            "judgement": "do"
         }
     ],
-    "8":[
+    "4":
+    [
         {
-            "sign": "",
-            "name": ""
+            "bin": "00",
+            "sign": "⚏",
+            "name": "old yin",
+            "judgement": "yield"
+            
         },
         {
-            "sign": "",
-            "name": ""
+            "bin": "01",
+            "sign": "⚎",
+            "name": "young yin",
+            "judgement": "cooperate"
+            
         },
         {
-            "sign": "",
-            "name": ""
+            "bin": "10",
+            "sign": "⚍",
+            "name": "young yang",
+            "judgement": "compete"
+            
         },
         {
-            "sign": "",
-            "name": ""
+            "bin": "11",
+            "sign": "⚌",
+            "name": "old yang",
+            "judgement": "impose"
+            
+        }
+    ],
+    "8":
+    [
+        {
+            "bin": "000",
+            "sign": "☷",
+            "name": "Earth",
+            "judgement": "earth"
         },
         {
-            "sign": "",
-            "name": ""
+            "bin": "001",
+            "sign": "☶",
+            "name": "Mountain",
+            "judgement": "ountain"
         },
         {
-            "sign": "",
-            "name": ""
+            "bin": "010",
+            "sign": "☵",
+            "name": "Water",
+            "judgement": "water"
         },
         {
-            "sign": "",
-            "name": ""
+            "bin": "011",
+            "sign": "☴",
+            "name": "Wind",
+            "judgement": "wind"
         },
         {
-            "sign": "",
-            "name": ""
+            "bin": "100",
+            "sign": "☳",
+            "name": "Thunder",
+            "judgement": "thunder"
+        },
+        {
+            "bin": "101",
+            "sign": "☲",
+            "name": "Fire",
+            "judgement": "fire"
+        },
+        {
+            "bin": "110",
+            "sign": "☱",
+            "name": "Lake",
+            "judgement": "lake"
+        },
+        {
+            "bin": "111",
+            "sign": "☰",
+            "name": "Heaven",
+            "judgement": "heaven"
         }
     ],
     "64":
     [
-        {
-            "sign": "",
-            "name": "",
+        {   
+            "bin": "000000",
+            "sign": "䷁",
+            "name": "Field",
             "judgement": "",
             "image": "",
             "changes": 
@@ -56,73 +109,702 @@
                 
             ]
         },
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {},
-        {}
+        {
+            "bin": "000001",
+            "sign": "䷖",
+            "name": "Stripping",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "000010",
+            "sign": "䷇",
+            "name": "Grouping",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "000011",
+            "sign": "䷓",
+            "name": "Viewing",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "000100",
+            "sign": "䷏",
+            "name": "Providing-For",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "000101",
+            "sign": "䷢",
+            "name": "Prospering",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "000110",
+            "sign": "䷬",
+            "name": "Clustering",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "000111",
+            "sign": "䷋",
+            "name": "Obstruction",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "001000",
+            "sign": "䷎",
+            "name": "Humbling",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "001001",
+            "sign": "䷳",
+            "name": "Bound",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "001010",
+            "sign": "䷦",
+            "name": "Limping",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "001011",
+            "sign": "䷴",
+            "name": "Infiltrating",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "001100",
+            "sign": "䷽",
+            "name": "Small Exceeding",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "001101",
+            "sign": "䷷",
+            "name": "Sojourning",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "001110",
+            "sign": "䷞",
+            "name": "Conjoining",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "001111",
+            "sign": "䷠",
+            "name": "Retiring",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "010000",
+            "sign": "䷆",
+            "name": "Leading",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "010001",
+            "sign": "䷃",
+            "name": "Enveloping",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "010010",
+            "sign": "䷜",
+            "name": "Gorge",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "010011",
+            "sign": "䷺",
+            "name": "Dispersing",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "010100",
+            "sign": "䷧",
+            "name": "Deliverance",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "010101",
+            "sign": "䷿",
+            "name": "Before Completion",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "001110",
+            "sign": "䷮",
+            "name": "Confining",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "011000",
+            "sign": "䷭",
+            "name": "Ascending",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "011001",
+            "sign": "䷑",
+            "name": "Correcting",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "011010",
+            "sign": "䷯",
+            "name": "Welling",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "011011",
+            "sign": "䷸",
+            "name": "Ground",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "011100",
+            "sign": "䷟",
+            "name": "Persevering",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "011101",
+            "sign": "䷱",
+            "name": "Holding",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "011110",
+            "sign": "䷛",
+            "name": "Great Exceeding",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "011111",
+            "sign": "䷫",
+            "name": "Coupling",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "100000",
+            "sign": "䷗",
+            "name": "Returning",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "100001",
+            "sign": "䷚",
+            "name": "Swallowing",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "100010",
+            "sign": "䷂",
+            "name": "Sprouting",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "100011",
+            "sign": "䷩",
+            "name": "Augmenting",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "100100",
+            "sign": "䷲",
+            "name": "Shake",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "100101",
+            "sign": "䷔",
+            "name": "Gnawing Bite",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "100110",
+            "sign": "䷐",
+            "name": "Following",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "100111",
+            "sign": "䷘",
+            "name": "Innocence",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "101000",
+            "sign": "䷣",
+            "name": "Intelligence Hidden",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "101001",
+            "sign": "䷕",
+            "name": "Adorning",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "101010",
+            "sign": "䷾",
+            "name": "Already Fording",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "101011",
+            "sign": "䷤",
+            "name": "Dwelling People",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "101100",
+            "sign": "䷶",
+            "name": "Abounding",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "101101",
+            "sign": "䷝",
+            "name": "Radiance",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "101110",
+            "sign": "䷰",
+            "name": "Skinning",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "101111",
+            "sign": "䷌",
+            "name": "Concording People",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "110000",
+            "sign": "䷒",
+            "name": "Nearing",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "110001",
+            "sign": "䷨",
+            "name": "Diminishing",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "110010",
+            "sign": "䷻",
+            "name": "Articulating",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "110011",
+            "sign": "䷼",
+            "name": "Inner Truth",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "110100",
+            "sign": "䷵",
+            "name": "Converting the Maiden",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "110101",
+            "sign": "䷥",
+            "name": "Polarising",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "110110",
+            "sign": "䷹",
+            "name": "Open",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "110111",
+            "sign": "䷉",
+            "name": "Treading",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "111000",
+            "sign": "䷊",
+            "name": "Pervading",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "111001",
+            "sign": "䷙",
+            "name": "Great Accumulating",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "111010",
+            "sign": "䷄",
+            "name": "Attending",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "111011",
+            "sign": "䷈",
+            "name": "Small Harvest",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "111100",
+            "sign": "䷡",
+            "name": "Great Invigorating",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "111101",
+            "sign": "䷍",
+            "name": "Great Possessing",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "111110",
+            "sign": "䷪",
+            "name": "Displacement",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        },
+        {
+            "bin": "111111",
+            "sign": "䷀",
+            "name": "Force",
+            "judgement": "",
+            "image": "",
+            "changes": 
+            [
+                
+            ]
+        }
     ],
     "sequence": 
     {
         "fuXi8": [7,3,2,1,0,4,5,6],
-        "kingWen64": [1, 22, 7, 19, 15, 35, 45, 12, 15, 52, 39, 53, 62, 56, 31, 33, 7, 4, 29, 59, 40, 64, 47, 6, 46, 18, 48, 57, 32, 50, 28, 44, 24, 27, 3, 42, 51, 21, 17, 25, 36, 22, 63, 37, 55, 30, 49, 13, 19, 41, 60, 61, 54, 38, 58, 10, 11, 26, 5, 9, 34, 14, 43, 1]
+        "kingWen64": 
+        [
+            2, 23, 8, 20, 16, 35, 45, 12, 
+            15, 52, 39, 53, 62, 56, 31, 33, 
+            7, 4, 29, 59, 40, 64, 47, 6, 
+            46, 18, 48, 57, 32, 50, 28, 44, 
+            24, 27, 3, 42, 51, 21, 17, 25, 
+            36, 22, 63, 37, 55, 30, 49, 13, 
+            19, 41, 60, 61, 54, 38, 58, 10, 
+            11, 26, 5, 9, 34, 14, 43, 1
+        ]
     }
 }
