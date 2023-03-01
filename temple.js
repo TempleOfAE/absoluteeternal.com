@@ -1,4 +1,6 @@
-function on(d){
+var overlays = [false,false,false,false,false,false,false]
+
+function on(d) {
   if (d == 0){
     document.getElementById("o0").style.display = "block";
   }
@@ -23,6 +25,7 @@ function on(d){
   if (d == 7){
     document.getElementById("o7").style.display = "block";
   }
+  overlays[d] = true
 }
 
 function off(d){
@@ -50,4 +53,5 @@ function off(d){
   if (d == 7){
     document.getElementById("o7").style.display = "none";
   }
+  overlays[d] = false
 }

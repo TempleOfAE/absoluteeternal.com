@@ -20,75 +20,6 @@ const divisions = [
 //     'M', 'D', 'E'
 // ]
 
-//yin yang symbols and names
-const binary = [
-    '⚋', '⚊'
-]
-const binaryName = [
-    "DON'T", 'DO'
-]
-
-// four symbols
-const quaternary = [
-    '⚏', '⚎', 
-    '⚍', '⚌'
-]
-const quaternaryName = [
-    'YIELD', 'COOPERATE', 
-    'COMPETE', 'IMPOSE'
-]
-
-// bagua
-const octal = [
-    '☷', '☶', '☵', '☴', 
-    '☳', '☲', '☱', '☰'
-]
-const octalName = [
-    'EARTH','MOUNTAIN','WATER','WIND',
-    'THUNDER','FIRE','LAKE','HEAVEN'
-]
-
-// traditional iching oracles symbols and names in numeric order
-const oracles = [
-    '䷁', '䷖', '䷇', '䷓', '䷏', '䷢', '䷬', '䷋',
-    '䷎', '䷳', '䷦', '䷴', '䷽', '䷷', '䷞', '䷠', 
-    '䷆', '䷃', '䷜', '䷺', '䷧', '䷿', '䷮', '䷅', 
-    '䷭', '䷑', '䷯', '䷸', '䷟', '䷱', '䷛', '䷫', 
-    '䷗', '䷚', '䷂', '䷩', '䷲', '䷔', '䷐', '䷘', 
-    '䷣', '䷕', '䷾', '䷤', '䷶', '䷝', '䷰', '䷌', 
-    '䷒', '䷨', '䷻', '䷼', '䷵', '䷥', '䷹', '䷉', 
-    '䷊', '䷙', '䷄', '䷈', '䷡', '䷍', '䷪', '䷀'
-]
-const names = [
-    'Receptive Earth','Splitting Apart','Holding Together','Contemplation',
-    'Enthusiasm','Progress','Gathering Together','Standstill',
-    'Modesty','Keeping Still','Obstruction','Development',
-    'Small Preponderance','Wanderer','Influence','Retreat',
-    'The Army','Youthful Folly','Abysmal Water','Dispersion',
-    'Deliverance', 'Before Completion','Oppression','Conflict',
-    'Pushing Upward','Venom','The Well','Gentle Wind',
-    'Continuity','The Cauldron','Great Preponderance','Coming To Meet',
-    'Return','Mouth Corners','Difficult Beginning','Increase',
-    'Arousing Thunder','Biting Through','Following','Innocence',
-    'Hidden Intelligence','Grace','After Completion','The Family',
-    'Abundance','Clinging Fire','Revolution','Fellowship',
-    'Approach','Decrease','Limitation','Inner Truth',
-    'Marrying Maiden','Opposition','Joyous Lake','Treading',
-    'Peace','Great Taming','Waiting','Small Taming',
-    'Great Power','Great Possession','Breakthrough','Creative Heaven'
-]
-
-// kind wen sequence of oracles
-const sequence = [
-    '2', '23', '8', '20', '16', '35', '45', '12', 
-    '15', '52', '39', '53', '62', '56', '31', '33', 
-    '7', '4', '29', '59', '40', '64', '47', '6', 
-    '46', '18', '48', '57', '32', '50', '28', '44', 
-    '24', '27', '3', '42', '51', '21', '17', '25', 
-    '36', '22', '63', '37', '55', '30', '49', '13', 
-    '19', '41', '60', '61', '54', '38', '58', '10', 
-    '11', '26', '5', '9', '34', '14', '43', '1'
-]
 
 // principles of the temple
 const principles = [
@@ -195,6 +126,7 @@ var circleHover = false // is the mouse in the main circle
 var timeOracleHover = false // is the mouse over the time oracle
 var dateHover = false // is the mouse over the date display
 var titleHover = false // is the mouse over title
+var changeHover = false // is the mouse over changes
 var squareWidth
 
 
@@ -259,6 +191,7 @@ function setup() {
 }
 
 function draw() {
+    // console.log(oracleD)
     push()
     push()
     // console.log(time)
@@ -345,7 +278,7 @@ function draw() {
 
     noStroke()
     
-    text('ToÆ',    
+    text('About ToÆ',    
     mother.width * .5, -mother.height * .1333)
     
     textSize(mother.width * .022)
@@ -374,83 +307,86 @@ function draw() {
         jackals = false
     }
 
-    UI() // checks location of mouse and updates variables to controll zoom and select functions  
-
+    //disables UI if overlay 1 is active
+    if (!overlays[1]) {
+        UI() // checks location of mouse and updates variables to controll zoom and select functions  
+    }
 }
 
 // detects if mouse is hovering over trigger areas
 function UI(UIShow = false) {
 
     function boolHover(shapes = [[0, 0, 0, 0, 0]], show) {
-    push()
-    logic = []
-    mouse = createVector(mouseX,mouseY)
-
-
         push()
-        if (show) {
-            stroke(255,0,0)
-            strokeWeight(5)
-            point(mouseX, mouseY)
-        }
-    pop()
+        logic = []
+        mouse = createVector(mouseX,mouseY)
 
-    let hover = true
 
-    for (shape of shapes) {
-        push()
-            noFill()
-            strokeWeight(5)
-            stroke(255,0,0)
-            rectMode(CENTER)
-        
-        //circle
-        if (shape[4] == 0) {
+            push()
             if (show) {
-                circle(shape[1], shape[2], shape[3])
-                point(shape[1],shape[2])
+                stroke(255,0,0)
+                strokeWeight(5)
+                point(mouseX, mouseY)
             }
-
-            let center = createVector(shape[1], shape[2])
-
-                if (shape[0] && center.dist(mouse) > (shape[3]) * .5 && shape[0] == true) {
-                    hover = false
-                }
-            
-                if (!shape[0] && center.dist(mouse) < (shape[3]) * .5 && shape[0] == true) {
-                    hover = false
-                }
-            
-                
-            
-        } else {
-            if (show) {
-                rect(shape[1], shape[2], shape[3], shape[4])
-                point(shape[1],shape[2])
-            }
-
-            let leftBoundry = mouse.x < (shape[1] - (shape[3] * .5))
-            let rightBoundry = mouse.x > (shape[1] + (shape[3] * .5))
-            let topBoundry = mouse.y < (shape[2] - (shape[4] * .5))
-            let botomBoundry = mouse.y > (shape[2] + (shape[4] * .5))
-
-            if  (shape[0] && (leftBoundry || rightBoundry || topBoundry || botomBoundry)) { hover = false }
-            
-            
-            if (!shape[0] &&(!leftBoundry && !rightBoundry && !topBoundry && !botomBoundry)) { hover = false }
-            
-        }
         pop()
-    }
 
-    pop()
-    return hover
-}
+        let hover = true
+
+        for (shape of shapes) {
+            push()
+                noFill()
+                strokeWeight(5)
+                stroke(255,0,0)
+                rectMode(CENTER)
+            
+            //circle
+            if (shape[4] == 0) {
+                if (show) {
+                    circle(shape[1], shape[2], shape[3])
+                    point(shape[1],shape[2])
+                }
+
+                let center = createVector(shape[1], shape[2])
+
+                    if (shape[0] && center.dist(mouse) > (shape[3]) * .5 && shape[0] == true) {
+                        hover = false
+                    }
+                
+                    if (!shape[0] && center.dist(mouse) < (shape[3]) * .5 && shape[0] == true) {
+                        hover = false
+                    }
+                
+                    
+                
+            } else {
+                if (show) {
+                    rect(shape[1], shape[2], shape[3], shape[4])
+                    point(shape[1],shape[2])
+                }
+
+                let leftBoundry = mouse.x < (shape[1] - (shape[3] * .5))
+                let rightBoundry = mouse.x > (shape[1] + (shape[3] * .5))
+                let topBoundry = mouse.y < (shape[2] - (shape[4] * .5))
+                let botomBoundry = mouse.y > (shape[2] + (shape[4] * .5))
+
+                if  (shape[0] && (leftBoundry || rightBoundry || topBoundry || botomBoundry)) { hover = false }
+                
+                
+                if (!shape[0] &&(!leftBoundry && !rightBoundry && !topBoundry && !botomBoundry)) { hover = false }
+                
+            }
+            pop()
+        }
+
+        pop()
+        return hover
+    }
     circleHover = boolHover([
             // [false, width / 2, height / 2, mother.width * .3, mother.width * 1.2],
             [true, width / 2, height / 2, mother.width * .72, 0]
         ],
         UIShow)
+    
     dateHover = boolHover([
         [true,
             width / 2, height * .287,
@@ -459,31 +395,36 @@ function UI(UIShow = false) {
         ],
         UIShow)
     
-    
-    
     timeOracleHover = boolHover([
             [true, width / 2, height *.376, mother.width * .07, mother.width * .075],
             // [true, width / 2, height / 2, mother.width * .72, 0]
         ],
         UIShow)
     
-    
-    
-    
-    
     titleHover = boolHover([
         [true, width / 2, height * .0976,
-            mother.width * .66, mother.width * .15],
-        [false, width * .677, height * .081,
-            mother.width * .2, mother.width * .1],
-        [false, width - (width * .677), height * .081, 
-            mother.width * .2, mother.width * .1]
+            mother.width * .5, mother.width * .15]
+        //,
+        // [false, width/2 + (mother.width * .28), height * .081,
+        //     mother.width * .1, mother.width * .1],
+        // [false, width/2 - (mother.width * .28), height * .081, 
+        //     mother.width * .1, mother.width * .1]
     ],
         UIShow)
+    
+    changeHover = boolHover([
+        [true,
+            width / 2, height * .71,
+            mother.width * .5, mother.width * .1],
+        [true, width / 2, height / 2, mother.width * .72, 0]
+        ],
+        UIShow)    
     
     if (titleHover && mouseIsPressed) {
         on(1)
     }
+
+    // on(2) // testing purposes only
 }
 
 // controlls functions from keyboard input
@@ -525,8 +466,10 @@ function mouseheld() {
 
 function mouseReleased() {
     if (timeOracleHover) {
-        oracleGenerator("TIME ONLY")
-        oracleDisplayCounter = 6
+        if (!overlays[2]) { //prevents new oracle if overlay 2 is active
+            oracleGenerator("TIME ONLY")
+            oracleDisplayCounter = 6
+        }
     } else if (circleHover) {
         // timeOracleDrawCounter = 0
         // oracleDisplayCounter = 6
@@ -721,11 +664,12 @@ function calandarSetup() {
 
 
         for (let i = 0; i < 13; i++) {
-                let s
-                if (i < 10) {
-                    s = 0 + String(i)
+            let s
+                //write month number
+                if (i < 9) {
+                    s = 0 + String(i+1)
                 } else {
-                    s = String(i)
+                    s = String(i+1)
                 }
             
                 templeCalandar.push([s, '   ',])
@@ -733,11 +677,12 @@ function calandarSetup() {
                 for (let ii = 0; ii < calandarThisYear[i] / 9; ii++) {
                     if (ii < 3) {
                         let wom = []
-                        for (let dow = 0; dow < 9; dow++){
+                        //write days of week
+                        for (let dow = 1; dow < 10; dow++){
                             if (dayCount != D) {
                                 wom.push(String(dow))
                             } else {
-                                wom.push('X')
+                                wom.push('x')
                                 M = i
                                 dayOfMonth = dayOfMonthCount
                                 // time[5] = 12
@@ -768,7 +713,8 @@ function calandarSetup() {
             for (let i = 0; i < calandarThisYear[13]; i++) {
                 // replace with X if day of year
                 if (D != dayCount) {
-                    templeCalandar[13].push(['S-' + String(i) + '  '])
+                    //write sun days
+                    templeCalandar[13].push(['S-' + String(i+1) + '  '])
                 } else {
                     templeCalandar[13].push('X ')
                     M = 13
@@ -1146,7 +1092,7 @@ function oracleGenerator(option = false) {
     oracleDisplayCounter = 6
     // time oracle generation
     // if () {
-        // timeStamp = Array.from(time) //time stamp at the time of oracle generation
+    // timeStamp = Array.from(time) //time stamp at the time of oracle generation
     if (option == "TIME ONLY") {
         timeOracle = TWD(timeStamp[0]) //TWD oracle from the moment(smallest unit of time mesaurment)
         // }
@@ -1161,18 +1107,15 @@ function oracleGenerator(option = false) {
             oracleA[i] = coin() // flips a single coin
             oracleB[i] = coin(3) // flip 3 coins
             oracleC[i] = changes(oracleA[i], oracleB[i]) // genertae changing line
-       
+    
             // identify and record changin lines
             if (oracleC[i] == '01' | oracleC[i] == '10') {
                 changingLines.push(i + 1)
             }
         }
         oracleD = splitChanges(oracleC)// generate oracle pair 
-        
-    }
-
     
-
+    }
 }
 
 //displays oracle
@@ -1187,11 +1130,10 @@ function displays(c) {
         }
     }
 
-    let iChingOracleChangeStrings = oracleC // ['01','11','00','01','00','11']
-    let iChingOracleflipsStrings = oracleA // ['0','1','0','1','0','1']
-    let iChingOracleChangeflipsStrings = oracleB // ['010','111','000','101','001','110']
+    // let iChingOracleChangeStrings = oracleC // ['01','11','00','01','00','11']
+    // let iChingOracleflipsStrings = oracleA // ['0','1','0','1','0','1']
+    // let iChingOracleChangeflipsStrings = oracleB // ['010','111','000','101','001','110']
 
-    // console.log(iChingOracleChangeStrings)
 
     function printOracle(
         S ,
@@ -1294,7 +1236,6 @@ function displays(c) {
                 }
             }
 
-            // line(0,Y,screen.width,Y)
             pop()
             
         }
@@ -1315,7 +1256,6 @@ function displays(c) {
         pop()
         pop()
     }
-
 
     function timeOracleDisplay(textStroke = 0) {
         let timeOracleSize = mother.width * .1
@@ -1347,8 +1287,6 @@ function displays(c) {
         let timeOracleNameBreakdownSize = timeOracleBreakdownSize * .18
         
         let timeOracleCharacterBreakdownSize = timeOracleBreakdownSize *.5
-
-
 
         let timeOracleBreakdownY = mother.height * .43
 
@@ -1467,7 +1405,6 @@ function displays(c) {
             }
     }
     
-
     function basicDisplay() {
         let y = mother.height * .458
         let os = mother.width * .14777
@@ -1570,8 +1507,7 @@ function displays(c) {
     }  
     //iching in deapth display
     else if (circleHover) {
-        // timeOracleDisplay()
-        // ichingDisplay()
+
         //if hovering over date
         if (dateHover) {
             templeCalandarDisplay()
@@ -1580,16 +1516,26 @@ function displays(c) {
         else if(!menuHover) {
             timeOracleDisplay()
             ichingBreakdownDisplay()
-    }
+        }
     }
     
     //basic oracle display
     else if(!menuHover){
         basicDisplay()
     }
+
+    if (changeHover) {
+        on(2)
+    } else {
+        off(2)
+    }
     pop()
 
     pop()
+
+    if (c == 5) {
+        interpretation()
+    }
 }
 
 function aboutTheTemple(s, x, y, r, spacing, ts) {
@@ -1895,4 +1841,31 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
 
     SquaredCircle()
     displayText(x, y)
+}
+
+function interpretation() {
+    let oracle = sequence[oracleD[0]]
+    let changingLinesList = ""
+    let intTimeStamp = str(timeStamp[3]) +'('+str(divisions[timeStamp[4]])+')'+ ':' + str(timeStamp[2])+ ':' +str(timeStamp[1]) + ' [' + str(timeStamp[0]) + ']'
+
+    for (item of changingLines) {
+        changingLinesList += "<p>"
+        changingLinesList += str(item)
+        changingLinesList+="</p>"
+    }
+
+    console.log(changingLinesList)
+
+    let intTitle
+    if (oracleD[0] != oracleD[1]) {
+        intTitle = oracles[oracleD[0]] + " " + oracles[oracleD[1]]
+        intSubTitle = sequence[oracleD[0]] + " changing to " + sequence[oracleD[1]]
+    } else {
+        intTitle = oracles[oracleD[0]]
+        intSubTitle = oracle
+    }
+    document.getElementById("timeStamp").innerHTML = intTimeStamp
+    document.getElementById("intTitle").innerHTML = intTitle
+    document.getElementById("intSubTitle").innerHTML = intSubTitle
+    document.getElementById("intChangingLines").innerHTML = changingLinesList
 }

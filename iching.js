@@ -1,4 +1,78 @@
-{
+//yin yang symbols and names
+const binary = [
+    '⚋', '⚊'
+]
+
+const binaryName = [
+    "DON'T", 'DO'
+]
+
+// four symbols
+const quaternary = [
+    '⚏', '⚎', 
+    '⚍', '⚌'
+]
+
+const quaternaryName = [
+    'YIELD', 'COOPERATE', 
+    'COMPETE', 'IMPOSE'
+]
+
+// bagua
+const octal = [
+    '☷', '☶', '☵', '☴', 
+    '☳', '☲', '☱', '☰'
+]
+
+const octalName = [
+    'EARTH','MOUNTAIN','WATER','WIND',
+    'THUNDER','FIRE','LAKE','HEAVEN'
+]
+
+// traditional iching oracles symbols and names in numeric order
+const oracles = [
+    '䷁', '䷖', '䷇', '䷓', '䷏', '䷢', '䷬', '䷋',
+    '䷎', '䷳', '䷦', '䷴', '䷽', '䷷', '䷞', '䷠', 
+    '䷆', '䷃', '䷜', '䷺', '䷧', '䷿', '䷮', '䷅', 
+    '䷭', '䷑', '䷯', '䷸', '䷟', '䷱', '䷛', '䷫', 
+    '䷗', '䷚', '䷂', '䷩', '䷲', '䷔', '䷐', '䷘', 
+    '䷣', '䷕', '䷾', '䷤', '䷶', '䷝', '䷰', '䷌', 
+    '䷒', '䷨', '䷻', '䷼', '䷵', '䷥', '䷹', '䷉', 
+    '䷊', '䷙', '䷄', '䷈', '䷡', '䷍', '䷪', '䷀'
+]
+
+const names = [
+    'Receptive Earth','Splitting Apart','Holding Together','Contemplation',
+    'Enthusiasm','Progress','Gathering Together','Standstill',
+    'Modesty','Keeping Still','Obstruction','Development',
+    'Small Preponderance','Wanderer','Influence','Retreat',
+    'The Army','Youthful Folly','Abysmal Water','Dispersion',
+    'Deliverance', 'Before Completion','Oppression','Conflict',
+    'Pushing Upward','Venom','The Well','Gentle Wind',
+    'Continuity','The Cauldron','Great Preponderance','Coming To Meet',
+    'Return','Mouth Corners','Difficult Beginning','Increase',
+    'Arousing Thunder','Biting Through','Following','Innocence',
+    'Hidden Intelligence','Grace','After Completion','The Family',
+    'Abundance','Clinging Fire','Revolution','Fellowship',
+    'Approach','Decrease','Limitation','Inner Truth',
+    'Marrying Maiden','Opposition','Joyous Lake','Treading',
+    'Peace','Great Taming','Waiting','Small Taming',
+    'Great Power','Great Possession','Breakthrough','Creative Heaven'
+]
+
+// kind wen sequence of oracles
+const sequence = [
+    '2', '23', '8', '20', '16', '35', '45', '12', 
+    '15', '52', '39', '53', '62', '56', '31', '33', 
+    '7', '4', '29', '59', '40', '64', '47', '6', 
+    '46', '18', '48', '57', '32', '50', '28', '44', 
+    '24', '27', '3', '42', '51', '21', '17', '25', 
+    '36', '22', '63', '37', '55', '30', '49', '13', 
+    '19', '41', '60', '61', '54', '38', '58', '10', 
+    '11', '26', '5', '9', '34', '14', '43', '1'
+]
+
+const iching = {
     "2":
     [
         {
@@ -797,14 +871,14 @@
         "fuXi8": [7,3,2,1,0,4,5,6],
         "kingWen64": 
         [
-            2, 23, 8, 20, 16, 35, 45, 12, 
-            15, 52, 39, 53, 62, 56, 31, 33, 
-            7, 4, 29, 59, 40, 64, 47, 6, 
-            46, 18, 48, 57, 32, 50, 28, 44, 
-            24, 27, 3, 42, 51, 21, 17, 25, 
-            36, 22, 63, 37, 55, 30, 49, 13, 
-            19, 41, 60, 61, 54, 38, 58, 10, 
-            11, 26, 5, 9, 34, 14, 43, 1
-        ]
+    '2', '23', '8', '20', '16', '35', '45', '12', 
+    '15', '52', '39', '53', '62', '56', '31', '33', 
+    '7', '4', '29', '59', '40', '64', '47', '6', 
+    '46', '18', '48', '57', '32', '50', '28', '44', 
+    '24', '27', '3', '42', '51', '21', '17', '25', 
+    '36', '22', '63', '37', '55', '30', '49', '13', 
+    '19', '41', '60', '61', '54', '38', '58', '10', 
+    '11', '26', '5', '9', '34', '14', '43', '1'
+]
     }
 }
