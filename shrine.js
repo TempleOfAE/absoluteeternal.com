@@ -191,7 +191,7 @@ function setup() {
 }
 
 function draw() {
-    // console.log(oracleD)
+    // console.log(iching.gua[62])
     push()
     push()
     // console.log(time)
@@ -520,8 +520,8 @@ function kali() {
     // console.log(templeDateDMY[0])
     for (let i = 0; i < currentTime.length; i++) {
         currentTime[5] = templeDayOfMonth
-        currentTime[6] = templeDateDMY[1]
-        currentTime[7] = templeDateDMY[2]
+        currentTime[6] = templeDateDMY[1] 
+        currentTime[7] = templeDateDMY[2] 
         // console.log(templeDayOfMonth)
         // time as ms
         // timeO[0] = currentTime[3]
@@ -532,13 +532,13 @@ function kali() {
 
         }
        
-        timeO[1] = "00".substr(str(currentTime[3]).length) + str(currentTime[3])
-        timeO[2] = "00".substr(str(currentTime[2]).length) + str(currentTime[2])
-        timeO[3] = "00".substr(str(currentTime[1]).length) + str(currentTime[1])
+        timeO[1] = "00".substr(str(currentTime[3]).length) + str(currentTime[3]) // 0 - 23
+        timeO[2] = "00".substr(str(currentTime[2]).length) + str(currentTime[2]) // 0 - 63
+        timeO[3] = "00".substr(str(currentTime[1]).length) + str(currentTime[1]) // 0 - 63
         timeO[4] = divisions[currentTime[4]]
-        timeO[5] = "00".substr(str(currentTime[5]).length) + str(currentTime[5])
-        timeO[6] = "00".substr(str(currentTime[6]).length) + str(currentTime[6])
-        timeO[7] = "000".substr(str(currentTime[7]).length) + str(currentTime[7])
+        timeO[5] = "00".substr(str(currentTime[5]).length) + str(currentTime[5]+1) // 1 - 27
+        timeO[6] = "00".substr(str(currentTime[6]).length) + str(currentTime[6]+1) // 1 - 13
+        timeO[7] = "000".substr(str(currentTime[7]).length) + str(currentTime[7]+1) // 1 - x
    
             // timing
         // time expressed as moments
@@ -1468,7 +1468,7 @@ function displays(c) {
         textSize(TempleCalandartextSize)
         let y = mother.height * .333
         textAlign(CENTER, CENTER)
-        text('YEAR ' + currentTime[7] + " TEMPLE ERA", mother.width * .5, y - (TempleCalandartextSize * 2))
+        text('YEAR ' + str(currentTime[7]+1) + " TEMPLE ERA", mother.width * .5, y - (TempleCalandartextSize * 2))
         textAlign(LEFT,CENTER)
         for (let i = 0; i < templeCalandar.length; i++){
             if (i == templeCalandar.length-1) {
@@ -1846,26 +1846,41 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
 function interpretation() {
     let oracle = sequence[oracleD[0]]
     let changingLinesList = ""
-    let intTimeStamp = str(timeStamp[3]) +'('+str(divisions[timeStamp[4]])+')'+ ':' + str(timeStamp[2])+ ':' +str(timeStamp[1]) + ' [' + str(timeStamp[0]) + ']'
+    let intTimeStamp = str(timeO[6]) + ' / ' + str(timeO[5]) + ' / ' + str(timeO[7]) + " - " +str(timeStamp[3]) + '(' + str(divisions[timeStamp[4]]) + ')' + ':' + str(timeStamp[2]) + ':' + str(timeStamp[1]) + ' [' + str(timeStamp[0]) + ']' + oracles[timeStamp[0]]
+    let intTimeOracle =
+        "In matters of action: " + iching.binary[timeOracle[0][0]].judgement+ " ["+ iching.binary[timeOracle[0][0]].sign + "]<br>"
+        + "In matters of communication: " + iching.quaternary[timeOracle[0][1]].judgement + " ["+ iching.quaternary[timeOracle[0][1]].sign + "]<br>"
+        + "In matters of thought: Be like " + iching.octal[timeOracle[0][2]].judgement + " ["+ iching.octal[timeOracle[0][2]].sign + "]<br>"
 
     for (item of changingLines) {
         changingLinesList += "<p>"
-        changingLinesList += str(item)
+        changingLinesList += "Change in line "+item+" means: "+str(iching.gua[oracleD[0]].changes[item-1])
         changingLinesList+="</p>"
     }
 
-    console.log(changingLinesList)
-
     let intTitle
     if (oracleD[0] != oracleD[1]) {
-        intTitle = oracles[oracleD[0]] + " " + oracles[oracleD[1]]
-        intSubTitle = sequence[oracleD[0]] + " changing to " + sequence[oracleD[1]]
+        intTitle = sequence[oracleD[0]] + "[" + oracles[oracleD[0]]+ "] \"" +names[oracleD[0]]+ "\" " + " changing to " + sequence[oracleD[1]] +"["+ oracles[oracleD[1]]+ "] "+ "\"" +names[oracleD[1]]+ "\""
     } else {
-        intTitle = oracles[oracleD[0]]
+        intTitle = sequence[oracleD[0]] + "[" + oracles[oracleD[0]]+ "] \"" +names[oracleD[0]]+ "\" "
         intSubTitle = oracle
     }
+
     document.getElementById("timeStamp").innerHTML = intTimeStamp
+    document.getElementById("timeOracle").innerHTML = intTimeOracle
     document.getElementById("intTitle").innerHTML = intTitle
-    document.getElementById("intSubTitle").innerHTML = intSubTitle
-    document.getElementById("intChangingLines").innerHTML = changingLinesList
+
+    if (oracleD[0] == oracleD[1]) {
+        document.getElementById("isChanging").innerHTML = ""
+        document.getElementById("images").innerHTML = "<tr><th>Oracle Image</th></tr><tr><td>" + iching.gua[oracleD[0]].image + "</td></tr>"
+        document.getElementById("intChangingLines").innerHTML = ""
+        // document.getElementById("ifate").innerHTML = "<a href=\"https://www.ifate.com/iching-meanings.html\"target=\"_blank\">interpretation by ifate.com</a>"
+        // document.getElementById("divinationcom").innerHTML = "<a href=\"https://divination.com/iching/lookup/" + sequence[oracleD[0]] + "-2/\"" + "target=\"_blank\">interpretation by divination.com</a>"
+    } else {
+        document.getElementById("isChanging").innerHTML = "Changing Lines"
+        document.getElementById("images").innerHTML = "<tr><th>Original Oracle Image</th><th>Changed Oracle Image</th></tr><tr><td>" + iching.gua[oracleD[0]].image + "</td><td>" + iching.gua[oracleD[1]].image + "</td></tr>"
+        document.getElementById("intChangingLines").innerHTML = changingLinesList
+        // document.getElementById("ifate").innerHTML = "<a href=\"https://www.ifate.com/i-ching-changes/iching-hexagram-" + sequence[oracleD[0]] + "-changing-to-" + sequence[oracleD[1]] + ".html\"target=\"_blank\">interpretation by ifate.com</a>"
+        // document.getElementById("divinationcom").innerHTML = "<a href=\"https://divination.com/iching/lookup/" + sequence[oracleD[0]] + "-2/\"" + "target=\"_blank\">interpretation by divination.com</a>"
+    }
 }

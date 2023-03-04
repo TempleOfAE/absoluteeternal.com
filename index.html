@@ -3,7 +3,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-16">
         <link rel="stylesheet" href="index.css">
-        <script src="temple.js"></script>
+        <script src="overlay.js"></script>
         <script src="p5.js"></script>
         <link rel="icon" href="favcon.png" type="image/png" sizes="32x32">
         <link rel="shortcut icon" type="image/png" href="favicon.png" />
@@ -81,10 +81,16 @@
 
                     <div id="o2">
                         <div class="overlaycon" id="o2con">
+                            <h1>Alter of The Will</h1>
                             <p style="text-align: right;" id="timeStamp"></p>
-                            <h1 id="intTitle"></h1>
-                            <h3 id="intSubTitle"></h3>
-                            <ul style="text-align: left;" id="intChangingLines"></ul>
+                            <p style="text-align: right;" id="timeOracle"></p>
+                            <h1>I-ching Oracle interpretation</h1>
+                            <h3 id="intTitle"></h3>
+                            <table style="width:100%" id = "images">
+                            </table>
+                            <h3 id="isChanging"></h3>
+                            <ol style="text-align: left;" id="intChangingLines"></ol>
+                            <p><br>AUTOMATIC INTERPRETATION IS CURRENTLY UNDER CONSTRUCTION see: https://en.wikibooks.org/wiki/I_Ching for interpretation</p>
                         </div>
                     </div>
                     <div id="o3" onclick="off(3)">
@@ -151,11 +157,17 @@
                 </div>
             </div>
         </div>
+            <!-- <p>Below are alternative interpretations of the iching oracle that was drawn for you on the alter above. The Temple of Æ does not in any way endorce these services or the information they provide, nor do we have any form of connection with them. These links are provided simply for your conveniance.</p>
+            <ul>
+                <li id="ifate">https://www.ifate.com</li>
+                <li id="divinationcom">https://divination.com/iching</li>
+            </ul> -->
+        
         <p>(C) Temple of The Absolute Eternal 2022 <a href="#" target="popup"
                         onclick="window.open('https://discord.com/invite/3wNM7u8','popup','width=600,height=600'); return false;">
                         Temple Fellowship Discord Server
                     </a></p>
         <script src="iching.js"></script>
-        <script src="idol.js"></script>
+        <script src="shrine.js"></script>
     </body>
 </html>
