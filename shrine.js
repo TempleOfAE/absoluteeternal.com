@@ -1860,7 +1860,7 @@ function interpretation() {
 
     let intTitle
     if (oracleD[0] != oracleD[1]) {
-        intTitle = sequence[oracleD[0]] + "[" + oracles[oracleD[0]]+ "] \"" +names[oracleD[0]]+ "\" " + " changing to " + sequence[oracleD[1]] +"["+ oracles[oracleD[1]]+ "] "+ "\"" +names[oracleD[1]]+ "\""
+        intTitle = "\""+names[oracleD[0]] + "\" [" + oracles[oracleD[0]]+ "]" +sequence[oracleD[0]]+ " ---changing to--> " + sequence[oracleD[1]] +"["+ oracles[oracleD[1]]+ "] "+ "\"" +names[oracleD[1]]+ "\""
     } else {
         intTitle = sequence[oracleD[0]] + "[" + oracles[oracleD[0]]+ "] \"" +names[oracleD[0]]+ "\" "
         intSubTitle = oracle
@@ -1871,14 +1871,14 @@ function interpretation() {
     document.getElementById("intTitle").innerHTML = intTitle
 
     if (oracleD[0] == oracleD[1]) {
-        document.getElementById("isChanging").innerHTML = ""
-        document.getElementById("images").innerHTML = "<tr><th>Oracle Image</th></tr><tr><td>" + iching.gua[oracleD[0]].image + "</td></tr>"
-        document.getElementById("intChangingLines").innerHTML = ""
+        document.getElementById("images").innerHTML = "<tr><th>Symbolic Interpretation: "+sequence[oracleD[0]] + "[" + oracles[oracleD[0]]+"] \""+names[oracleD[0]]+ "\"</th></tr><tr><td>" + iching.gua[oracleD[0]].image + "</td></tr>"
+        document.getElementById("isChanging").innerHTML = "Oracle Judgement"
+        document.getElementById("intChangingLines").innerHTML = iching.gua[oracleD[0]].judgement
         // document.getElementById("ifate").innerHTML = "<a href=\"https://www.ifate.com/iching-meanings.html\"target=\"_blank\">interpretation by ifate.com</a>"
         // document.getElementById("divinationcom").innerHTML = "<a href=\"https://divination.com/iching/lookup/" + sequence[oracleD[0]] + "-2/\"" + "target=\"_blank\">interpretation by divination.com</a>"
     } else {
         document.getElementById("isChanging").innerHTML = "Changing Lines"
-        document.getElementById("images").innerHTML = "<tr><th>Original Oracle Image</th><th>Changed Oracle Image</th></tr><tr><td>" + iching.gua[oracleD[0]].image + "</td><td>" + iching.gua[oracleD[1]].image + "</td></tr>"
+        document.getElementById("images").innerHTML = "<tr><th>Symbolic Interpretation: "+sequence[oracleD[0]] + "[" + oracles[oracleD[0]]+ "] \"" +names[oracleD[0]]+ "\"</th><th>Symbolic Interpretation: "+sequence[oracleD[1]] +"["+ oracles[oracleD[1]]+ "] "+ "\"" +names[oracleD[1]]+"\"</th></tr><tr><td>" + iching.gua[oracleD[0]].image + "</td><td>" + iching.gua[oracleD[1]].image + "</td></tr>"
         document.getElementById("intChangingLines").innerHTML = changingLinesList
         // document.getElementById("ifate").innerHTML = "<a href=\"https://www.ifate.com/i-ching-changes/iching-hexagram-" + sequence[oracleD[0]] + "-changing-to-" + sequence[oracleD[1]] + ".html\"target=\"_blank\">interpretation by ifate.com</a>"
         // document.getElementById("divinationcom").innerHTML = "<a href=\"https://divination.com/iching/lookup/" + sequence[oracleD[0]] + "-2/\"" + "target=\"_blank\">interpretation by divination.com</a>"
