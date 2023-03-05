@@ -744,12 +744,12 @@ const iching = {
                 "image": "Wind and thunder: the image of Increase. <br>Thus the superior man: If he sees good, he imitates it; If he has faults, he rids himself of them.",
                 "changes":
                     [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
+                        "It furthers one to accomplish great deeds. Supreme good fortune.No blame.",
+                        "Someone does indeed increase him;Ten pairs of tortoises cannot oppose it. Constant perseverance brings good fortune. The king presents him before God. Good fortune.",
+                        "One is enriched through unfortunate events. No blame, if you are sincereAnd walk in the middle,And report with a seal to the prince.",
+                        "If you walk in the middle And report to the prince, He will follow. It furthers one to be used In the removal of the capital.",
+                        "If in truth you have a kind heart, ask not. Supreme good fortune. Truly, kindness will be recognized as your virtue.",
+                        "He brings increase to no one. Indeed, someone even strikes him. He does not keep his heart constantly steady. Misfortune."
                     ]
             },
             {
@@ -759,14 +759,15 @@ const iching = {
                 "judgement": "Shock brings success. Shock comes--oh, oh! Laughing words--ha, ha! The shock terrifies for a hundred miles, And he does not let fall the sacrificial spoon and chalice.",
                 "image": "Thunder repeated: the image of Shock. <br>Thus in fear and trembling The superior man sets his life in orderAnd examines himself.",
                 "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+
+[
+"Shock comes--oh, oh! Then follow laughing words--ha, ha! Good fortune.",
+"Shock comes bringing danger. A hundred thousand times You lose your treasures And must climb the Change hills. Do not go in pursuit of them. After seven days you will get them back.",
+"Shock comes and makes one distraught. If shock spurs to action One remains free of misfortune.",
+"Shock is mired.",
+"Shock goes hither and thither. Danger. However, nothing at all is lost. Yet there are things to be done.",
+"Shock brings ruin and terrified gazing around. Going ahead brings misfortune. If is has not yet touched one's own body But has reached one's neighbor first, There is no blame. One's comrades have something to talk about.",
+         ]
             },
             {
                 "bin": "100101",
@@ -775,110 +776,110 @@ const iching = {
                 "judgement": "Biting Through has success. It is favorable to let justice be administered.",
                 "image": "Thunder and lightning: The image of Biting Through. <br>Thus the kings of former times made firm the laws Through clearly defined penalties.",
                 "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
-            },
+[
+"His feet are fastened in the stocks, So that his toes disappear. No blame.",
+"Bites through tender meat, So that his nose disappears. No blame.",
+"Bites on old dried meat And strikes on something poisonous. Slight humiliation. No blame.",
+"Bites on dried gristly meat. Receives metal arrows. It furthers one to be mindful of difficulties And to be persevering. Good fortune.",
+"Bites on dried lean meat. Receives yellow gold. Perseveringly aware of danger. No blame.",
+"His neck is fastened in the wooden cangue, So that his ears disappear. Misfortune."
+           ]
+},
             {
                 "bin": "100110",
                 "sign": "䷐",
                 "name": "Following",
                 "judgement": "Following has supreme success. Perseverance furthers. No blame.",
                 "image": "Thunder in the middle of the lake: The image of Following. <br>Thus the superior man at nightfall Goes indoors for rest and recuperation.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
-            },
+        "changes":
+[
+"The standard is changing. Perseverance brings good fortune. To go out of the door in company Produces deeds.",
+"If one clings to the little boy, One loses the strong man.",
+"If one clings to the strong man, One loses the little boy. Through following one finds what one seeks. It furthers one to remain persevering.",
+"Following creates success. Perseverance brings misfortune. To go one's own way with sincerity brings clarity. How could there be blame in this? ",
+"Sincere in the good. Good fortune.",
+"He meets with firm allegiance And is still further bound. The king introduces him To the Western Mountain."
+           ]
+},
             {
                 "bin": "100111",
                 "sign": "䷘",
                 "name": "Innocence",
                 "judgement": "Supreme success. Perseverance furthers. If someone is not as he should be, He has misfortune,And it does not further him To undertake something.",
                 "image": "Under heaven thunder rolls: All things attain the natural state of innocence. <br>Thus the kings of old, Rich in virtue, and in harmony with the time, Fostered and nourished all beings.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
-            },
+        "changes":
+[
+"Innocent behavior brings good fortune.",
+"If one does not count on the harvest while plowing, Nor on the use of the ground while clearing it, It furthers one to undertake something.",
+"Undeserved misfortune. The cow that was tethered by someone Is the wanderer's gain, the citizen's loss.",
+"He who can be persevering Remains without blame.",
+"Use no medicine in an illness Incurred through no fault of your own. It will pass of itself.",
+"Innocent action brings misfortune. Nothing furthers."
+  ]         
+},
             {
                 "bin": "101000",
                 "sign": "䷣",
                 "name": "Intelligence Hidden",
                 "judgement": "In adversity It furthers one to be persevering.",
                 "image": "The light has sunk into the earth: The image of Darkening of the Light. <br>Thus does the superior man live with the great mass: He veils his light, yet still shines.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
-            },
+        "changes":
+[
+"Darkening of the light during flight. He lowers his wings. The superior man does not eat for three days On his wanderings. But he has somewhere to go. The host has occasion to gossip about him.",
+"Darkening of the light injures him in the left thigh. He gives aid with the strength of a horse. Good fortune.",
+"Darkening of the light during the hunt in the south. Their great leader is captured. One must not expect perseverance too soon.",
+"He penetrates the left side of the belly. One gets at the very heart of the darkening of the light, And leaves gate and courtyard.",
+"Darkening of the light as with Prince Chi. Perseverance furthers.",
+"Not light but darkness. First he climbed up to heaven, Then he plunged into the depths of the earth."
+ ]         
+},
             {
                 "bin": "101001",
                 "sign": "䷕",
                 "name": "Adorning",
                 "judgement": "Grace has success. In small matters It is favorable to undertake something.",
                 "image": "Fire at the foot of the mountain: The image of Grace. <br>Thus does the superior man proceed When clearing up current affairs. But he dare not decide controversial issues in this way.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
-            },
+        "changes":
+[
+"He lends grace to his toes, leaves the carriage, and walks.",
+"Lends grace to the beard on his chin.",
+"Graceful and moist. Constant perseverance brings good fortune.",
+"Grace or simplicity? A white horse comes as if on wings. He is not a robber, He will woo at the right time.",
+"Grace in the hills and gardens. The roll of silk is meager and small. Humiliation, but in the end good fortune.",
+"Simple grace. No blame."
+ ]         
+},
             {
                 "bin": "101010",
                 "sign": "䷾",
                 "name": "Already Fording",
                 "judgement": "Success in small matters. Perseverance furthers. At the beginning good fortune, At the end disorder.",
                 "image": "Water over fire: the image of the condition In After Completion. <br>Thus the superior man Takes thoughts of misfortune And arms himself against it in advance.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
-            },
+        "changes":
+[
+"He brakes his wheels. He gets his tail in the water. No blame.",
+"The woman loses the curtain of her carriage.Do not run after it; On the seventh day you will get it.",
+"The Illustrious Ancestor Disciplines the Devil's Country. After three years he conquers it. Inferior people must not be employed.",
+"The finest clothes turn to rags. Be careful all day long.",
+"The neighbour in the east who slaughters an ox Does not attain as much real happiness As the neighbour in the west With his small offering.",
+"He gets his head in the water. Danger."
+ ]         
+},
             {
                 "bin": "101011",
                 "sign": "䷤",
                 "name": "Dwelling People",
                 "judgement": "The perseverance of the woman furthers.",
                 "image": "Wind comes forth from fire: The image of The Family. <br>Thus the superior man has substance in his words And duration in his way of life.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+[
+"Firm seclusion within the family. Remorse disappears.",
+"She should not follow her whims. She must attend within to the food. Perseverance brings good fortune.",
+"When tempers flare up in the family, Too great severity brings remorse. Good fortune nonetheless. When woman and child dally and laugh, It leads in the end to humiliation.",
+"She is the treasure of the house. Great good fortune.",
+"As a king he approaches his family. Fear not. Good fortune.",
+"His work commands respect. In the end good fortune comes.",
+  ]        
             },
             {
                 "bin": "101100",
@@ -886,15 +887,15 @@ const iching = {
                 "name": "Abounding",
                 "judgement": "Abundance has success. The king attains abundance. Be not sad. Be like the sun at midday.",
                 "image": "Both thunder and lightning come: The image of Abundance. <br>Thus the superior man decides lawsuits And carries out punishments.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+[
+"When a man meets his destined ruler, They can be together ten days, And it is not a mistake. Going meets with recognition.",
+"The curtain is of such fullness That the polestars can be seen at noon. Through going one meets with mistrust and hate. If one rouses him through truth, Good fortune comes.",
+"The underbrush is of such abundance That the small stars can be seen at noon. He breaks his right arm. No blame.",
+"The curtain is of such fullness That the polestars can be seen at noon. He meets his ruler, who is of like kind. Good fortune.",
+"Lines are coming, Blessing and fame draw near. Good fortune.",
+"His house is in a state of abundance. He screens off his family. He peers through the gate And no longer perceives anyone. For three years he sees nothing. Misfortune.",
+   ]       
             },
             {
                 "bin": "101101",
@@ -902,15 +903,15 @@ const iching = {
                 "name": "Radiance",
                 "judgement": "Perseverance furthers. It brings success. Care of the cow brings good fortune.",
                 "image": "That which is bright rises twice: The image of Fire. <br>Thus the great man, by perpetuating this brightness, Illumines the four quarters of the world.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+[
+"The footprints run crisscross. If one is seriously intent, no blame.",
+"Yellow light. Supreme good fortune.",
+"In the light of the setting sun, Men either beat the pot and sing Or loudly bewail the approach of old age. Misfortune.",
+"Its coming is sudden; It flames up, dies down, is thrown away.",
+"Tears in floods, sighing and lamenting. Good fortune.",
+"The king uses him to march forth and chastise. Then it is best to kill the leaders And take captive the followers. No blame.",
+    ]       
             },
             {
                 "bin": "101110",
@@ -918,47 +919,47 @@ const iching = {
                 "name": "Skinning",
                 "judgement": "On your own day You are believed. Supreme success. Furthering through perseverance. Remorse disappears.",
                 "image": "Fire in the lake: the image of Revolution. <br>Thus the superior man Sets the calendar in order.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
-            },
+        "changes":
+[
+"Wrapped in the hide of a yellow cow.",
+"When one's own day comes, one may create revolution. Starting brings good fortune. No blame.",
+"Starting brings misfortune. Perseverance brings danger. When the talk of revolution has gone the rounds three times, One may commit himself, And men will believe him.",
+"Remorse disappears. Men believe him. Changing the form of government brings good fortune.",
+"The great man changes like a tiger. Even before he questions the oracle He is believed.",
+"The superior man changes like a panther. The inferior man molts in the face. Starting brings misfortune. To remain persevering brings good fortune. And makes the seasons clear."
+  ]        
+},
             {
                 "bin": "101111",
                 "sign": "䷌",
                 "name": "Concording People",
                 "judgement": "Fellowship with Men in the open. Success. It furthers one to cross the great water. The perseverance of the superior man furthers.",
                 "image": "Heaven together with fire: The image of Fellowship with Men. <br>Thus the superior man organizes the clans And makes distinctions between things.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
-            },
+        "changes":
+[
+"Fellowship with men at the gate. No blame.",
+"Fellowship with men in the clan. Humiliation.",
+"He hides weapons in the thicket; He climbs the high hill in front of it. For three years he does not rise up.",
+"He climbs up on his wall; he cannot attack. Good fortune.",
+"Men bound in fellowship first weep and lament, But afterward the laugh. After great struggles they succeed in meeting.",
+"Fellowship with men in the meadow. No remorse."
+  ]         
+},
             {
                 "bin": "110000",
                 "sign": "䷒",
                 "name": "Nearing",
                 "judgement": "Approach has supreme success. Perseverance furthers. When the eight month comes, There will be misfortune.",
                 "image": "The earth above the lake: The image of Approach. <br>Thus the superior man is inexhaustible In his will to teach, And without limits In his tolerance and protection of the people.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+[
+"Joint approach. Perseverance brings good fortune.",
+"Joint approach. Good fortune. Everything furthers.",
+"Comfortable approach. Nothing that would not further. If one is induced to grieve over it, One becomes free of blame.",
+"Complete approach. No blame.",
+"Wise approach. This is right for a great prince. Good fortune.",
+"Greathearted approach. Good fortune. No blame.",
+  ]        
             },
             {
                 "bin": "110001",
@@ -966,15 +967,15 @@ const iching = {
                 "name": "Diminishing",
                 "judgement": "Decrease combined with sincerity Brings about supreme good fortune Without blame. One may be persevering in this. It furthers one to undertake something. How is this to be carried out? One may use two small bowls for the sacrifice.",
                 "image": "At the foot of the mountain, the lake: The image of Decrease. <br>Thus the superior man controls his anger And restrains his instincts.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+[
+"Going quickly when one's tasks are finished Is without blame. But one must reflect on how much one may decrease others.",
+"Perseverance furthers. To undertake something brings misfortune. Without decreasing oneself, One is able to bring increase to others.",
+"When three people journey together, Their number decreases by one. When one man journeys alone, He finds a companion.",
+"If a man decreases his faults, It makes the other hasten to come and rejoice. No blame.",
+"Someone does indeed increase him. Ten pairs of tortoises cannot oppose it. Supreme good fortune.",
+"If one is increased without depriving others, there is no blame. Perseverance brings good fortune. It furthers one to undertake something. One obtains servants But no longer has a separate home.",
+    ]       
             },
             {
                 "bin": "110010",
@@ -982,15 +983,15 @@ const iching = {
                 "name": "Articulating",
                 "judgement": "Success. Galling limitation must not be persevered in.",
                 "image": "Water over Lake: the image of Limitation. <br>Thus the superior man Creates numbers and measure, And examines the nature of virtue and correct conduct.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+[
+"Not going out of the door and the courtyard Is without blame.",
+"Not going out of the gate and the courtyard Brings misfortune.",
+"He who knows no limitation Will have cause to lament. No blame.",
+"Contented limitation. Success.",
+"Sweet limitation brings good fortune. Going brings esteem.",
+"Galling limitation. Perseverance brings misfortune. Remorse disappears."
+ ]         
             },
             {
                 "bin": "110011",
@@ -998,15 +999,15 @@ const iching = {
                 "name": "Inner Truth",
                 "judgement": "Pigs and fishes. Good fortune. It furthers one to cross the great water. Perseverance furthers.",
                 "image": "Wind over lake: the image of Inner Truth. <br>Thus the superior man discusses criminal cases In order to delay executions.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+[
+"Being prepared brings good fortune. If there are secret designs, it is disquieting.",
+"A crane is calling in the shade. Its young answers it. I have a good goblet. I will share it with you.",
+"He finds a comrade. Now he beats the drum, now he stops. Now he sobs, now he sings.",
+"The moon nearly at the full. The team horse goes astray. No blame.",
+"He possesses truth, which links together. No blame.",
+"Cockcrow penetrating to heaven. Perseverance brings misfortune."
+ ]          
             },
             {
                 "bin": "110100",
@@ -1014,31 +1015,31 @@ const iching = {
                 "name": "Converting the Maiden",
                 "judgement": "Undertakings bring misfortune. Nothing that would further.",
                 "image": "Thunder over the lake: The image of The Marrying Maiden. <br>Thus the superior man Understands the transitory In the light of the eternity of the end.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
-            },
+        "changes":
+[
+"The marrying maiden as a concubine. A lame man who is able to tread. Undertakings bring good fortune.",
+"A one-eyed man who is able to see. The perseverance of a solitary man furthers.",
+"The marrying maiden as a slave. She marries as a concubine.",
+"The marrying maiden draws out the allotted time. A late marriage comes in due course.",
+"The sovereign I gave his daughter in marriage. The embroidered garments of the princess Were not as gorgeous As those of the servingmaid. The moon that is nearly full Brings good fortune.",
+"The woman holds the basket, but there are no fruits in it. The man stabs the sheep, but no blood flows. Nothing that acts to further."
+ ]         
+},
             {
                 "bin": "110101",
                 "sign": "䷥",
                 "name": "Polarising",
                 "judgement": "In small matters, good fortune.",
                 "image": "Above fire; below, the lake: The image of Opposition. <br>Thus amid all fellowship The superior man retains his individuality.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+[
+"Remorse disappears. If you lose your horse, do not run after it; It will come back of its own accord. When you see evil people, Guard yourself against mistakes.",
+"One meets his lord in a narrow street. No blame.",
+"One sees the wagon dragged back, The oxen halted, A man's hair and nose cut off. Not a good beginning, but a good end.",
+"Isolated through opposition, One meets a like-minded man With whom one can associate in good faith. Despite the danger, no blame.",
+"Remorse disappears. The companion bites his way through the wrappings. If one goes to him, How could it be a mistake?",
+"Isolated through opposition, One sees one's companion as a pig covered with dirt, As a wagon full of devils. First one draws a bow against him, Then one lays the bow aside. He is not a robber; he will woo at the right time. As one goes, rain falls; then good fortune comes.",
+  ]         
             },
             {
                 "bin": "110110",
@@ -1046,31 +1047,31 @@ const iching = {
                 "name": "Open",
                 "judgement": "Success. Perseverance is favorable.",
                 "image": "Lakes resting on one another: The image of the Joyous. <br>Thus the superior man joins with his friends For discussion and practice.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
-            },
+        "changes":
+[
+"Contented joyousness. Good fortune.",
+"Sincere joyousness. Good fortune. Remorse disappears.",
+"Coming joyousness. Misfortune.",
+"Joyousness that is weighed is not at peace. After ridding himself of mistakes a man has joy.",
+"Sincerity toward disintegrating influences is dangerous.",
+"Seductive joyousness."
+          ]
+},
             {
                 "bin": "110111",
                 "sign": "䷉",
                 "name": "Treading",
                 "judgement": "Treading upon the tail of the tiger. It does not bite the man. Success.",
                 "image": "Heaven above, the lake below: The image of Treading. <br>Thus the superior man discriminates between high and low, And thereby fortifies the thinking of the people.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+
+["Simple conduct. Progress without blame.",
+"Treading a smooth, level course. The perseverance of a dark man Brings good fortune.",
+"A one-eyed man is able to see, A lame man is able to tread. He treads on the tail of the tiger. The tiger bites the man. Misfortune. Thus does a warrior act on behalf of his great prince.",
+"He treads on the tail of the tiger. Caution and circumspection Lead ultimately to good fortune.",
+"Resolute conduct. Perseverance with awareness of danger.",
+"Look to your conduct and weigh the favorable signs. When everything is fulfilled, supreme good fortune comes."]
+           
             },
             {
                 "bin": "111000",
@@ -1078,15 +1079,15 @@ const iching = {
                 "name": "Pervading",
                 "judgement": "The small departs, The great approaches. Good fortune. Success.",
                 "image": "Heaven and earth unite: the image of Peace. <br>Thus the ruler Divides and completes the course of heaven and earth; He furthers and regulates the gifts of heaven and earth, And so aids the people.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+
+["When ribbon grass is pulled up, the sod comes with it. Each according to his kind. Undertakings bring good fortune.",
+"Bearing with the uncultured in gentleness, Fording the river with resolution, Not neglecting what is distant, Not regarding one's companions: Thus one may manage to walk in the middle.",
+"No plain not followed by a slope. No going not followed by a return. He who remains persevering in danger Is without blame. Do not complain about this truth; Enjoy the good fortune you still possess.",
+"He flutters down, not boasting of his wealth, Together with his neighbor, Guileless and sincere.",
+"The sovereign I Gives his daughter in marriage. This brings blessing And supreme good fortune.",
+"The wall falls back into the moat. Use no army now. Make your commands known within your own town. Perseverance brings humiliation."]
+           
             },
             {
                 "bin": "111001",
@@ -1094,15 +1095,15 @@ const iching = {
                 "name": "Great Accumulating",
                 "judgement": "Perseverance furthers. Not eating at home brings good fortune. It furthers one to cross the great water.",
                 "image": "Heaven within the mountain: The image of The Taming Power of the Great. <br>Thus the superior man aquaints himself with many sayings of antiquity And many deeds of the past, In order to strengthen his character thereby.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+
+["Danger is at hand. It furthers one to desist.",
+"The axletrees are taken from the wagon.",
+"A good horse that follows others. Awareness of danger, With perseverance, furthers. Practice chariot driving and armed defense daily. It furthers one to have somewhere to go.",
+"The headboard of a young bull. Great good fortune.",
+"The tusk of a gelded boar. Good fortune.",
+"One attains the way of heaven. Success."]
+         
             },
             {
                 "bin": "111010",
@@ -1110,15 +1111,15 @@ const iching = {
                 "name": "Attending",
                 "judgement": "If you are sincere, You have light and success. Perseverance brings good fortune. It furthers one to cross the great water.",
                 "image": "Clouds rise up to heaven: <br>The image of Waiting. <br>Thus the superior man eats and drinks, Is joyous and of good cheer.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+
+["Waiting in the meadow. It furthers one to abide in what endures. No blame.",
+"Waiting on the sand. There is some gossip. The end brings good fortune.",
+"Waiting in the mud Brings about the arrival of the enemy.",
+"Waiting in blood. Get out of the pit.",
+"Waiting at meat and drink. Perseverance brings good fortune.",
+"One falls into the pit. Three uninvited guests arrive. Honor them, and in the end there will be good fortune."]
+          
             },
             {
                 "bin": "111011",
@@ -1126,15 +1127,15 @@ const iching = {
                 "name": "Small Harvest",
                 "judgement": "The Taming Power of the Small has success. Dense clouds, no rain from our western region.",
                 "image": "The wind drives across heaven: The image of The Taming Power of the Small. <br>Thus the superior man Refines the outward aspect of his nature.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+
+["Return to the way. How could there be blame in this? Good fortune.",
+"He allows himself to be drawn into returning. Good fortune.",
+"The spokes burst out of the wagon wheel. Man and wife roll their eyes.",
+"If you are sincere, blood vanishes and fear gives way. No blame.",
+"If you are sincere and loyally attached, You are rich in your neighbor.",
+"The rain comes, there is rest. This is due to the lasting affect of character. Perseverance brings the woman into danger. The moon is nearly full. If the superior man persists, Misfortune comes."]
+         
             },
             {
                 "bin": "111100",
@@ -1142,15 +1143,14 @@ const iching = {
                 "name": "Great Invigorating",
                 "judgement": "Perseverance furthers.",
                 "image": "Thunder in heaven above: The image of The Power of the Great. <br>Thus the superior man does not tread upon paths That do not accord with established order.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+["Power in the toes. Continuing brings misfortune. This is certainly true.",
+"Perseverance brings good fortune.",
+"The inferior man works through power. The superior man does not act thus. To continue is dangerous. A goat butts against a hedge And gets its horns entangled.",
+"Perseverance brings good fortune. Remorse disappears. The hedge opens; there is no entanglement. Power depends upon the axle of a big cart.",
+"Loses the goat with ease. No remorse.",
+"A goat butts against a hedge. It cannot go backward, it cannot go forward. Nothing serves to further. If one notes the difficulty, this brings good fortune."]
+          
             },
             {
                 "bin": "111101",
@@ -1158,15 +1158,15 @@ const iching = {
                 "name": "Great Possessing",
                 "judgement": "Supreme success.",
                 "image": "Fire in heaven above: The image of Possession in Great Measure. <br></br>Thus the superior man curbs evil and furthers good, And thereby obeys the benevolent will of heaven.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+
+["No relationship with what is harmful; There is no blame in this. If one remains conscious of difficulty, One remains without blame.",
+"A big wagon for loading. One may undertake something. No blame.",
+"A prince offers it to the Son of Heaven. A petty man cannot do this.",
+"He makes a difference Between himself and his neighbor. No blame.",
+"He whose truth is accessible, yet dignified, Has good fortune.",
+"Change in the Sixth place means: He is blessed by heaven. Good fortune. Nothing that does not further.",]
+           
             },
             {
                 "bin": "111110",
@@ -1174,15 +1174,13 @@ const iching = {
                 "name": "Displacement",
                 "judgement": "One must resolutely make the matter known At the court of the king. It must be announced truthfully. Danger. It is necessary to notify one's own city. It does not further to resort to arms. It furthers one to undertake something.",
                 "image": "The lake has risen up to heaven: The image of Break-through. <br>Thus the superior man Dispenses riches downward And refrains from resting on his virtue.",
-                "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+        "changes":
+    ["Mighty in the forward-striding toes. When one goes and is not equal to the task, One makes a mistake.",
+"A cry of alarm. Arms at evening and at night. Fear nothing.",
+"To be powerful in the cheekbones Brings misfortune. The superior man is firmly resolved. He walks alone and is caught in the rain. He is bespattered, And people murmur against him. No blame.",
+"There is no skin on his thighs, And walking comes hard. If a man were to let himself be led like a sheep, Remorse would disappear. But if these words are heard They will not be believed.",
+"In dealing with weeds, Firm resolution is necessary. Walking in the middle Remains free of blame.",
+"No cry. In the end misfortune comes."]
             },
             {
                 "bin": "111111",
@@ -1191,54 +1189,16 @@ const iching = {
                 "judgement": "The Creative works sublime success, Furthering through perseverance.",
                 "image": "The movement of heaven is full of power. <br>Thus the superior man makes himself strong and untiring.",
                 "changes":
-                    [
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        "",
-                        ""
-                    ]
+    [
+        "Hidden dragon. Do not act.",
+"Dragon appearing in the field.  It furthers one to see the great man.",
+"All day long the superior man is creatively active. At nightfall his mind is beset with cares. Danger. No blame.",
+"Wavering flight over the depths. No blame.",
+"Flying dragon in the heavens. It furthers one to see the great man.",
+"Arrogant dragon will have cause to repent.",
+        "When all the lines Change, it means: There appears a flight of dragons without heads. Good fortune."
+    ]
             }
         ],
 }
-//     "sequence": 
-//     {
-//         "fuXi8": [7,3,2,1,0,4,5,6],
-//         "kingWen64": 
-//         [
-//     '2', '23', '8', '20', '16', '35', '45', '12', 
-//     '15', '52', '39', '53', '62', '56', '31', '33', 
-//     '7', '4', '29', '59', '40', '64', '47', '6', 
-//     '46', '18', '48', '57', '32', '50', '28', '44', 
-//     '24', '27', '3', '42', '51', '21', '17', '25', 
-//     '36', '22', '63', '37', '55', '30', '49', '13', 
-//     '19', '41', '60', '61', '54', '38', '58', '10', 
-//     '11', '26', '5', '9', '34', '14', '43', '1'
-// ]
-//     }
-// }
-
-// const ichingWilhelm1950 = {
-//     "1": {
-//         "oracle"         : "䷀",
-//         "name"           : "The Creative",
-//         "note"           : "The first hexagram is made up of six unbroken lines. These unbroken lines stand for the primal power, which is light-giving, active, strong, and of the spirit. The hexagram is consistently strong in character, and since it is without weakness, its essence is power or energy. Its image is heaven. Its energy is represented as unrestricted by any fixed conditions in space and is therefore conceived of as motion. Time is regarded as the basis of this motion. Thus the hexagram includes also the power of time and the power of persisting in time, that is, duration. The power represented by the hexagram is to be interpreted in a dual sense in terms of its action on the universe and of its action on the world of men. In relation to the universe, the hexagram expresses the strong, creative action of the Deity. In relation to the human world, it denotes the creative action of the holy man or sage, of the ruler or leader of men, who through his power awakens and develops their higher nature.",
-//         "judgement"      : "THE CREATIVE works sublime success, Furthering through perseverance.",
-//         "interpretation" : "According to the original meaning, the attributes [sublimity, potentiality of success, power to further, perseverance] are paired. When an individual draws this oracle, it means that success will come to him from the primal depths of the universe and that everything depends upon his seeking his happiness and that of others in one way only, that is, by perseverance in what is right. The specific meanings of the four attributes became the subject of speculation at an early date. The Chinese word here rendered by \"sublime\" means literally \"head,\" \"origin,\" \"great.\" This is why Confucius says in explaining it: \"Great indeed is the generating power of the Creative; all beings owe their beginning to it. This power permeates all heaven.\" For this attribute inheres in the other three as well. The beginning of all things lies still in the beyond in the form of ideas that have yet to become real. But the Creative furthermore has power to lend form to these archetypes of ideas. This is indicated in the word success, and the process is represented by an image from nature: \"The clouds pass and the rain does its work, and all individual beings flow into their forms.\" Applies to the human world, these attributes show the great man the way to notable success: \"Because he sees with great clarity and cause and effects, he completes the six steps at the right time and mounts toward heaven on them at the right time, as though on six dragons.\" The six steps are the six different positions given in the hexagram, which are represented later by the dragon symbol. Here it is shown that the way to success lies in apprehending and giving actuality to the way of the universe [Tao], which, as a law running through end and beginning, brings about all phenomena in time. Thus each step attained forthwith becomes a preparation for the next. Time is no longer a hindrance but the means of making actual what is potential. The act of creation having found expression in the two attributes sublimity and success, the work of conservation is shown to be a continuous actualization and differentiation of form. This is expressed in the two terms \"furthering\" (literally, \"creating that which accords with the nature of a given being\") and \"persevering\" (literally, \"correct and firm\"). \"The course of the Creative alters and shapes beings until each attains its true, specific nature, then it keeps them in conformity with the Great Harmony. Thus does it show itself to further through perseverance.\" In relation to the human sphere, this shows how the great man brings peace and security to the world through his activity in creating order: \"He towers high above the multitude of beings, and all lands are united in peace.\" Another line of speculation goes still further in separating the words \"sublime,\" \"success,\" \"furthering,\" \"perseverance,\" and parallels them with the four cardinal virtues in humanity. To sublimity, which, as the fundamental principle, embraces all the other attributes, it links love. To the attribute success are linked the morals, which regulate and organize expressions of love and thereby make them successful. The attribute furthering is correlated with justice, which creates the conditions in which each receives that which accords with his being, that which is due him and which constitutes his happiness. The attribute perseverance is correlated with wisdom, which discerns the immutable laws of all that happens and can therefore bring about enduring conditions. These speculations, already broached in the commentary called Wên Yen , later formed the bridge connecting the philosophy of the \"five stages (elements) of change,\" as laid down in the Book of History (Shu Ching) with the philosophy of the Book of Changes, which is based solely on the polarity of positive and negative principles. In the course of time this combination of the two systems of thought opened the way for an increasingly intricate number symbolism.",
-//         "image"          : "The movement of heaven is full of power. Thus the superior man makes himself strong and untiring.",
-//         "interpretation" : "Since there is only one heaven, the doubling of the trigram Ch'ien, of which heaven is the image, indicates the movement of heaven. One complete revolution of heaven makes a day, and the repetition of the trigram means that each day is followed by another. This creates the idea of time. Since it is the same heaven moving with untiring power, there is also created the idea of duration both in and beyond time, a movement that never stops nor slackens, just as one day follows another in an unending course. This duration in time is the image of the power inherent in the Creative. With this image as a model, the sage learns how best to develop himself so that his influence may endure. He must make himself strong in every way, by consciously casting out all that is inferior and degrading. Thus he attains that tirelessness which depends upon consciously limiting the fields of his activity.",
-//         "changes": [
-//             ["Hidden dragon. Do not act.", "In China the dragon has a meaning altogether different from that given it in the Western world. The dragon is a symbol of the electrically charged, dynamic, arousing force that manifests itself in the thunderstorm. In winter this energy withdraws into the earth; in the early summer it becomes active again, appearing in the sky as thunder and lightning. As a result the creative forces on earth begin to stir again. Here this creative force is still hidden beneath the earth and therefore has no effect. In terms of human affairs, this symbolizes a great man who is still unrecognized. Nonetheless he remains true to himself. He does not allow himself to be influenced by outward success or failure, but confident in his strength, he bides his time. Hence it is wise for the man who consults the oracle and draws this line to wait in the calm strength of patience. The time will fulfill itself. One need not fear least strong will should not prevail; the main thing is not to expend one's powers prematurely in an attempt to obtain by force something for which the time is not yet ripe."],
-//             ["Dragon appearing in the field. It furthers one to see the great man.", "Here the effects of the light-giving power begin to manifest themselves. In terms of human affairs, this means that the great man makes his appearance in his chosen field of activity. As yet he has no commanding position but is still with his peers. However, what distinguishes him form the others is his seriousness of purpose, his unqualified reliability, and the influence he exerts on his environment with out conscious effort. Such a man is destined to gain great influence and to set the world in order. Therefore it is favorable to see him."],
-//             ["All day long the superior man is creatively active. At nightfall his mind is still beset with cares. Danger. No blame.", "A sphere of influence opens up for the great man. His fame begins to spread. The masses flock to him. His inner power is adequate to the increased outer activity. There are all sorts of things to be done, and when others are at rest in the evening, plans and anxieties press in upon him. But danger lurks here at the place of transition from lowliness to the heights. Many a great man has been ruined because the masses flocked to him and swept him into their course. Ambition has destroyed his integrity. However, true greatness is not impaired by temptations. He who remains in touch with the time that is dawning, and with its demands is prudent enough to avoid all pitfalls, and remains blameless."],
-//             ["Wavering flight over the depths. No blame.", "A place of transition has been reached, and free choice can enter in. A twofold possibility is presented to the great man: he can soar to the heights and play an important part in the world, or he can withdraw into solitude and develop himself. He can go the way of the hero or that of the holy sage who seeks seclusion. There is no general law of his being. If the individual acts consistently and is true to himself, he will find the way that is appropriate for him. This way is right for him and without blame."],
-//             ["Flying dragon in the heavens. It furthers one to see the great man.", "Here the great man has attained the sphere of the heavenly beings. His influence spreads and becomes visible throughout the whole world. Everyone who sees him may count himself blessed. Confucius says about this line: Things that accord in tone vibrate together. Things that have affinity in their inmost natures seek one another. Water flows to what is wet, fire turns to what is dry. Clouds (the breath of heaven) follow the dragon, wind (the breath of earth) follows the tiger. Thus the sage arises, and all creatures follow him with their eyes. What is born of heaven feels related to what is above. What is born of earth feels related to what is below. Each follows its kind."],
-//             ["Arrogant dragon will have cause to repent.", "When a man seeks to climb so high that he loses touch with the rest of mankind, he becomes isolated, and this necessarily leads to failure. This line warns against titanic aspirations that exceed one's power. A precipitous fall would follow."],
-//             ["There appears a flight of dragons without heads. Good fortune.", "When all the lines are nines, it means that the whole hexagram is in motion and changes into the hexagram K'un, THE RECEPTIVE, whose character is devotion. The strength of the Creative and the mildness of the Receptive unite. Strength is indicated by the flight of dragons, mildness by the fact that their heads are hidden. This means that mildness in action joined to strength of decision brings good fortune."]
-//         ]
-        
-//     }
-// }
 
