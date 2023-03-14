@@ -483,7 +483,7 @@ const iching = {
                 "sign": "䷺",
                 "name": "Dispersing",
                 "judgement": "Success. The king approaches his temple. It furthers one to cross the great water. Perseverance furthers.",
-                "image": "The wind drives over the water: The image of Dispersion. <br>vThus the kings of old sacrificed to the Lord And built temples.",
+                "image": "The wind drives over the water: The image of Dispersion. <br>Thus the kings of old sacrificed to the Lord And built temples.",
                 "changes":
                     [
                         "He brings help with the strength of a horse. Good fortune.",
