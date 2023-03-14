@@ -121,11 +121,12 @@ var menuHover = false
 var menuSelectTitle = ''
 var menuSelectDescription = ""
 
+var mobile = false
+
 function preload() {
     mother = loadImage('mother.png');
     jackal = loadImage('jackal.png')
 }
-
 function setup() {
     //set image sizes
     mother.width = windowHeight * motherSizeMod;
@@ -155,8 +156,9 @@ function setup() {
     timeStamp = Array.from(currentTime)
     oracleGenerator() // loads oracle system
 }
-
 function draw() {
+    mobile = (windowWidth < windowHeight)
+
     push()
     push()
 
@@ -186,20 +188,18 @@ function draw() {
     }
 
     if (windowHeight < windowWidth) {
-            mother.width = windowHeight*motherSizeMod;
+        mother.width = windowHeight*motherSizeMod;
         mother.height = mother.width
         jackal.width = mother.width *2
         jackal.height = mother.height
     } else {
-            mother.height = windowHeight *motherSizeMod;
+        mother.height = windowHeight *motherSizeMod;
         mother.width = mother.height
-        jackal.width = mother.width *2
-        jackal.height = mother.height
+        // jackal.width = mother.width *2
+        // jackal.height = mother.height
     }
 
     middle = createVector(window.width * .5, window.height * .5) // defines center of circle
-
-    // UI() // checks location of mouse and updates variables to controll zoom and select functions
 
     clear();
     // pixelDensity(1);
@@ -209,11 +209,8 @@ function draw() {
 
     translate(middle.x - mother.width / 2, (middle.y - mother.height / 2));
    
-    // push()
-
     circleWidth = mother.width * .725
     idol(mother.width * .5, mother.height * .5, circleWidth, true, false, mother.width*.003, 255)
-    // pop()
     
     clock(0)
 
@@ -266,7 +263,6 @@ function draw() {
         UI() // checks location of mouse and updates variables to controll zoom and select functions  
     }
 }
-
 // detects if mouse is hovering over trigger areas
 function UI(UIShow = false) {
 
@@ -371,67 +367,6 @@ function UI(UIShow = false) {
         on(1)
     }
 }
-
-// controlls functions from keyboard input
-function keyTyped() {
-    // timeStamp = Array.from(time)
-    if (keyCode == ENTER) {
-        if (timeOracleHover) {
-            timeStamp = Array.from(currentTime)
-            oracleGenerator("TIME ONLY")
-        } else {
-            timeStamp = Array.from(currentTime)
-            oracleGenerator()
-        }
-    }
-}
-
-function mousePressed() {
-    if (timeOracleHover) {
-        timeStamp = Array.from(currentTime)
-    } else if (circleHover) {
-        timeStamp = Array.from(currentTime)
-        oracleGenerator()
-    } else {
-        return false
-    }
-
-    if (titleHover) {
-        on(1)
-    }
-}
-
-function mouseheld() {
-    if (mouseIsPressed) {
-        return true
-    } else {
-        return false
-    }
-}
-
-function mouseReleased() {
-    if (timeOracleHover) {
-        if (!overlays[2]) { //prevents new oracle if overlay 2 is active
-            oracleGenerator("TIME ONLY")
-            oracleDisplayCounter = 6
-        }
-    } else if (circleHover) {
-
-    } else {
-        return false
-    }
-
-}
-
-function windowResized() {
-    mother.width = windowHeight * motherSizeMod
-    mother.height = mother.width
-    jackal.width = mother.width *2
-    jackal.height = mother.height
-    resizeCanvas(windowWidth, windowHeight);
-    // menuBar(principles,(windowHeight*menuYMod))
-}
-
 // converts ms time to base 64 temple time and controlls animation timing variables
 function kali() {
     dateTemple = Date.now() - zerohour + offset;
@@ -481,8 +416,8 @@ function kali() {
             timeScaleCycle[i] = map(timeMoment[i], timeUnitsMax[i] * .5, timeUnitsMax[i], 1, 0)
         }
     }
-}
-    
+} 
+// calculates the temple calandar for current year starting from beginging of temple era
 function calandarSetup() {
 
     function calandarCount(x = [27.55454977, 27, 0.55454977, 27, 27, 1]) {
@@ -627,8 +562,7 @@ function calandarSetup() {
     // timeO[5] = str(dayOfMonth)
 
     // console.log(timeO)
-    }
-
+}
 // controlls myriad animation
 function myriad() {
     push()
@@ -675,7 +609,6 @@ function myriad() {
     colorMode(RGB)
     pop()
 }
-
 // controlls emianation animation
 function emination(count) {
     push()
@@ -821,7 +754,6 @@ function emination(count) {
     // }
     pop()
 }
-
 // base 64 temple time clock display
 function clock() {
     push()
@@ -934,7 +866,6 @@ function clock() {
     pop()
     pop()
 }
-
 //generates new oracle
 function oracleGenerator(option = false) {
     //returns series of coin flips for oracle generation
@@ -1015,7 +946,6 @@ function oracleGenerator(option = false) {
     
     }
 }
-
 //displays oracle
 function displays(c) {
     push()
@@ -1430,7 +1360,6 @@ function displays(c) {
         interpretation()
     }
 }
-
 function aboutTheTemple(s, x, y, r, spacing, ts) {
     
     // let center = createVector(center.x,center.y)
@@ -1482,7 +1411,6 @@ function aboutTheTemple(s, x, y, r, spacing, ts) {
     }
     pop()
 }
-
 function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color) {
 
     function flower(x,y,circumradius){
@@ -1572,7 +1500,6 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
         pop()
         pop()
 
-        let mobile = (windowWidth < windowHeight)
         if (!circleHover && !menuHover && !mobile) {
         vale(1);
         }
@@ -1702,7 +1629,6 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
 
     SquaredCircle()
 }
-
 function interpretation() {
     let oracle = sequence[oracleD[0]]
     let changingLinesList = ""
@@ -1743,4 +1669,60 @@ function interpretation() {
         // document.getElementById("ifate").innerHTML = "<a href=\"https://www.ifate.com/i-ching-changes/iching-hexagram-" + sequence[oracleD[0]] + "-changing-to-" + sequence[oracleD[1]] + ".html\"target=\"_blank\">interpretation by ifate.com</a>"
         // document.getElementById("divinationcom").innerHTML = "<a href=\"https://divination.com/iching/lookup/" + sequence[oracleD[0]] + "-2/\"" + "target=\"_blank\">interpretation by divination.com</a>"
     }
+}
+
+// user input functions
+function keyTyped() {
+    // timeStamp = Array.from(time)
+    if (keyCode == ENTER) {
+        if (timeOracleHover) {
+            timeStamp = Array.from(currentTime)
+            oracleGenerator("TIME ONLY")
+        } else {
+            timeStamp = Array.from(currentTime)
+            oracleGenerator()
+        }
+    }
+}
+function mousePressed() {
+    if (timeOracleHover) {
+        timeStamp = Array.from(currentTime)
+    } else if (circleHover) {
+        timeStamp = Array.from(currentTime)
+        oracleGenerator()
+    } else {
+        return false
+    }
+
+    if (titleHover) {
+        on(1)
+    }
+}
+function mouseheld() {
+    if (mouseIsPressed) {
+        return true
+    } else {
+        return false
+    }
+}
+function mouseReleased() {
+    if (timeOracleHover) {
+        if (!overlays[2]) { //prevents new oracle if overlay 2 is active
+            oracleGenerator("TIME ONLY")
+            oracleDisplayCounter = 6
+        }
+    } else if (circleHover) {
+
+    } else {
+        return false
+    }
+
+}
+function windowResized() {
+    mother.width = windowHeight * motherSizeMod
+    mother.height = mother.width
+    jackal.width = mother.width *2
+    jackal.height = mother.height
+    resizeCanvas(windowWidth, windowHeight);
+    // menuBar(principles,(windowHeight*menuYMod))
 }
