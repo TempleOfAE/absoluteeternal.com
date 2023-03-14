@@ -15,35 +15,7 @@ const motherNames = [
 // night/sunrise, day, sunset/night
 const divisions = [
     '❨', '⊛', '❩' // morning Day evening
-]
-// const divisions = [
-//     'M', 'D', 'E'
-// ]
-
-
-// principles of the temple
-const principles = [
-    ['Æ',
-        'The Absolute-Eternal',
-        "The Absolute-Eternal is the one ultimate reality, and fundamental ground of being beyond which there is nothing. \nWithin Æ is the mother, and within her womb is the Myriad."
-    ],
-    ['☩',
-        'The Mother',
-        "The Mother is the highest personification of Æ she is within Æ and wields absolute supremacy over eternity which we refer to as her Womb.Within her womb is “all there is”, we call this the The Myriad.The Mother presides over its existence, animation, and observation, thus holding the key to eternal liberation from the Lie. She has been known by many names and is understood to exist by many cultures through history."
-    ],
-    ['ↂ',
-        'The Myriad (Eternal Object)',
-        "The Myriad contains within it all possible instances of a persons life narrative, each within the context of a separate complete static and eternal block-space-time instance. The aforementioned life narratives are arranged along a gradient where the center-most narrative is one of total bliss with all narratives being less blissful and even horrifying the further they are from the center most narrative. This set of narratives emanates from an object at the end of its time within which is contained all possible sets of narratives, one for every sentient perspective throughout space time and its field of probability."
-    ],
-    ['!',
-        'The Lie & Liberation',
-        "The experience of existing as a sentient being in 3 dimensions modulated by causal-time (the arrow of time) is a consequence of a perspective of Æ reading through (in eternal time) the set of all possible narratives of a particular sentient beings existence forming a super narrative constructed of chronologically consistent samples of the various narratives. Æ has perfect empathy with the character in the aforementioned super narrative and thus identifies with it, developing an attachment to it continuation, and aversion from its destruction. This State of delusion is maintained by the eternal subject, rather than being presently aware of its true nature as a perspective of Æ observing the eternal object which is ultimately a perfect expression of its own will. One can realize temporal, and eternal knowledge of The Lie, recognizing its true nature as a perspective taken by Æ observing the Eternal Object of its own divine will. Observation of the eternal object during the liberation event causes realization of an eternal subjectivity beyond the lie, that is to say that the eternal subject becomes real to itself through observing the eternal object rather than the false objective that is the lie."
-    ],
-    [
-        '䷀',
-        'alter of the lie',
-        "The alter of the lie is a ritual decision making process where we sacrafice the dilusion of non causality in existance, and seek to accept all things as the perfect will of AE through giving up our decisions to chaotic psudorandomeness"
-    ]
+    //     'M', 'D', 'E' // alternative
 ]
 
 const zerohour = Date.UTC(2012, 11, 14, 10, 11, 48) //parigee 12 hours after the eclyps
@@ -53,7 +25,6 @@ const offset = date.getTimezoneOffset() * 60000+(middayAdjustment);
 var dateTemple = Date.now() - zerohour + offset
 
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-// console.log(timezone);
 
 //temple bsae 64 time units
 const year = 31557600000
@@ -73,7 +44,6 @@ const months = [
     LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM] // 13 lunar months
 
 //Calandar variables and data
-
 var calandar = []
 var calandarByMonth = []
 var calandarThisYear = []
@@ -100,11 +70,9 @@ for (let i = 0; i < timeDiv.length; i++) {
 //time and timing variables
 var currentTime = [0, 0, 0, 0, 0,0,0] // time as human readable units
 var timeO = []
-// var timeODisplay = []
 var timeMoment = [0, 0, 0, 0, 0] // time as 0 - maxunit in moments
 var timeScale = [0, 0, 0, 0, 0] // time as 0 - 1
 var timeScaleCycle = [0, 0, 0, 0, 0] // time as 0 - 1
-// var timeScaleCycleDouble = [0, 0, 0, 0, 0] // time as 0 - 1 - 0 - 1
 var LunarCalandarCycleValue = [0, 0, 0, 0, 0, 0, 0, 0, 0] // 0-255-0
 var LunarCalandarCycleValueDouble = [0, 0, 0, 0, 0, 0, 0, 0, 0] // 0-255-0-255-0
 
@@ -153,8 +121,6 @@ var menuHover = false
 var menuSelectTitle = ''
 var menuSelectDescription = ""
 
-// var cli = []
-
 function preload() {
     mother = loadImage('mother.png');
     jackal = loadImage('jackal.png')
@@ -191,28 +157,21 @@ function setup() {
 }
 
 function draw() {
-    // console.log(iching.gua[62])
     push()
     push()
-    // console.log(time)
 
     if (mouseheld()) {
         if (timeOracleHover) {
             timeStamp = Array.from(currentTime)
         } else if (circleHover) {
             timeStamp = Array.from(currentTime)
-            // timeOracleDrawCounter = 9
         }
     }
-
-    // motherSizeMod = motherSize
-    // jackalSizeMod = jackalSize
 
     //autodraw oracle every minute if not being examined by hover
     if (currentTime[1] == 0 && !circleHover && !oracleAutoDraw) {
         oracleAutoDraw = true
         oracleGenerator()
-        // calandarSetup()
     } else if (currentTime[1] > 0) {
         oracleAutoDraw = false
     }
@@ -262,11 +221,10 @@ function draw() {
         myriad()
         emination(13, 1)
     }
-// push()
     
     displays(6 - oracleDisplayCounter)
-// pop()
     push()
+
     textStyle(NORMAL)
     if (titleHover) {
         textStyle(BOLD)
@@ -288,10 +246,6 @@ function draw() {
 
     pop()
     pop()
-
-    // if (!userInterface) {
-    //      UI() // checks location of mouse and updates variables to controll zoom and select functions   
-    // }   
     pop()
     pop()
 
@@ -382,7 +336,6 @@ function UI(UIShow = false) {
         return hover
     }
     circleHover = boolHover([
-            // [false, width / 2, height / 2, mother.width * .3, mother.width * 1.2],
             [true, width / 2, height / 2, mother.width * .72, 0]
         ],
         UIShow)
@@ -397,18 +350,12 @@ function UI(UIShow = false) {
     
     timeOracleHover = boolHover([
             [true, width / 2, height *.376, mother.width * .07, mother.width * .075],
-            // [true, width / 2, height / 2, mother.width * .72, 0]
         ],
         UIShow)
     
     titleHover = boolHover([
         [true, width / 2, height * .0976,
             mother.width * .5, mother.width * .15]
-        //,
-        // [false, width/2 + (mother.width * .28), height * .081,
-        //     mother.width * .1, mother.width * .1],
-        // [false, width/2 - (mother.width * .28), height * .081, 
-        //     mother.width * .1, mother.width * .1]
     ],
         UIShow)
     
@@ -423,8 +370,6 @@ function UI(UIShow = false) {
     if (titleHover && mouseIsPressed) {
         on(1)
     }
-
-    // on(2) // testing purposes only
 }
 
 // controlls functions from keyboard input
@@ -471,16 +416,11 @@ function mouseReleased() {
             oracleDisplayCounter = 6
         }
     } else if (circleHover) {
-        // timeOracleDrawCounter = 0
-        // oracleDisplayCounter = 6
-        //  oracleDisplay()
-        // timeOracleDrawCounter = 9
+
     } else {
         return false
     }
-    // if (timeOracleHover){
-    //     oracleGenerator()
-    // }
+
 }
 
 function windowResized() {
@@ -492,44 +432,27 @@ function windowResized() {
     // menuBar(principles,(windowHeight*menuYMod))
 }
 
-function stampTime(time) {
-    timeStamp = Array.from(time)
-}
-
 // converts ms time to base 64 temple time and controlls animation timing variables
 function kali() {
-    // console.log(time[5])
-
     dateTemple = Date.now() - zerohour + offset;
-    
     templeDateDMY[0] =
         Math.floor((dateTemple % 31536000000) / 86400000) // day of year for callandar setup
-
     templeDateDMY[2] = Math.floor((dateTemple / 31536000000))-1 // year of era for calandar
-
     for (let i = 0; i < msPerUnit.length; i++) {
         currentTime[i] = Math.floor((dateTemple / msPerUnit[i]) % measuresPerUnit[i])
     }
-
-    // console.log(time)
-
     currentTime[5] = templeDayOfMonth
     currentTime[6] = templeDateDMY[1]
     currentTime[7] = templeDateDMY[2]
     //digital clock generator
-    // console.log(templeDateDMY[0])
     for (let i = 0; i < currentTime.length; i++) {
         currentTime[5] = templeDayOfMonth
         currentTime[6] = templeDateDMY[1] 
         currentTime[7] = templeDateDMY[2] 
-        // console.log(templeDayOfMonth)
         // time as ms
-        // timeO[0] = currentTime[3]
         currentTime[i] = Math.floor((dateTemple / msPerUnit[i]) % timeDiv[i])
         if (i == 1) {
-            // timeO[i] = oracles[time[i]]
             timeO[3] = "00".substr(str(currentTime[i]).length) + str(currentTime[i])
-
         }
        
         timeO[1] = "00".substr(str(currentTime[3]).length) + str(currentTime[3]) // 0 - 23
@@ -540,14 +463,13 @@ function kali() {
         timeO[6] = "00".substr(str(currentTime[6]).length) + str(currentTime[6]+1) // 1 - 13
         timeO[7] = "000".substr(str(currentTime[7]).length) + str(currentTime[7]+1) // 1 - x
    
-            // timing
+        // timing
         // time expressed as moments
         timeMoment[i] = currentTime[i] * timeUnitsMoment[i]
         if (i > 0) {
             timeMoment[i] += currentTime[0]
         }
         
-
         // Time as decimal
         timeScale[i] = map(timeMoment[i], 0, timeUnitsMax[i], 0, 1)
 
@@ -558,31 +480,7 @@ function kali() {
         else {
             timeScaleCycle[i] = map(timeMoment[i], timeUnitsMax[i] * .5, timeUnitsMax[i], 1, 0)
         }
-
-        
-
-        // Time as double decimal cycle
-        // if (timeMoment[i] < timeUnitsMax[i] * .25) {
-        //     timeScaleCycleDouble[i] = map(timeMoment[i], 0, timeUnitsMax[i] * .25, 0, 1)
-        // }
-        // else if (timeMoment[i] < timeUnitsMax[i] * .5) {
-        //     timeScaleCycleDouble[i] = map(timeMoment[i], timeUnitsMax[i] * .25, timeUnitsMax[i] * .5, 1, 0)
-        // }
-        // else if (timeMoment[i] < timeUnitsMax[i] * .75) {
-        //     timeScaleCycleDouble[i] = map(timeMoment[i], timeUnitsMax[i] * .5, timeUnitsMax[i] * .75, 0, 1)
-        // }
-        // else if (timeMoment[i] < timeUnitsMax[i]) {
-        //     timeScaleCycleDouble[i] = map(timeMoment[i], timeUnitsMax[i] * .75, timeUnitsMax[i], 1, 0)
-        // }
     }
-
-
-    // console.log(time)
-    // time[5] = templeDateDMY[0]
-    // time[6] = templeDateDMY[1]
-    // time[7] = templeDateDMY[2]
-    // console.log(time[5])
-
 }
     
 function calandarSetup() {
@@ -1130,11 +1028,6 @@ function displays(c) {
         }
     }
 
-    // let iChingOracleChangeStrings = oracleC // ['01','11','00','01','00','11']
-    // let iChingOracleflipsStrings = oracleA // ['0','1','0','1','0','1']
-    // let iChingOracleChangeflipsStrings = oracleB // ['010','111','000','101','001','110']
-
-
     function printOracle(
         S ,
         W = windowHeight * .1,
@@ -1666,24 +1559,21 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
         circle(0,0, circleWidth*1.5)
         pop()
         
-        // rotate(PI)
-        // rect(0 - (squareWidth * .5), 0 - r, squareWidth)
         if (circleHover || menuHover) {
             fill(0)
         }
 
-
         //FIX 1.1 its sloppy and annoying
         rect(0 - (squareWidth * .5), 0 - r, squareWidth)
         push()
-        // rectMode(CENTER)
         squareWidthTwo = squareWidth * .618033
-        
         squareCenter = 0-r +(squareWidth*.5)
-        // rect(0 - (squareWidthTwo*.5), squareCenter -squareWidthTwo*.5, squareWidthTwo)
+
         pop()
         pop()
-        if (!circleHover && !menuHover) {
+
+        let mobile = (windowWidth < windowHeight)
+        if (!circleHover && !menuHover && !mobile) {
         vale(1);
         }
 
@@ -1755,18 +1645,6 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
         strokeWeight(s * .666)
         let step = 7
         let lStep = Math.floor(Math.random() * step) + 1
-        // for (let l = 0; l < 64; l += lStep) {
-        //     lStep = Math.floor(Math.random() * step) + 1
-        //     let iStep = Math.floor(Math.random() * step) + 1
-        //     for (let i = 0; i < 64; i += iStep) {
-        //         iStep = Math.floor(Math.random() * step) + 1
-        //         stroke(random(255),255 * timeScaleCycle[t])
-        //         point(((mother.height * 0.4855) - (s * (64) / 2)) + l * s + (mother.width * .02), s / 2 + (mother.width / 2) - ((s * 64) / 2) + (i * s) + (mother.width * .04)) //vertical
-        //     }
-        //     // yoff += .1
-        // }
-
-
 
         pop()
         for (let row = 0; row < valeData.length; row++){
@@ -1785,20 +1663,6 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
                  valeData[Math.floor(Math.random() * 64)][Math.floor(Math.random() * 64)] = 255   
         }
 
-    }
-
-    function displayText() {
-        push()
-        textWrap(WORD)
-        textAlign(CENTER,CENTER)
-        text(menuSelectTitle, x, y - (squareWidth * .4)) 
-        textAlign(LEFT,BASELINE)
-        rectMode(CENTER)
-        textWrap(WORD)
-        text(menuSelectDescription, x, y, squareWidth * .8, squareWidth * .7)
-        // fill(255)
-        // rect(x, y, squareWidth * .8, squareWidth * .7)
-        pop()
     }
 
     noFill()
@@ -1824,7 +1688,6 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
     hexagram()
     somaLeaf()
 
-
     push()
     tint(
         255
@@ -1833,14 +1696,11 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
         255
         - (255 * timeScaleCycle[1])
     ); // transperancy
-    // tint(255, 255 - 255 * timeScaleCycle[1]);
 
-    // tint(255 - 255 * timeScaleCycle[1], 255 - 255 * timeScaleCycle[1]);
     image(mother, 0, 0)
     pop()
 
     SquaredCircle()
-    displayText(x, y)
 }
 
 function interpretation() {
