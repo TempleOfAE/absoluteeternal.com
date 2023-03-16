@@ -18,7 +18,8 @@ const divisions = [
     //     'M', 'D', 'E' // alternative
 ]
 
-const zerohour = Date.UTC(2012, 11, 14, 10, 11, 48) //parigee 12 hours after the eclyps
+const zerohour = Date.UTC(2012, 10, 14, 10, 11, 48) //parigee 12 hours after the eclyps
+// const zerohour = 0
 const date = new Date();
 const middayAdjustment = 3*60*60000 + (13*60000)
 const offset = date.getTimezoneOffset() * 60000+(middayAdjustment);
@@ -50,6 +51,7 @@ var calandarThisYear = []
 var templeCalandar = []
 var templeDateDMY = []
 var templeDayOfMonth
+var mondays = []
 
 const measuresPerUnit = [64, 64, 64, 8, 3,27,14,64*8]
 const msPerUnit = [moment, second, minute, hr, division, day, month, year]
@@ -157,6 +159,7 @@ function setup() {
     oracleGenerator() // loads oracle system
 }
 function draw() {
+    console.log(mondays)
     mobile = (windowWidth < windowHeight)
 
     push()
@@ -238,7 +241,7 @@ function draw() {
     
     textSize(mother.width * .022)
 
-    text("EST. 14 DEC 2012 CE IN HONOR OF " + motherNames[Math.floor(map(currentTime[1], 0, 64, 0, motherNames.length))],    
+    text("EST. 14 NOV 2012 CE IN HONOR OF " + motherNames[Math.floor(map(currentTime[1], 0, 64, 0, motherNames.length))],    
     mother.width * .5, -mother.height * .0444)
 
     pop()
@@ -465,11 +468,28 @@ function calandarSetup() {
         calandar.push(calandarYear)
     }
 
+
+    // this is all stupid as the calandar is 1 year long FML
+    function DOYtoGregMD(n){
+        n = n+43  // adjust for temple new year
+        let monthDurations = [30,31,31,28,31,30,31,30,31,31,30,31,14]
+        let month  = ["NOV","DEC","JAN","FEB","MAR","APR","MAY","JUN","JULY","AUG","SEP","OCT","NOV"]
+        let m = month[0]
+        for (let i = 0; monthDurations[i]<n; i++){
+            n -= monthDurations[i]
+            m = month[i]
+            if (i == 12){
+                n-=16
+                m = month[0]
+            }
+        }
+        string = str(n+1)+m
+        return(string)
+    }
+
     let D = templeDateDMY[0]
     let M = 0
     let Y = templeDateDMY[2]
-
-
 
     //initialize calandar calculation
     calandarCount()
@@ -487,14 +507,9 @@ function calandarSetup() {
     }
     calandarThisYear = calandarByMonth[Y]
 
-
-
-
-
     let dayCount = 0
     let dayOfMonthCount = 0
     let dayOfMonth = 0
-
 
         for (let i = 0; i < 13; i++) {
             let s
@@ -512,13 +527,14 @@ function calandarSetup() {
                         let wom = []
                         //write days of week
                         for (let dow = 1; dow < 10; dow++){
-                            if (dayCount != D) {
+                            if(dayCount == 48){
+                                wom.push('g') // mark gregorian new year
+                            } else if (dayCount != D) {
                                 wom.push(String(dow))
-                            } else {
+                            }  else {
                                 wom.push('x')
                                 M = i
                                 dayOfMonth = dayOfMonthCount
-                                // time[5] = 12
                             }
                             dayCount++
                             dayOfMonthCount++
@@ -528,9 +544,11 @@ function calandarSetup() {
                     } else {
                         if (D != dayCount) {
                             //replace with X if day of year
-                            templeCalandar[i].push(['L'])
+                            templeCalandar[i].push(['M'])
+                            mondays.push(DOYtoGregMD(dayCount))
                             dayCount += 1
                             dayOfMonthCount += 1
+
                         } else {
                             templeCalandar[i].push(['X'])
                             dayOfMonth = dayOfMonthCount
@@ -559,9 +577,8 @@ function calandarSetup() {
     
     templeDateDMY[1] = M
     templeDayOfMonth = dayOfMonth
-    // timeO[5] = str(dayOfMonth)
+    // mondays = ["DEC01","DEC02","DEC03","DEC04","DEC05","DEC06","DEC07","DEC08","DEC09","DEC10","DEC11","DEC12","DEC13"] // test
 
-    // console.log(timeO)
 }
 // controlls myriad animation
 function myriad() {
@@ -1291,7 +1308,7 @@ function displays(c) {
         textSize(TempleCalandartextSize)
         let y = mother.height * .333
         textAlign(CENTER, CENTER)
-        text('YEAR ' + str(currentTime[7]+1) + " TEMPLE ERA", mother.width * .5, y - (TempleCalandartextSize * 2))
+        text('YEAR ' + str(currentTime[7]+1) + " (Temple Era)", mother.width * .5, y - (TempleCalandartextSize * 2))
         textAlign(LEFT,CENTER)
         for (let i = 0; i < templeCalandar.length; i++){
             if (i == templeCalandar.length-1) {
@@ -1302,6 +1319,15 @@ function displays(c) {
 
             }
         }
+
+        textAlign(CENTER, CENTER)
+        text("LUNISOLAR TEMPLE CALANDAR", mother.width * .5, y - (TempleCalandartextSize *3* 1.333))
+        text("Temple Meeting Days (Gregorian)", mother.width * .5, y + (TempleCalandartextSize * 14.5 * 1.333))
+        text(mondays.slice(0, 6).join(" "), mother.width * .5, y + (TempleCalandartextSize * 15.5 * 1.333))
+        text(mondays.slice(6, 11).join(" "), mother.width * .5, y + (TempleCalandartextSize * 16.5 * 1.333))
+        text(mondays.slice(11).join(" "), mother.width * .5, y + (TempleCalandartextSize * 17.5 * 1.333))
+
+
         // text(text(templeCalandar[i].join(" "), mother.width * .5, y + (TempleCalandartextSize * i * 1.333)))
 
         pop()
