@@ -19,7 +19,6 @@ const divisions = [
 ]
 
 const zerohour = Date.UTC(2012, 10, 14, 10, 11, 48) //parigee 12 hours after the eclyps
-// const zerohour = 0
 const date = new Date();
 const middayAdjustment = 3*60*60000 + (13*60000)
 const offset = date.getTimezoneOffset() * 60000+(middayAdjustment);
