@@ -1,4 +1,4 @@
-var mother //stores shrine image\
+var mother //stores shrine image
 var jackal
 
 const motherNames = [
@@ -125,6 +125,8 @@ var menuSelectDescription = ""
 
 var mobile = false
 
+
+//main p5js functions
 function preload() {
     mother = loadImage('mother.png');
     jackal = loadImage('jackal.png')
@@ -198,8 +200,6 @@ function draw() {
     } else {
         mother.height = windowHeight *motherSizeMod;
         mother.width = mother.height
-        // jackal.width = mother.width *2
-        // jackal.height = mother.height
     }
 
     middle = createVector(window.width * .5, window.height * .5) // defines center of circle
@@ -266,6 +266,64 @@ function draw() {
         UI() // checks location of mouse and updates variables to controll zoom and select functions  
     }
 }
+function windowResized() {
+    mother.width = windowHeight * motherSizeMod
+    mother.height = mother.width
+    jackal.width = mother.width *2
+    jackal.height = mother.height
+    resizeCanvas(windowWidth, windowHeight);
+    // menuBar(principles,(windowHeight*menuYMod))
+}
+
+// pP5 user input functions
+function keyTyped() {
+    // timeStamp = Array.from(time)
+    if (keyCode == ENTER) {
+        if (timeOracleHover) {
+            timeStamp = Array.from(currentTime)
+            oracleGenerator("TIME ONLY")
+        } else {
+            timeStamp = Array.from(currentTime)
+            oracleGenerator()
+        }
+    }
+}
+function mousePressed() {
+    if (timeOracleHover) {
+        timeStamp = Array.from(currentTime)
+    } else if (circleHover) {
+        timeStamp = Array.from(currentTime)
+        oracleGenerator()
+    } else {
+        return false
+    }
+
+    if (titleHover) {
+        on(1)
+    }
+}
+function mouseheld() {
+    if (mouseIsPressed) {
+        return true
+    } else {
+        return false
+    }
+}
+function mouseReleased() {
+    if (timeOracleHover) {
+        if (!overlays[2]) { //prevents new oracle if overlay 2 is active
+            oracleGenerator("TIME ONLY")
+            oracleDisplayCounter = 6
+        }
+    } else if (circleHover) {
+
+    } else {
+        return false
+    }
+
+}
+
+
 // detects if mouse is hovering over trigger areas
 function UI(UIShow = false) {
 
@@ -580,6 +638,8 @@ function calandarSetup() {
     // mondays = ["DEC01","DEC02","DEC03","DEC04","DEC05","DEC06","DEC07","DEC08","DEC09","DEC10","DEC11","DEC12","DEC13"] // test
 
 }
+
+
 // controlls myriad animation
 function myriad() {
     push()
@@ -771,6 +831,8 @@ function emination(count) {
     // }
     pop()
 }
+
+
 // base 64 temple time clock display
 function clock() {
     push()
@@ -883,6 +945,8 @@ function clock() {
     pop()
     pop()
 }
+
+
 //generates new oracle
 function oracleGenerator(option = false) {
     //returns series of coin flips for oracle generation
@@ -963,7 +1027,7 @@ function oracleGenerator(option = false) {
     
     }
 }
-//displays oracle
+
 function displays(c) {
     push()
 
@@ -1695,60 +1759,4 @@ function interpretation() {
         // document.getElementById("ifate").innerHTML = "<a href=\"https://www.ifate.com/i-ching-changes/iching-hexagram-" + sequence[oracleD[0]] + "-changing-to-" + sequence[oracleD[1]] + ".html\"target=\"_blank\">interpretation by ifate.com</a>"
         // document.getElementById("divinationcom").innerHTML = "<a href=\"https://divination.com/iching/lookup/" + sequence[oracleD[0]] + "-2/\"" + "target=\"_blank\">interpretation by divination.com</a>"
     }
-}
-
-// user input functions
-function keyTyped() {
-    // timeStamp = Array.from(time)
-    if (keyCode == ENTER) {
-        if (timeOracleHover) {
-            timeStamp = Array.from(currentTime)
-            oracleGenerator("TIME ONLY")
-        } else {
-            timeStamp = Array.from(currentTime)
-            oracleGenerator()
-        }
-    }
-}
-function mousePressed() {
-    if (timeOracleHover) {
-        timeStamp = Array.from(currentTime)
-    } else if (circleHover) {
-        timeStamp = Array.from(currentTime)
-        oracleGenerator()
-    } else {
-        return false
-    }
-
-    if (titleHover) {
-        on(1)
-    }
-}
-function mouseheld() {
-    if (mouseIsPressed) {
-        return true
-    } else {
-        return false
-    }
-}
-function mouseReleased() {
-    if (timeOracleHover) {
-        if (!overlays[2]) { //prevents new oracle if overlay 2 is active
-            oracleGenerator("TIME ONLY")
-            oracleDisplayCounter = 6
-        }
-    } else if (circleHover) {
-
-    } else {
-        return false
-    }
-
-}
-function windowResized() {
-    mother.width = windowHeight * motherSizeMod
-    mother.height = mother.width
-    jackal.width = mother.width *2
-    jackal.height = mother.height
-    resizeCanvas(windowWidth, windowHeight);
-    // menuBar(principles,(windowHeight*menuYMod))
 }
