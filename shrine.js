@@ -905,7 +905,7 @@ function displays(c) {
                 // textSize(changingLineTextSize)
                 // text(changingLinesText, mother.width / 2, changingLineYPos + changingLineTextSize * 1.3)
 
-                text("ORACLE INTERPRETATION", mother.width / 2, changingLineYPos)
+                text("MESSAGE INTERPRETATION", mother.width / 2, changingLineYPos)
 
                 // name and number
                 let nameNumberYPos = mother.height * .57
