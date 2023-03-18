@@ -124,6 +124,7 @@ var menuSelectDescription = ""
 
 var mobile = false
 
+// P5 main functions
 function preload() {
     mother = loadImage('mother.png');
     jackal = loadImage('jackal.png')
@@ -204,7 +205,7 @@ function draw() {
     middle = createVector(window.width * .5, window.height * .5) // defines center of circle
 
     clear();
-    // pixelDensity(1);
+
     kali()
 
     background(0);
@@ -213,7 +214,6 @@ function draw() {
    
     circleWidth = mother.width * .725
     idol(mother.width * .5, mother.height * .5, circleWidth, true, false, mother.width*.003, 255)
-    
     clock(0)
 
     if (!circleHover && !menuHover) {
@@ -265,110 +265,63 @@ function draw() {
         UI() // checks location of mouse and updates variables to controll zoom and select functions  
     }
 }
-// detects if mouse is hovering over trigger areas
-function UI(UIShow = false) {
+function windowResized() {
+    mother.width = windowHeight * motherSizeMod
+    mother.height = mother.width
+    jackal.width = mother.width *2
+    jackal.height = mother.height
+    resizeCanvas(windowWidth, windowHeight);
+    // menuBar(principles,(windowHeight*menuYMod))
+}
 
-    function boolHover(shapes = [[0, 0, 0, 0, 0]], show) {
-        push()
-        logic = []
-        mouse = createVector(mouseX,mouseY)
-
-
-            push()
-            if (show) {
-                stroke(255,0,0)
-                strokeWeight(5)
-                point(mouseX, mouseY)
-            }
-        pop()
-
-        let hover = true
-
-        for (shape of shapes) {
-            push()
-                noFill()
-                strokeWeight(5)
-                stroke(255,0,0)
-                rectMode(CENTER)
-            
-            //circle
-            if (shape[4] == 0) {
-                if (show) {
-                    circle(shape[1], shape[2], shape[3])
-                    point(shape[1],shape[2])
-                }
-
-                let center = createVector(shape[1], shape[2])
-
-                    if (shape[0] && center.dist(mouse) > (shape[3]) * .5 && shape[0] == true) {
-                        hover = false
-                    }
-                
-                    if (!shape[0] && center.dist(mouse) < (shape[3]) * .5 && shape[0] == true) {
-                        hover = false
-                    }
-                
-                    
-                
-            } else {
-                if (show) {
-                    rect(shape[1], shape[2], shape[3], shape[4])
-                    point(shape[1],shape[2])
-                }
-
-                let leftBoundry = mouse.x < (shape[1] - (shape[3] * .5))
-                let rightBoundry = mouse.x > (shape[1] + (shape[3] * .5))
-                let topBoundry = mouse.y < (shape[2] - (shape[4] * .5))
-                let botomBoundry = mouse.y > (shape[2] + (shape[4] * .5))
-
-                if  (shape[0] && (leftBoundry || rightBoundry || topBoundry || botomBoundry)) { hover = false }
-                
-                
-                if (!shape[0] &&(!leftBoundry && !rightBoundry && !topBoundry && !botomBoundry)) { hover = false }
-                
-            }
-            pop()
+// P5 user input functions
+function keyTyped() {
+    // timeStamp = Array.from(time)
+    if (keyCode == ENTER) {
+        if (timeOracleHover) {
+            timeStamp = Array.from(currentTime)
+            oracleGenerator("TIME ONLY")
+        } else {
+            timeStamp = Array.from(currentTime)
+            oracleGenerator()
         }
-
-        pop()
-        return hover
     }
-    circleHover = boolHover([
-            [true, width / 2, height / 2, mother.width * .72, 0]
-        ],
-        UIShow)
-    
-    dateHover = boolHover([
-        [true,
-            width / 2, height * .287,
-            mother.width * .5, mother.width * .08],
-        [true, width / 2, height / 2, mother.width * .72, 0]
-        ],
-        UIShow)
-    
-    timeOracleHover = boolHover([
-            [true, width / 2, height *.376, mother.width * .07, mother.width * .075],
-        ],
-        UIShow)
-    
-    titleHover = boolHover([
-        [true, width / 2, height * .0976,
-            mother.width * .5, mother.width * .15]
-    ],
-        UIShow)
-    
-    changeHover = boolHover([
-        [true,
-            width / 2, height * .71,
-            mother.width * .5, mother.width * .1],
-        [true, width / 2, height / 2, mother.width * .72, 0]
-        ],
-        UIShow)    
-    
-    if (titleHover && mouseIsPressed) {
+}
+function mousePressed() {
+    if (timeOracleHover) {
+        timeStamp = Array.from(currentTime)
+    } else if (circleHover) {
+        timeStamp = Array.from(currentTime)
+        oracleGenerator()
+    } else {
+        return false
+    }
+
+    if (titleHover) {
         on(1)
     }
 }
+function mouseheld() {
+    if (mouseIsPressed) {
+        return true
+    } else {
+        return false
+    }
+}
+function mouseReleased() {
+    if (timeOracleHover) {
+        if (!overlays[2]) { //prevents new oracle if overlay 2 is active
+            oracleGenerator("TIME ONLY")
+            oracleDisplayCounter = 6
+        }
+    } else if (circleHover) {
+
+    } else {
+        return false
+    }
+
+}
+
 // converts ms time to base 64 temple time and controlls animation timing variables
 function kali() {
     dateTemple = Date.now() - zerohour + offset;
@@ -579,387 +532,109 @@ function calandarSetup() {
     // mondays = ["DEC01","DEC02","DEC03","DEC04","DEC05","DEC06","DEC07","DEC08","DEC09","DEC10","DEC11","DEC12","DEC13"] // test
 
 }
-// controlls myriad animation
-function myriad() {
-    push()
-    function rotateby(angle, rotation) {
-        var result = (angle + rotation) % 361;
-        if (result < 0)
-            result += 361;
-        return result;
-    }
 
+// detects if mouse is hovering over trigger areas
+function UI(UIShow = false) {
 
-    noFill();
-    colorMode(HSB);
-    w = mother.width * .011; //animation scale
-
-    y = mother.height / 2 * 1.06;
-    x = mother.width / 2;
-    n = 27 * .5;
-    sw = mother.width * .005
-
-    strokeWeight(sw * .6);
-    f = color(100, 0, 100);
-    f.setAlpha(1 - timeScaleCycle[1])
-        // fill(f)
-    stroke(f)
-
-    for (let i = 0; i < n; i++) {
-        let ww = map(i, 0, n, w, 0)
-
-        c = color(rotateby(map(i, 0, n, 0, 360), 360 * timeScale[0]), 100, 100, 1 - timeScaleCycle[1])
-        stroke(c)
-
-        strokeWeight(sw)
-        ellipse((x) - (ww / 2), y, ww, ww * 1.5) /// internal path
-        ellipse((x) + (ww / 2), y, ww, ww * 1.5) /// internal path
-
-        c.setAlpha(.2 - .2 * timeScaleCycle[1])
-        stroke(c)
-
-        strokeWeight(sw)
-        ellipse(x - ww / 2, y, ww, w * 1.5)
-        ellipse(x + ww / 2, y, ww, w * 1.5)
-    }
-    colorMode(RGB)
-    pop()
-}
-// controlls emianation animation
-function emination(count) {
-    push()
-    cx = mother.width / 2
-    cy = mother.height / 2
-        + (mother.height * .006)
-    clockCenter = createVector(cx, cy)
-
-    colorMode(HSB)
-
-    let length = windowHeight * .414
-    let eminationPoint = createVector(x, y + mother.height * .01)
-    let clockPoint = createVector(mother.width * .5, mother.height * .5)
-    let direction = p5.Vector.sub(clockCenter, clockPoint)
-
-    //rainbow size
-    let backgroundDensity = 8
-    let maxspacing = ((PI * 2) / (count * backgroundDensity * 20))
-    let rays = count * backgroundDensity
-
-    // rainbow timing 
-    let spacing = maxspacing - maxspacing * timeScaleCycle[1]
-    rotation = PI * 2 - spacing * (count * backgroundDensity - 1) / 2 // aligns emination to center 
-    for (let i = 0; i < count * backgroundDensity; i++) {
+    function boolHover(shapes = [[0, 0, 0, 0, 0]], show) {
         push()
-        direction.setMag(length * 1.2)
-        direction.rotate(rotation)
-        let hand = p5.Vector.add(clockCenter, direction)
-        let c = color(map(i, 0, count * backgroundDensity, -80, 260), 100 - 100 * timeScaleCycle[1], 100)
-        strokeWeight(1)
-        c.setAlpha(.5);
-        stroke(c)
-
-        line(eminationPoint.x, eminationPoint.y, hand.x, hand.y) // draws emination
-        pop()
-
-        rotation = spacing
-    }
-
-    direction = p5.Vector.sub(eminationPoint, clockPoint)
-    maxspacing = ((PI * 2) / (count * 20))
-    rays = count
-    spacing = maxspacing - maxspacing * timeScaleCycle[1]
-    rotation = PI * 2 - spacing * (count - 1) / 2 // aligns emination to center 
-
-    for (let i = 0; i < count; i++) {
-        push()
-        direction.setMag(length * 1.2)
-        direction.rotate(rotation)
-        let hand = p5.Vector.add(clockCenter, direction)
-        let c = color(map(i, 0, count, -80, 260), 100 - 100 * timeScaleCycle[1], 100)
-        if (i < count * .5) {
-            strokeWeight(log(nf(map(i, -1, count, 1, count * 2))))
-        } else {
-            strokeWeight(log(nf(map(i, -1, count, count * 2, 1))))
-        }
-        // c.setAlpha(timeScaleCycle[1]);
-        stroke(c);
-
-        line(eminationPoint.x, eminationPoint.y, hand.x, hand.y) // draws emination
-        pop()
-
-        rotation = spacing
-    }
-
-    stroke(100, 100) //white emination
-    strokeWeight(mother.width * .005)
-    stroke(100, 100) //white emination
-    strokeWeight(mother.width * (.01 - .01 * timeScaleCycle[1]));
+        logic = []
+        mouse = createVector(mouseX,mouseY)
 
 
-
-    //lens
-    let n = noise(dateTemple / 1000)
-    let ncycle = noise(dateTemple / 1000)
-    if (n > .5) {
-        ncycle = map(n, 0, 1, 0, 1)
-    } else {
-        ncycle = map(n, 0, 1, 1, 0)
-    }
-    let fade = map(timeScaleCycle[1], 0, 1, 0, 3)
-    let ccycle = color(map(n, 0, 1, -80, 260), 100, 70, fade)
-
-    // lense fill
-    fill(100, fade) // lense fade in and out
-    // fill(0, 0, 100, fade)
-    // nofill()
-
-    stroke(ccycle)
-
-    let scan
-    // extents of horizontal lens scan
-    // scan = Math.floor(map(n, 0, 1, -rays*.5, rays*.5)) //line by line
-    scan = Math.round(map(n, 0, 1, -rays*.5, rays*.5)) // line by line
-    // scan = map(n, 0, 1, -rays*.5, rays*.5) // smooth
-
-    direction = p5.Vector.sub(eminationPoint, clockPoint);
-    direction.setMag(length - length * timeScale[1]) // vertical scan of lens
-    direction.rotate(spacing * scan); // horizontal scan of lens
-    hand = p5.Vector.add(eminationPoint, direction)
-
-    // lens
-    strokeWeight(mother.width * .0055 * ncycle);
-    ellipse(hand.x, hand.y, log(nf(mother.width * .1 * (1 - ncycle))) * 5 * (.6 - (.6 * timeScale[1])), log(nf(mother.width * .2 * (ncycle))) * 5 * (.6 - .6 * timeScale[1]));
-    point(hand.x, hand.y);
-
-    // line from eye of eternity to lens
-    stroke(ccycle);
-    strokeWeight(mother.width * .001);
-    line(cx, cy, hand.x, hand.y);
-    stroke(100, 100)
-
-    // eye of eternity
-    stroke(0)
-    strokeWeight(mother.width * .00333);
-    ellipse(cx, cy, mother.width * .015, mother.width * .0025); //black background
-    stroke(255)
-    strokeWeight(mother.width * .00333);
-    ellipse(cx, cy, mother.width * .01, mother.width * .002); //whites
-    stroke(map(n, 0, 1, -80, 260), 100, 70);
-    strokeWeight(mother.width * .00444);
-    point(cx, cy); //cornia
-    stroke(0);
-    strokeWeight(mother.width * .00222);
-    point(cx, cy); //pupil
-
-    //jackal eyes
-    // if (jackals) {
-    //     let leftEyeX = cx - mother.width * .575
-    //     let rightEyeX = cx + mother.width * .575
-    //     let eyesY = cy + mother.height * .0666
-    //     let corniaSize = mother.width * .0222
-    //     let pupilSize = corniaSize * .5
-    //     //cornia
-    //     strokeWeight(corniaSize);
-    //     point(leftEyeX, eyesY);
-    //     point(rightEyeX, eyesY);
-    //     //pupils
-    //     stroke(0)
-    //     strokeWeight(pupilSize);
-    //     point(leftEyeX, eyesY);
-    //     point(rightEyeX, eyesY);
-    // }
-    pop()
-}
-// base 64 temple time clock display
-function clock() {
-    push()
-
-    textAlign(CENTER, CENTER)
-    colorMode(RGB)
-
-    push()
-    stroke(0)
-    let ts = mother.width * .0333
-    strokeWeight(ts*.2)
-    fill(255)
-    textSize(ts*.8)
-
-
-    // digital clock
-    text(
-        str(timeO[1]) //hour
-        + ' : '
-        + str(timeO[2]) //minute
-        + ' : ' + str(timeO[3]) //second
-        , mother.width * .41, mother.height * .2 //location
-    )
-
-    text(
-        + str(timeO[6]) //month
-        + ' / ' + str(timeO[5]) //day
-        + ' / ' + str(timeO[7]) //year
-
-        , mother.width * .59, mother.height * .2 //location
-    )
-
-    text(
-            oracles[currentTime[1]]
-            + oracles[currentTime[2]]
-            + oracles[currentTime[3]]
-
-            , mother.width * .435, mother.height * .17
-        )
-
-    text(
-             oracles[currentTime[6]]
-            + oracles[currentTime[5]]
-            + oracles[currentTime[7]]
-
-            , mother.width * .565, mother.height * .17
-        )
-    
-    textSize(ts * 1.3)
-    
-    text(
-        str(timeO[4]) //day section
-        , mother.width * .5, mother.height * .185 //location
-    )
-
-    pop()
-
-    //analogue clock
-    push()
-    noStroke()
-    let smhTs = ts * .8
-    fill(255)
-    textSize(smhTs)
-    translate(mother.width * .5, mother.height * .5)
-
-    //background
-    push()
-    let rim = mother.height * -.365
-
-    for (let i = 0; i < 8; i++) {
-        push()
-        rotate((TWO_PI / 8) * i)
-        stroke(255)
-        strokeWeight(ts * .75)
-        line(0, rim, 0, rim - (smhTs * 3))
-        stroke(0)
-        strokeWeight(ts * .5)
-        line(0, rim, 0, rim - (smhTs * 3))
-        pop()
-    }
-
-    for (let i = 0; i < 64; i++) {
-        push()
-        rotate((TWO_PI / 64) * i)
-        stroke(255)
-        strokeWeight(ts * .75)
-        line(0, rim, 0, rim - (smhTs * 2))
-        stroke(0)
-        strokeWeight(ts * .5)
-        line(0, rim, 0, rim - (smhTs * 2))
-        pop()
-    }
-    pop()
-
-    fill(255)
-    for (let t = 1; t <= 3; t++) {
-        for (let i = 0; i < currentTime[t] + 1; i++) {
             push()
+            if (show) {
+                stroke(255,0,0)
+                strokeWeight(5)
+                point(mouseX, mouseY)
+            }
+        pop()
+
+        let hover = true
+
+        for (shape of shapes) {
+            push()
+                noFill()
+                strokeWeight(5)
+                stroke(255,0,0)
+                rectMode(CENTER)
             
-            rotate((TWO_PI / timeDiv[t]) * i)
-            if (t == 3) {
-                text(octal[i], 0, (rim + (smhTs * .5)) - (smhTs * t))
+            //circle
+            if (shape[4] == 0) {
+                if (show) {
+                    circle(shape[1], shape[2], shape[3])
+                    point(shape[1],shape[2])
+                }
+
+                let center = createVector(shape[1], shape[2])
+
+                    if (shape[0] && center.dist(mouse) > (shape[3]) * .5 && shape[0] == true) {
+                        hover = false
+                    }
+                
+                    if (!shape[0] && center.dist(mouse) < (shape[3]) * .5 && shape[0] == true) {
+                        hover = false
+                    }
+                
+                    
+                
             } else {
-                text(oracles[i], 0, (rim + (smhTs * .5)) - (smhTs * t))
+                if (show) {
+                    rect(shape[1], shape[2], shape[3], shape[4])
+                    point(shape[1],shape[2])
+                }
+
+                let leftBoundry = mouse.x < (shape[1] - (shape[3] * .5))
+                let rightBoundry = mouse.x > (shape[1] + (shape[3] * .5))
+                let topBoundry = mouse.y < (shape[2] - (shape[4] * .5))
+                let botomBoundry = mouse.y > (shape[2] + (shape[4] * .5))
+
+                if  (shape[0] && (leftBoundry || rightBoundry || topBoundry || botomBoundry)) { hover = false }
+                
+                
+                if (!shape[0] &&(!leftBoundry && !rightBoundry && !topBoundry && !botomBoundry)) { hover = false }
+                
             }
             pop()
         }
-    }
 
-    pop()
-    pop()
-}
-//generates new oracle
-function oracleGenerator(option = false) {
-    //returns series of coin flips for oracle generation
-    function coin(flips = 1) {
-        record = ''
-        for (let i = 0; i < flips; i++) {
-            record += Math.round(Math.random())
-        }
-        return record   
+        pop()
+        return hover
     }
-    //returns quaternary change oracle from compairing a binary and octal input (4 coin iching meathod)
-    function changes(binIn, octalIn) {
-        if (binIn == '0') {
-            if (octalIn == '111') {
-                return '01'
-            } else {
-                return '00'
-            }
-        } else {
-            if (octalIn == '110' || octalIn == '101' || octalIn == '011') {
-                return '10'
-            } else {
-                return '11'
-            }
-        }
-    }
-    //splits quaternary changes data into two array of oracles as decimal value
-    function splitChanges(quatIn) {
-        let oraclePair = []
-        for (let i = 0; i < 2; i++){
-            oraclePair[i] = parseInt(quatIn.map(function(ii){return ii[i]}).join(''),2)
-        }
-        return oraclePair
-    }
-    //splits an iching oracle(int 0-63) into a binary quaternary and octal oracle from top to bottom respectivly
-    function TWD(oracleIn) {
-        oracleIn = parseInt((timeStamp[0]), 10).toString(2); // get int as binary value
-
-        oracleIn = "000000".substr(oracleIn.length) + oracleIn // format binary value to reflect 6 digit format
-        return [[
-            parseInt(oracleIn.slice(5,6), 2), //deeds
-            parseInt(oracleIn.slice(3,5),2), //words
-            parseInt(oracleIn.slice(0, 3), 2) //thoughts
+    circleHover = boolHover([
+            [true, width / 2, height / 2, mother.width * .72, 0]
         ],
-                
-            [oracleIn.slice(5, 6),
-                oracleIn.slice(3, 5),
-            oracleIn.slice(0,3)]
-        ]
-    }
-
-    // reset oracle display variables
-    oracleDisplayCounter = 6
-    // time oracle generation
-    // if () {
-    // timeStamp = Array.from(time) //time stamp at the time of oracle generation
-    if (option == "TIME ONLY") {
-        timeOracle = TWD(timeStamp[0]) //TWD oracle from the moment(smallest unit of time mesaurment)
-        // }
-    } else {
-
-        timeOracle = TWD(timeStamp[0])
-
-
-        // generate ICHING oracle pair using 4 coin meathod
-        changingLines = []
-        for (let i = 0; i < 6; i++) {
-            oracleA[i] = coin() // flips a single coin
-            oracleB[i] = coin(3) // flip 3 coins
-            oracleC[i] = changes(oracleA[i], oracleB[i]) // genertae changing line
+        UIShow)
     
-            // identify and record changin lines
-            if (oracleC[i] == '01' | oracleC[i] == '10') {
-                changingLines.push(i + 1)
-            }
-        }
-        oracleD = splitChanges(oracleC)// generate oracle pair 
+    dateHover = boolHover([
+        [true,
+            width / 2, height * .287,
+            mother.width * .5, mother.width * .08],
+        [true, width / 2, height / 2, mother.width * .72, 0]
+        ],
+        UIShow)
     
+    timeOracleHover = boolHover([
+            [true, width / 2, height *.376, mother.width * .07, mother.width * .075],
+        ],
+        UIShow)
+    
+    titleHover = boolHover([
+        [true, width / 2, height * .0976,
+            mother.width * .5, mother.width * .15]
+    ],
+        UIShow)
+    
+    changeHover = boolHover([
+        [true,
+            width / 2, height * .71,
+            mother.width * .5, mother.width * .1],
+        [true, width / 2, height / 2, mother.width * .72, 0]
+        ],
+        UIShow)    
+    
+    if (titleHover && mouseIsPressed) {
+        on(1)
     }
 }
 //displays oracle
@@ -1385,55 +1060,117 @@ function displays(c) {
         interpretation()
     }
 }
-function aboutTheTemple(s, x, y, r, spacing, ts) {
-    
-    // let center = createVector(center.x,center.y)
-    //convert string to array
-    push()
-    // colorMode(RGB)
-    // font()
-    // rectMode(CENTER)
-    s = s.split("")
 
-    fill(255)
-    stroke(0)
-    textSize(ts)
+// base 64 temple time clock display
+function clock() {
+    push()
+
     textAlign(CENTER, CENTER)
-    textStyle(BOLD)
-    noStroke()
-    if (middle.dist(createVector(mouseX, mouseY)) > r-(ts*.75) & middle.dist(createVector(mouseX, mouseY)) < r+(ts*.75)) {
-        stroke(0)
-        // menuHover = true
-        if (mouseIsPressed) {
-            on(1)    
-        }
-
-        strokeWeight(ts*.0666)
-
-        textStyle(NORMAL)
-
-    } else {
-        // menuHover = false
-    }
+    colorMode(RGB)
 
     push()
-    noFill()
-    stroke(255)
-    strokeWeight(ts*.1)
-    circle(x,y,r*1.94)
+    stroke(0)
+    let ts = mother.width * .0333
+    strokeWeight(ts*.2)
+    fill(255)
+    textSize(ts*.8)
+
+
+    // digital clock
+    text(
+        str(timeO[1]) //hour
+        + ' : '
+        + str(timeO[2]) //minute
+        + ' : ' + str(timeO[3]) //second
+        , mother.width * .41, mother.height * .2 //location
+    )
+
+    text(
+        + str(timeO[6]) //month
+        + ' / ' + str(timeO[5]) //day
+        + ' / ' + str(timeO[7]) //year
+
+        , mother.width * .59, mother.height * .2 //location
+    )
+
+    text(
+            oracles[currentTime[1]]
+            + oracles[currentTime[2]]
+            + oracles[currentTime[3]]
+
+            , mother.width * .435, mother.height * .17
+        )
+
+    text(
+             oracles[currentTime[6]]
+            + oracles[currentTime[5]]
+            + oracles[currentTime[7]]
+
+            , mother.width * .565, mother.height * .17
+        )
+    
+    textSize(ts * 1.3)
+    
+    text(
+        str(timeO[4]) //day section
+        , mother.width * .5, mother.height * .185 //location
+    )
+
     pop()
 
-    for (let i = 0; i < s.length; i++){
-        push()
-        stroke(255)
-        // strokeWeight(ts*.5)
+    //analogue clock
+    push()
+    noStroke()
+    let smhTs = ts * .8
+    fill(255)
+    textSize(smhTs)
+    translate(mother.width * .5, mother.height * .5)
 
-        translate(x, y)
-        rotate(spacing*-(s.length*.5)+(spacing*.5))
-        rotate(spacing * i)
-        text(s[i], 0,r*-1)
+    //background
+    push()
+    let rim = mother.height * -.365
+
+    for (let i = 0; i < 8; i++) {
+        push()
+        rotate((TWO_PI / 8) * i)
+        stroke(255)
+        strokeWeight(ts * .75)
+        line(0, rim, 0, rim - (smhTs * 3))
+        stroke(0)
+        strokeWeight(ts * .5)
+        line(0, rim, 0, rim - (smhTs * 3))
         pop()
     }
+
+    for (let i = 0; i < 64; i++) {
+        push()
+        rotate((TWO_PI / 64) * i)
+        stroke(255)
+        strokeWeight(ts * .75)
+        line(0, rim, 0, rim - (smhTs * 2))
+        stroke(0)
+        strokeWeight(ts * .5)
+        line(0, rim, 0, rim - (smhTs * 2))
+        pop()
+    }
+    pop()
+
+    fill(255)
+    for (let t = 1; t <= 3; t++) {
+        for (let i = 0; i < currentTime[t] + 1; i++) {
+            push()
+            
+            rotate((TWO_PI / timeDiv[t]) * i)
+            if (t == 3) {
+                text(octal[i], 0, (rim + (smhTs * .5)) - (smhTs * t))
+            } else {
+                text(oracles[i], 0, (rim + (smhTs * .5)) - (smhTs * t))
+            }
+            pop()
+        }
+    }
+
+    pop()
     pop()
 }
 function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color) {
@@ -1654,6 +1391,85 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
 
     SquaredCircle()
 }
+
+//generates new oracle
+function oracleGenerator(option = false) {
+    //returns series of coin flips for oracle generation
+    function coin(flips = 1) {
+        record = ''
+        for (let i = 0; i < flips; i++) {
+            record += Math.round(Math.random())
+        }
+        return record   
+    }
+    //returns quaternary change oracle from compairing a binary and octal input (4 coin iching meathod)
+    function changes(binIn, octalIn) {
+        if (binIn == '0') {
+            if (octalIn == '111') {
+                return '01'
+            } else {
+                return '00'
+            }
+        } else {
+            if (octalIn == '110' || octalIn == '101' || octalIn == '011') {
+                return '10'
+            } else {
+                return '11'
+            }
+        }
+    }
+    //splits quaternary changes data into two array of oracles as decimal value
+    function splitChanges(quatIn) {
+        let oraclePair = []
+        for (let i = 0; i < 2; i++){
+            oraclePair[i] = parseInt(quatIn.map(function(ii){return ii[i]}).join(''),2)
+        }
+        return oraclePair
+    }
+    //splits an iching oracle(int 0-63) into a binary quaternary and octal oracle from top to bottom respectivly
+    function TWD(oracleIn) {
+        oracleIn = parseInt((timeStamp[0]), 10).toString(2); // get int as binary value
+
+        oracleIn = "000000".substr(oracleIn.length) + oracleIn // format binary value to reflect 6 digit format
+        return [[
+            parseInt(oracleIn.slice(5,6), 2), //deeds
+            parseInt(oracleIn.slice(3,5),2), //words
+            parseInt(oracleIn.slice(0, 3), 2) //thoughts
+        ],
+                
+            [oracleIn.slice(5, 6),
+                oracleIn.slice(3, 5),
+            oracleIn.slice(0,3)]
+        ]
+    }
+
+    // reset oracle display variables
+    oracleDisplayCounter = 6
+    // time oracle generation
+
+    if (option == "TIME ONLY") {
+        timeOracle = TWD(timeStamp[0]) //TWD oracle from the moment(smallest unit of time mesaurment)
+        // }
+    } else {
+
+        timeOracle = TWD(timeStamp[0])
+
+        // generate ICHING oracle pair using 4 coin meathod
+        changingLines = []
+        for (let i = 0; i < 6; i++) {
+            oracleA[i] = coin() // flips a single coin
+            oracleB[i] = coin(3) // flip 3 coins
+            oracleC[i] = changes(oracleA[i], oracleB[i]) // genertae changing line
+    
+            // identify and record changin lines
+            if (oracleC[i] == '01' | oracleC[i] == '10') {
+                changingLines.push(i + 1)
+            }
+        }
+        oracleD = splitChanges(oracleC)// generate oracle pair 
+    
+    }
+}
 function interpretation() {
     let oracle = sequence[oracleD[0]]
     let changingLinesList = ""
@@ -1696,58 +1512,247 @@ function interpretation() {
     }
 }
 
-// user input functions
-function keyTyped() {
-    // timeStamp = Array.from(time)
-    if (keyCode == ENTER) {
-        if (timeOracleHover) {
-            timeStamp = Array.from(currentTime)
-            oracleGenerator("TIME ONLY")
+// controlls myriad animation
+function myriad() {
+    push()
+    function rotateby(angle, rotation) {
+        var result = (angle + rotation) % 361;
+        if (result < 0)
+            result += 361;
+        return result;
+    }
+
+
+    noFill();
+    colorMode(HSB);
+    w = mother.width * .011; //animation scale
+
+    y = mother.height / 2 * 1.06;
+    x = mother.width / 2;
+    n = 27 * .5;
+    sw = mother.width * .005
+
+    strokeWeight(sw * .6);
+    f = color(100, 0, 100);
+    f.setAlpha(1 - timeScaleCycle[1])
+        // fill(f)
+    stroke(f)
+
+    for (let i = 0; i < n; i++) {
+        let ww = map(i, 0, n, w, 0)
+
+        c = color(rotateby(map(i, 0, n, 0, 360), 360 * timeScale[0]), 100, 100, 1 - timeScaleCycle[1])
+        stroke(c)
+
+        strokeWeight(sw)
+        ellipse((x) - (ww / 2), y, ww, ww * 1.5) /// internal path
+        ellipse((x) + (ww / 2), y, ww, ww * 1.5) /// internal path
+
+        c.setAlpha(.2 - .2 * timeScaleCycle[1])
+        stroke(c)
+
+        strokeWeight(sw)
+        ellipse(x - ww / 2, y, ww, w * 1.5)
+        ellipse(x + ww / 2, y, ww, w * 1.5)
+    }
+    colorMode(RGB)
+    pop()
+}
+// controlls emianation animation
+function emination(count) {
+    push()
+    cx = mother.width / 2
+    cy = mother.height / 2
+        + (mother.height * .006)
+    clockCenter = createVector(cx, cy)
+
+    colorMode(HSB)
+
+    let length = windowHeight * .414
+    let eminationPoint = createVector(x, y + mother.height * .01)
+    let clockPoint = createVector(mother.width * .5, mother.height * .5)
+    let direction = p5.Vector.sub(clockCenter, clockPoint)
+
+    //rainbow size
+    let backgroundDensity = 8
+    let maxspacing = ((PI * 2) / (count * backgroundDensity * 20))
+    let rays = count * backgroundDensity
+
+    // rainbow timing 
+    let spacing = maxspacing - maxspacing * timeScaleCycle[1]
+    rotation = PI * 2 - spacing * (count * backgroundDensity - 1) / 2 // aligns emination to center 
+    for (let i = 0; i < count * backgroundDensity; i++) {
+        push()
+        direction.setMag(length * 1.2)
+        direction.rotate(rotation)
+        let hand = p5.Vector.add(clockCenter, direction)
+        let c = color(map(i, 0, count * backgroundDensity, -80, 260), 100 - 100 * timeScaleCycle[1], 100)
+        strokeWeight(1)
+        c.setAlpha(.5);
+        stroke(c)
+
+        line(eminationPoint.x, eminationPoint.y, hand.x, hand.y) // draws emination
+        pop()
+
+        rotation = spacing
+    }
+
+    direction = p5.Vector.sub(eminationPoint, clockPoint)
+    maxspacing = ((PI * 2) / (count * 20))
+    rays = count
+    spacing = maxspacing - maxspacing * timeScaleCycle[1]
+    rotation = PI * 2 - spacing * (count - 1) / 2 // aligns emination to center 
+
+    for (let i = 0; i < count; i++) {
+        push()
+        direction.setMag(length * 1.2)
+        direction.rotate(rotation)
+        let hand = p5.Vector.add(clockCenter, direction)
+        let c = color(map(i, 0, count, -80, 260), 100 - 100 * timeScaleCycle[1], 100)
+        if (i < count * .5) {
+            strokeWeight(log(nf(map(i, -1, count, 1, count * 2))))
         } else {
-            timeStamp = Array.from(currentTime)
-            oracleGenerator()
+            strokeWeight(log(nf(map(i, -1, count, count * 2, 1))))
         }
-    }
-}
-function mousePressed() {
-    if (timeOracleHover) {
-        timeStamp = Array.from(currentTime)
-    } else if (circleHover) {
-        timeStamp = Array.from(currentTime)
-        oracleGenerator()
-    } else {
-        return false
+        // c.setAlpha(timeScaleCycle[1]);
+        stroke(c);
+
+        line(eminationPoint.x, eminationPoint.y, hand.x, hand.y) // draws emination
+        pop()
+
+        rotation = spacing
     }
 
-    if (titleHover) {
-        on(1)
-    }
-}
-function mouseheld() {
-    if (mouseIsPressed) {
-        return true
-    } else {
-        return false
-    }
-}
-function mouseReleased() {
-    if (timeOracleHover) {
-        if (!overlays[2]) { //prevents new oracle if overlay 2 is active
-            oracleGenerator("TIME ONLY")
-            oracleDisplayCounter = 6
-        }
-    } else if (circleHover) {
+    stroke(100, 100) //white emination
+    strokeWeight(mother.width * .005)
+    stroke(100, 100) //white emination
+    strokeWeight(mother.width * (.01 - .01 * timeScaleCycle[1]));
 
-    } else {
-        return false
-    }
 
+
+    //lens
+    let n = noise(dateTemple / 1000)
+    let ncycle = noise(dateTemple / 1000)
+    if (n > .5) {
+        ncycle = map(n, 0, 1, 0, 1)
+    } else {
+        ncycle = map(n, 0, 1, 1, 0)
+    }
+    let fade = map(timeScaleCycle[1], 0, 1, 0, 3)
+    let ccycle = color(map(n, 0, 1, -80, 260), 100, 70, fade)
+
+    // lense fill
+    fill(100, fade) // lense fade in and out
+    // fill(0, 0, 100, fade)
+    // nofill()
+
+    stroke(ccycle)
+
+    let scan
+    // extents of horizontal lens scan
+    // scan = Math.floor(map(n, 0, 1, -rays*.5, rays*.5)) //line by line
+    scan = Math.round(map(n, 0, 1, -rays*.5, rays*.5)) // line by line
+    // scan = map(n, 0, 1, -rays*.5, rays*.5) // smooth
+
+    direction = p5.Vector.sub(eminationPoint, clockPoint);
+    direction.setMag(length - length * timeScale[1]) // vertical scan of lens
+    direction.rotate(spacing * scan); // horizontal scan of lens
+    hand = p5.Vector.add(eminationPoint, direction)
+
+    // lens
+    strokeWeight(mother.width * .0055 * ncycle);
+    ellipse(hand.x, hand.y, log(nf(mother.width * .1 * (1 - ncycle))) * 5 * (.6 - (.6 * timeScale[1])), log(nf(mother.width * .2 * (ncycle))) * 5 * (.6 - .6 * timeScale[1]));
+    point(hand.x, hand.y);
+
+    // line from eye of eternity to lens
+    stroke(ccycle);
+    strokeWeight(mother.width * .001);
+    line(cx, cy, hand.x, hand.y);
+    stroke(100, 100)
+
+    // eye of eternity
+    stroke(0)
+    strokeWeight(mother.width * .00333);
+    ellipse(cx, cy, mother.width * .015, mother.width * .0025); //black background
+    stroke(255)
+    strokeWeight(mother.width * .00333);
+    ellipse(cx, cy, mother.width * .01, mother.width * .002); //whites
+    stroke(map(n, 0, 1, -80, 260), 100, 70);
+    strokeWeight(mother.width * .00444);
+    point(cx, cy); //cornia
+    stroke(0);
+    strokeWeight(mother.width * .00222);
+    point(cx, cy); //pupil
+
+    //jackal eyes
+    // if (jackals) {
+    //     let leftEyeX = cx - mother.width * .575
+    //     let rightEyeX = cx + mother.width * .575
+    //     let eyesY = cy + mother.height * .0666
+    //     let corniaSize = mother.width * .0222
+    //     let pupilSize = corniaSize * .5
+    //     //cornia
+    //     strokeWeight(corniaSize);
+    //     point(leftEyeX, eyesY);
+    //     point(rightEyeX, eyesY);
+    //     //pupils
+    //     stroke(0)
+    //     strokeWeight(pupilSize);
+    //     point(leftEyeX, eyesY);
+    //     point(rightEyeX, eyesY);
+    // }
+    pop()
 }
-function windowResized() {
-    mother.width = windowHeight * motherSizeMod
-    mother.height = mother.width
-    jackal.width = mother.width *2
-    jackal.height = mother.height
-    resizeCanvas(windowWidth, windowHeight);
-    // menuBar(principles,(windowHeight*menuYMod))
-}
+
+
+// function aboutTheTemple(s, x, y, r, spacing, ts) {
+    
+//     // let center = createVector(center.x,center.y)
+//     //convert string to array
+//     push()
+//     // colorMode(RGB)
+//     // font()
+//     // rectMode(CENTER)
+//     s = s.split("")
+
+//     fill(255)
+//     stroke(0)
+//     textSize(ts)
+//     textAlign(CENTER, CENTER)
+//     textStyle(BOLD)
+//     noStroke()
+//     if (middle.dist(createVector(mouseX, mouseY)) > r-(ts*.75) & middle.dist(createVector(mouseX, mouseY)) < r+(ts*.75)) {
+//         stroke(0)
+//         // menuHover = true
+//         if (mouseIsPressed) {
+//             on(1)    
+//         }
+
+//         strokeWeight(ts*.0666)
+
+//         textStyle(NORMAL)
+
+//     } else {
+//         // menuHover = false
+//     }
+
+//     push()
+//     noFill()
+//     stroke(255)
+//     strokeWeight(ts*.1)
+//     circle(x,y,r*1.94)
+//     pop()
+
+//     for (let i = 0; i < s.length; i++){
+//         push()
+//         stroke(255)
+//         // strokeWeight(ts*.5)
+
+//         translate(x, y)
+//         rotate(spacing*-(s.length*.5)+(spacing*.5))
+//         rotate(spacing * i)
+//         text(s[i], 0,r*-1)
+//         pop()
+//     }
+//     pop()
+// }
