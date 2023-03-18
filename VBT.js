@@ -1,4 +1,4 @@
-const VBT2 =
+const VBT112 =
     [
         "Paradevi, whose nature is visarga, or creation, manifests as the upward prana and the downward apana. By fixing the mind at the two points of generation (of prana and apana), the state of fullness results.",
         "When the ingoing pranic air and outgoing pranic air are both restrained in their space from their (respective points of) return, the essence of bhairava, which is not different from bhairavi, manifests.",
@@ -60,10 +60,7 @@ const VBT2 =
         "O Goddess, as a result of slowly swinging or rocking the body, one attains a tranquil state of mind and floats into the stream of divine consciousness.",
         "O Devi, having fixed the gaze continuously on the clear sky (without blinking) and with a steady awareness, at once the nature of Bhairava is achieved.",
         "One should contemplate on the sky as the form of bhairava (until it is) all absorbed in the forehead. Then all that (space) will be entered by the essence of light in the state of bhairava.",
-        "Knowing a bit about duality, the outer light and darkness in the manifest world and so on, one who again experiences the infinite form of Bhairava procures illumination.",
-        
-        "Like this, one should ever contemplate on the terrible darkness of night during the dark fortnight of the moon, if he desires to attain the form of bhairava.< br > Similarly, while closing the eyes, one should contemplate on the profound darkness spreading in front as the form of bhairava.Thus he becomes one with that.",
-
+        "Knowing a bit about duality, the outer light and darkness in the manifest world and so on, one who again experiences the infinite form of Bhairava procures illumination.<br>Like this, one should ever contemplate on the terrible darkness of night during the dark fortnight of the moon, if he desires to attain the form of bhairava.<br>Similarly, while closing the eyes, one should contemplate on the profound darkness spreading in front as the form of bhairava.Thus he becomes one with that.",
         "Whoever restrains even the same sense organ enters the one void without a second by this obstruction and there the atma, or self, is illumined.",
         "O Devi, by recitation of akaara, the letter 'A', in the absence of bindu and visarga, a great torrent of knowledge of the supreme Lord, Parameshvara, at once arises.",
         "When the mind is joined with the visarga, at the end of the visarga it is made supportless. In this way the mind is touched by the eternal Brahma, or the supreme consciousness.",

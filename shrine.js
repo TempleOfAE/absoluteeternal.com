@@ -891,21 +891,23 @@ function displays(c) {
             let changingLineYPos = mother.height * .777
             let changingLineTextSize = osss * .3
             if (c == 6) {
-                let changesText = 'CHANGING LINES'
-                let changingLinesText = changingLines
-                if (changingLines.length > 0) {
-                    if (changingLines.length == 1) {
-                        changesText = 'CHANGING LINE'
-                    }
-                } else {
-                    changesText = "NO CHANGE"
-                }
+                // let changesText = 'CHANGING LINES'
+                // let changingLinesText = changingLines
+                // if (changingLines.length > 0) {
+                //     if (changingLines.length == 1) {
+                //         changesText = 'CHANGING LINE'
+                //     }
+                // } else {
+                //     changesText = "NO CHANGE"
+                // }
                 textSize(changingLineTextSize)
-                text(changesText, mother.width / 2, changingLineYPos)
-                textSize(changingLineTextSize)
-                text(changingLinesText, mother.width / 2, changingLineYPos + changingLineTextSize * 1.3)
+                // text(changesText, mother.width / 2, changingLineYPos)
+                // textSize(changingLineTextSize)
+                // text(changingLinesText, mother.width / 2, changingLineYPos + changingLineTextSize * 1.3)
 
-                               // name and number
+                text("ORACLE INTERPRETATION", mother.width / 2, changingLineYPos)
+
+                // name and number
                 let nameNumberYPos = mother.height * .57
                 for (i = 0; i < 2; i++) {
                     textSize(os * .25);
@@ -1479,6 +1481,7 @@ function interpretation() {
         + "In matters of communication: " + iching.quaternary[timeOracle[0][1]].judgement + " ["+ iching.quaternary[timeOracle[0][1]].sign + "]<br>"
         + "In matters of thought: Be like " + iching.octal[timeOracle[0][2]].judgement + " ["+ iching.octal[timeOracle[0][2]].sign + "]<br>"
 
+    let tantra = Math.floor(Math.random() * VBT112.length)
     for (item of changingLines) {
         changingLinesList += "<p>"
         changingLinesList += "Change in line "+item+" means: "+str(iching.gua[oracleD[0]].changes[item-1])
@@ -1510,6 +1513,8 @@ function interpretation() {
         // document.getElementById("ifate").innerHTML = "<a href=\"https://www.ifate.com/i-ching-changes/iching-hexagram-" + sequence[oracleD[0]] + "-changing-to-" + sequence[oracleD[1]] + ".html\"target=\"_blank\">interpretation by ifate.com</a>"
         // document.getElementById("divinationcom").innerHTML = "<a href=\"https://divination.com/iching/lookup/" + sequence[oracleD[0]] + "-2/\"" + "target=\"_blank\">interpretation by divination.com</a>"
     }
+
+    document.getElementById("VBT").innerHTML = VBT112[tantra]
 }
 
 // controlls myriad animation
