@@ -1,4 +1,4 @@
-const VBT112 =
+const VBT2 =
     [
         "Paradevi, whose nature is visarga, or creation, manifests as the upward prana and the downward apana. By fixing the mind at the two points of generation (of prana and apana), the state of fullness results.",
         "When the ingoing pranic air and outgoing pranic air are both restrained in their space from their (respective points of) return, the essence of bhairava, which is not different from bhairavi, manifests.",
@@ -6,8 +6,12 @@ const VBT112 =
         "When Kumbhaka takes place after Puraka or Rechaka, then the shakti known as shanta is experienced and through that peace (the bhairava consciousness) is revealed.",
         "Concentrate on the shakti arising from the root like the rays of the sun, gradually becoming subtler and subtler, until at last she dissolves in the dwadashanta and bhairava manifests.",
         "(Meditate on that shakti) moving upwards like lightning through all the chakras one by one to the dwadashanta. Then at last the glorious form of Bhairava dawns.",
+
         "The twelve (centres) should be pierced successively through proper understanding of their (associated) twelve letters. Thus becoming liberated from the gross then the subtle, one by one, at the end (of its journey) the kundalini becomes Shiva.<br>Then, having filled the tip of moordha (forehead) and crossed the bridge between the eyebrows, the mind rises above all dichotomizing thought patterns and omnipresence (prevails).",
-        "Like the live different coloured circles on the peacock's feathers, one should meditate on the five voids. Then by following them to the end, which becomes the principle void, enter the heart.<br>In this way, wherever there is mindful awareness, either on the void, or on another (object such as a) wall, or on an excellent person (such as guru), gradually the boon of absorption into the self is granted.",
+
+        "Like the live different coloured circles on the peacock's feathers, one should meditate on the five voids. Then by following them to the end, which becomes the principle void, enter the heart.",
+        "In this way, wherever there is mindful awareness, either on the void, or on another (object such as a) wall, or on an excellent person (such as guru), gradually the boon of absorption into the self is granted.",
+        
         "Having closed the eyes, and fixing the attention at the crown of the head, gradually stabilize the mind and direct it towards the goal, which will become discernible.",
         "One should meditate on the inner space of the medial nadi (sushumna) situated in the central axis of the body (the spinal column), which is as slender as a fibre of the lotus stem, and then by the grace of Devi, the divine (form) is revealed.",
         "By using the hands (as tools) to block the entrances in all directions, the eyebrow centre is pierced and bindu (or light) is seen. Being gradually absorbed within that, the supreme state is realized.",
@@ -60,7 +64,11 @@ const VBT112 =
         "O Goddess, as a result of slowly swinging or rocking the body, one attains a tranquil state of mind and floats into the stream of divine consciousness.",
         "O Devi, having fixed the gaze continuously on the clear sky (without blinking) and with a steady awareness, at once the nature of Bhairava is achieved.",
         "One should contemplate on the sky as the form of bhairava (until it is) all absorbed in the forehead. Then all that (space) will be entered by the essence of light in the state of bhairava.",
-        "Knowing a bit about duality, the outer light and darkness in the manifest world and so on, one who again experiences the infinite form of Bhairava procures illumination.<br>Like this, one should ever contemplate on the terrible darkness of night during the dark fortnight of the moon, if he desires to attain the form of bhairava.<br>Similarly, while closing the eyes, one should contemplate on the profound darkness spreading in front as the form of bhairava.Thus he becomes one with that.",
+        "Knowing a bit about duality, the outer light and darkness in the manifest world and so on, one who again experiences the infinite form of Bhairava procures illumination.",
+        
+        "Like this, one should ever contemplate on the terrible darkness of night during the dark fortnight of the moon, if he desires to attain the form of bhairava.",
+        "Similarly, while closing the eyes, one should contemplate on the profound darkness spreading in front as the form of bhairava. Thus he becomes one with that.",
+
         "Whoever restrains even the same sense organ enters the one void without a second by this obstruction and there the atma, or self, is illumined.",
         "O Devi, by recitation of akaara, the letter 'A', in the absence of bindu and visarga, a great torrent of knowledge of the supreme Lord, Parameshvara, at once arises.",
         "When the mind is joined with the visarga, at the end of the visarga it is made supportless. In this way the mind is touched by the eternal Brahma, or the supreme consciousness.",
@@ -76,7 +84,9 @@ const VBT112 =
         "When lust, anger, greed, delusion, arrogance and jealousy are seen (within), having fixed the mind completely (on these), the underlying tattwa, or essence, alone remains.",
         "Meditating on the manifest world as imagined or illusive, like a magic show or a painting, and seeing all existence as transient, happiness arises.",
         "O Goddess, the mind should not dwell on pain or pleasure, but the essence that remains in the middle (in between the opposites) should be known.",
-        "Abandoning consideration for one's own body, one should contemplate with a firm mind that, 'I am everywhere'. When this is seen (by means of concentrated insight) one does not see another and thus becomes happy.<br>Contemplating on that special knowledge, for example, the analogy of the jar, or that the desires, etc. exist not only within me but everywhere, one thus becomes all-pervasive.<br>The subject-object consciousness is common to everybody. Yogis, however, are especially alert regarding this relationship.",
+        "Abandoning consideration for one's own body, one should contemplate with a firm mind that, 'I am everywhere'. When this is seen (by means of concentrated insight) one does not see another and thus becomes happy.",
+        "Contemplating on that special knowledge, for example, the analogy of the jar, or that the desires, etc. exist not only within me but everywhere, one thus becomes all-pervasive.",
+        "The subject-object consciousness is common to everybody. Yogis, however, are especially alert regarding this relationship.",
         "Contemplate on consciousness, such as one's own and even in another's body as well. Thus abandoning all physical expectation, one becomes all-pervasive in the course of time.",
         "O gazelle-eyed one, having free the mind of all supports, one should refrain from all the Vikalpas (thoughts/counter- thoughts). Then, the self becomes one with the supreme Sell in the state of bhairava.",
         "The supreme Lord, who is omnipresent, omniscient and omnipotent, verily, I am lie and 1 have the same shiva- nature. (Contemplating thus with firm conviction, one becomes Shiva.",
@@ -108,5 +118,7 @@ const VBT112 =
         "There is neither bondage nor liberation for me. These scare cowards and are the reflections (projections) of the intellect, just as the sun is reflected in water.",
         "All the doors of perception produce pain and pleasure through contact with the senses. Thus, casting aside (the sensory objects) and withdrawing (the senses) within, one abides in one's own self.",
         "Knowledge reveals all and the self of all is the revealer (knower). One should contemplate on the knowledge and the knower as being one and the same.",
-        "O dear one, when the mind, awareness, energy and individual self, this set of four dissolves, then the state of bhairava manifests."
+        "O dear one, when the mind, awareness, energy and individual self, this set of four dissolves, then the state of bhairava manifests.",
+        "O Goddess, I have briefly told you more than one hundred and twelve ways whereby the mind (is rendered still) without any surge of thought, knowing which people become wise.",
+        "One attains the state of bhairava, if established even in one of these (one hundred and twelve dharanas), and by his speech he confers blessings or curses.",
     ]
