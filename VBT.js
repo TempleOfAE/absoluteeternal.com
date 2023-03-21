@@ -1,4 +1,4 @@
-const VBT2 =
+const VBT112 =
     [
         "Paradevi, whose nature is visarga, or creation, manifests as the upward prana and the downward apana. By fixing the mind at the two points of generation (of prana and apana), the state of fullness results.",
         "When the ingoing pranic air and outgoing pranic air are both restrained in their space from their (respective points of) return, the essence of bhairava, which is not different from bhairavi, manifests.",

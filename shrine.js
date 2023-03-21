@@ -159,7 +159,7 @@ function setup() {
     oracleGenerator() // loads oracle system
 }
 function draw() {
-    console.log(mondays)
+    // console.log(mondays)
     mobile = (windowWidth < windowHeight)
 
     push()
