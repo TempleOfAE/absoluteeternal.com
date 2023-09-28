@@ -14,14 +14,12 @@ const motherNames = [
 
 // night/sunrise, day, sunset/night
 const divisions = [
-    '❨', '⊛', '❩' // morning Day evening
-    //     'M', 'D', 'E' // alternative
+    '☉', '♀', '⚸', // Day, Sunset, Sunrise
 ]
 
-const zerohour = Date.UTC(2012, 10, 14, 10, 11, 48) //parigee 12 hours after the eclyps
+const zerohour = Date.UTC(2012, 10, 13, 22, 12, 55) //exact time of total eclyps UTC
 const date = new Date();
-const middayAdjustment = 3*60*60000 + (13*60000)
-const offset = date.getTimezoneOffset() * 60000+(middayAdjustment);
+const offset = (date.getTimezoneOffset() * 60000);
 var dateTemple = Date.now() - zerohour + offset
 
 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -240,7 +238,7 @@ function draw() {
 
     textSize(mother.width * .022)
 
-    text("EST. 14 NOV 2012 CE IN HONOR OF " + motherNames[Math.floor(map(currentTime[1], 0, 64, 0, motherNames.length))],    
+    text("EST. 13 NOV 2012 CE IN HONOR OF " + motherNames[Math.floor(map(currentTime[1], 0, 64, 0, motherNames.length))],    
     mother.width * .5, -mother.height * .0444)
 
     pop()
@@ -348,7 +346,7 @@ function kali() {
         timeO[1] = "00".substr(str(currentTime[3]).length) + str(currentTime[3]) // 0 - 23
         timeO[2] = "00".substr(str(currentTime[2]).length) + str(currentTime[2]) // 0 - 63
         timeO[3] = "00".substr(str(currentTime[1]).length) + str(currentTime[1]) // 0 - 63
-        timeO[4] = divisions[currentTime[4]]
+        timeO[4] = divisions[currentTime[4]] // 0 - 2
         timeO[5] = "00".substr(str(currentTime[5]).length) + str(currentTime[5]+1) // 1 - 27
         timeO[6] = "00".substr(str(currentTime[6]).length) + str(currentTime[6]+1) // 1 - 13
         timeO[7] = "000".substr(str(currentTime[7]).length) + str(currentTime[7]+1) // 1 - x
