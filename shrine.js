@@ -903,7 +903,7 @@ function displays(c) {
                 // textSize(changingLineTextSize)
                 // text(changingLinesText, mother.width / 2, changingLineYPos + changingLineTextSize * 1.3)
 
-                text("MESSAGE INTERPRETATION", mother.width / 2, changingLineYPos)
+                text("INTERPRETATION", mother.width / 2, changingLineYPos)
 
                 // name and number
                 let nameNumberYPos = mother.height * .57
