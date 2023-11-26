@@ -1479,7 +1479,7 @@ function interpretation() {
         + "In matters of communication: " + iching.quaternary[timeOracle[0][1]].judgement + " ["+ iching.quaternary[timeOracle[0][1]].sign + "]<br>"
         + "In matters of thought: Be like " + iching.octal[timeOracle[0][2]].judgement + " ["+ iching.octal[timeOracle[0][2]].sign + "]<br>"
 
-    let tantra = Math.floor(Math.random() * VBT112.length)
+    // let tantra = Math.floor(Math.random() * VBT112.length)
     for (item of changingLines) {
         changingLinesList += "<p>"
         changingLinesList += "Change in line "+item+" means: "+str(iching.gua[oracleD[0]].changes[item-1])
@@ -1512,7 +1512,7 @@ function interpretation() {
         // document.getElementById("divinationcom").innerHTML = "<a href=\"https://divination.com/iching/lookup/" + sequence[oracleD[0]] + "-2/\"" + "target=\"_blank\">interpretation by divination.com</a>"
     }
 
-    document.getElementById("VBT").innerHTML = VBT112[tantra]
+    // document.getElementById("VBT").innerHTML = VBT112[tantra]
 }
 
 // controlls myriad animation
