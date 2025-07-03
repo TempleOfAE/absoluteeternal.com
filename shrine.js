@@ -14,15 +14,16 @@ const motherNames = [
 
 // night/sunrise, day, sunset/night
 const divisions = [
-    '☉', '♀', '⚸', // Day, Sunset, Sunrise
+ '☉', '♀', '⚸' // Day, Sunset, Sunrise
 ]
 
 const zerohour = Date.UTC(2012, 10, 13, 22, 12, 55) //exact time of total eclyps UTC
+//const zerohour = Date.UTC(2012, 10, 14, 0, 0, 0) //new day mark
 const date = new Date();
 const offset = (date.getTimezoneOffset() * 60000);
 var dateTemple = Date.now() - zerohour + offset
 
-const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+//const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 //temple bsae 64 time units
 const year = 31557600000
@@ -37,9 +38,9 @@ const second = minute / 64
 const moment = second / 64
 
 //temple month length structure
-const months = [
-    year - (LAM * 13), // calandar correction holiday to unite solar and lunar year
-    LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM] // 13 lunar months
+//const months = [
+  //  year - (LAM * 13), // calandar correction holiday to unite solar and lunar year
+    //LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM, LAM] // 13 lunar months
 
 //Calandar variables and data
 var calandar = []
@@ -252,7 +253,7 @@ function draw() {
         jackals = true
             push()
             imageMode(CENTER)
-            image(jackal, windowWidth * .5, windowHeight * .5)
+          //  image(jackal, windowWidth * .5, windowHeight * .5)
             pop()
     }else {
         jackals = false
@@ -322,10 +323,10 @@ function mouseReleased() {
 
 // converts ms time to base 64 temple time and controlls animation timing variables
 function kali() {
-    dateTemple = Date.now() - zerohour + offset;
+    dateTemple = Date.now() - zerohour + offset; //temple date adjusted for viewers timezone
     templeDateDMY[0] =
-        Math.floor((dateTemple % 31536000000) / 86400000) // day of year for callandar setup
-    templeDateDMY[2] = Math.floor((dateTemple / 31536000000))-1 // year of era for calandar
+        Math.floor((dateTemple % year) / 86400000) // day of year for callandar setup
+    templeDateDMY[2] = Math.floor((dateTemple / year))-1 // year of era for calandar
     for (let i = 0; i < msPerUnit.length; i++) {
         currentTime[i] = Math.floor((dateTemple / msPerUnit[i]) % measuresPerUnit[i])
     }
@@ -419,22 +420,22 @@ function calandarSetup() {
     }
 
 
-    // this is all stupid as the calandar is 1 year long FML
-    function DOYtoGregMD(n){
-        n = n+43  // adjust for temple new year
-        let monthDurations = [30,31,31,28,31,30,31,30,31,31,30,31,14]
-        let month  = ["NOV","DEC","JAN","FEB","MAR","APR","MAY","JUN","JULY","AUG","SEP","OCT","NOV"]
-        let m = month[0]
-        for (let i = 0; monthDurations[i]<n; i++){
-            n -= monthDurations[i]
-            m = month[i]
-            if (i == 12){
-                n-=16
-                m = month[0]
+    function DOYtoGregMD(dayOfYear) {
+        const shiftedDay = ((dayOfYear - 1 + 14) % 365 + 365) % 365 + 1;
+    
+        const monthNames = ["NOV", "DEC", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT"];
+        const monthLengths = [30, 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31];
+    
+        let day = shiftedDay;
+    
+        for (let i = 0; i < 13; i++) {
+            if (day <= monthLengths[i]) {
+                return `${monthNames[i]}${day}`;
             }
+            day -= monthLengths[i];
         }
-        string = str(n+1)+m
-        return(string)
+    
+        throw new Error("Mapping failed");
     }
 
     let D = templeDateDMY[0]
@@ -481,12 +482,15 @@ function calandarSetup() {
                                 wom.push('g') // mark gregorian new year
                             } else if (dayCount != D) {
                                 wom.push(String(dow))
+                             // wom.push(String(DOYtoGregMD(dayCount)))
                             }  else {
-                                wom.push('x')
+                                wom.push('T')
                                 M = i
                                 dayOfMonth = dayOfMonthCount
                             }
                             dayCount++
+                            console.log(DOYtoGregMD(dayCount))
+
                             dayOfMonthCount++
                         }
                         wom.push('   ')
@@ -496,7 +500,7 @@ function calandarSetup() {
                             //replace with X if day of year
                             templeCalandar[i].push(['M'])
                             mondays.push(DOYtoGregMD(dayCount))
-                            dayCount += 1
+                            dayCount++
                             dayOfMonthCount += 1
 
                         } else {
@@ -528,7 +532,6 @@ function calandarSetup() {
     templeDateDMY[1] = M
     templeDayOfMonth = dayOfMonth
     // mondays = ["DEC01","DEC02","DEC03","DEC04","DEC05","DEC06","DEC07","DEC08","DEC09","DEC10","DEC11","DEC12","DEC13"] // test
-
 }
 
 // detects if mouse is hovering over trigger areas
