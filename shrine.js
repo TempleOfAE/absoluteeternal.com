@@ -1570,7 +1570,7 @@ function myriad() {
     } else {
         var w = h * 0.999;     // scale
         var n = 13.5;          // line density
-        var sw = wdt * 0.033;   // line width
+        var sw = wdt * 0.0666;   // line width
        // y = h * 0.5;
         var ts1 = timeScale[0];
         var tsc1 = timeScaleCycle[1];
@@ -1595,13 +1595,13 @@ function myriad() {
             strokeWeight(sw);
             //inner glow
             var ww2 = ww / 2;
-            c.setAlpha(0.3 - 0.3 * tsc1);
+            c.setAlpha(0.15 - 0.15 * tsc1);
             stroke(c);
             ellipse(x - ww2, y, ww, ww * 1.5);
             ellipse(x + ww2, y, ww, ww * 1.5);
     
             //owter glow
-            c.setAlpha(0.1 - 0.1 * tsc1);
+            c.setAlpha(0.07 - 0.07 * tsc1);
             stroke(c);
             ellipse(x - ww2, y, ww, w * 1.5);
             ellipse(x + ww2, y, ww, w * 1.5);
