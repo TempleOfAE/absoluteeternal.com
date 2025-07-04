@@ -158,7 +158,6 @@ function setup() {
     oracleGenerator() // loads oracle system
 }
 function draw() {
-    // console.log(mondays)
     mobile = (windowWidth < windowHeight)
 
     push()
@@ -248,16 +247,16 @@ function draw() {
     pop()
 
     //JACKAL DISPLAY LOGIC
-    if (windowHeight < windowWidth * .85) 
-    {
-        jackals = true
-            push()
-            imageMode(CENTER)
+   // if (windowHeight < windowWidth * .85) 
+   // {
+    //    jackals = true
+   //         push()
+   //         imageMode(CENTER)
           //  image(jackal, windowWidth * .5, windowHeight * .5)
-            pop()
-    }else {
-        jackals = false
-    }
+   //         pop()
+  //  }else {
+  //      jackals = false
+  //  }
 
     //disables UI if overlay 1 is active
     if (!overlays[1]) {
@@ -489,7 +488,7 @@ function calandarSetup() {
                                 dayOfMonth = dayOfMonthCount
                             }
                             dayCount++
-                            console.log(DOYtoGregMD(dayCount))
+
 
                             dayOfMonthCount++
                         }
@@ -812,15 +811,15 @@ function displays(c) {
         textAlign(CENTER, CENTER)
 
         for (let i = 0; i < 2; i++){
-            // console.log(timeOracle)
+
             printOracle(str(timeOracle[1][0]), timeOracleCharacterBreakdownSize, timeOracleCharacterBreakdownSize * 1.61803398875,  mother.width / 2 - timeOracleBreakdownSize + (timeOracleBreakdownSize * 2 * i), binaryY, 1, 0)
-            // console.log(timeOracle[0])
+
 
             printOracle(str(timeOracle[1][1]), timeOracleCharacterBreakdownSize, timeOracleCharacterBreakdownSize * 1.61803398875, mother.width / 2 - timeOracleBreakdownSize + (timeOracleBreakdownSize * 2 * i), quaternaryY, 2, 0)
-            // console.log(timeOracle[0])
+
 
             printOracle(str(timeOracle[1][2]), timeOracleCharacterBreakdownSize, timeOracleCharacterBreakdownSize * 1.61803398875,  mother.width / 2 - timeOracleBreakdownSize + (timeOracleBreakdownSize * 2 * i), octalY, 3, 0)
-            // console.log(timeOracle[0])
+
 
             textSize(timeOracleNameBreakdownSize)
             text(binaryName[timeOracle[0][0]], mother.width / 2, binaryY)
@@ -1256,7 +1255,6 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
             fill(0)
         }
 
-        //FIX 1.1 its sloppy and annoying
         rect(0 - (squareWidth * .5), 0 - r, squareWidth)
         push()
         squareWidthTwo = squareWidth * .618033
@@ -1300,8 +1298,6 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
             // stroke(255*Math.random())
             line(points[order[i]].x,points[order[i]].y,points[order[i+1]].x,points[order[i+1]].y)
         }
-
-        // console.log(A)
         pop()
     }
 
@@ -1331,31 +1327,37 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
 
     //static that covers mother image
     function vale(t) {
-        push()
-        colorMode(RGB)
-        let s = mother.width * .0098
-        strokeWeight(s * .666)
-        let step = 7
-        let lStep = Math.floor(Math.random() * step) + 1
-
-        pop()
-        for (let row = 0; row < valeData.length; row++){
-            for (let column = 0; column < valeData.length; column++){
-                push()
-                stroke(255, valeData[row][column]* timeScaleCycle[t])
-                point(((mother.height * 0.4855) - (s * (64) / 2)) + row * s + (mother.width * .02), s / 2 + (mother.width / 2) - ((s * 64) / 2) + (column * s) + (mother.width * .04))
-
-                pop()
-
-                valeData[row][column] -= 8
+        let len = valeData.length;
+        let s = mother.width * 0.0098;
+        let timeFactor = timeScaleCycle[t];
+    
+        let offsetX = (mother.height * 0.4855) - (s * len / 2) + (mother.width * 0.02);
+        let offsetY = s / 2 + (mother.width / 2) - (s * len / 2) + (mother.width * 0.04);
+    
+        push();
+        colorMode(RGB);
+        strokeWeight(s * 0.333);
+    
+        for (let row = 0; row < len; row++) {
+            for (let col = 0; col < len; col++) {
+                let val = valeData[row][col];
+                if (val > 0) {
+                    stroke(255, val * timeFactor);
+                    point(offsetX + row * s, offsetY + col * s);
+                    valeData[row][col] = val - 8;
+                }
             }
         }
-
-        for (let i = 0; i < 16; i++){
-                 valeData[Math.floor(Math.random() * 64)][Math.floor(Math.random() * 64)] = 255   
+    
+        pop();
+    
+        for (let i = 0; i < 16; i++) {
+            let r = (Math.random() * len) | 0;
+            let c = (Math.random() * len) | 0;
+            valeData[r][c] = 255;
         }
-
     }
+    
 
     noFill()
     stroke(color)
@@ -1520,62 +1522,117 @@ function interpretation() {
 
 // controlls myriad animation
 function myriad() {
-    push()
-    function rotateby(angle, rotation) {
-        var result = (angle + rotation) % 361;
-        if (result < 0)
-            result += 361;
-        return result;
+    var h = mother.height;
+    var wdt = mother.width;
+    y = h * 0.53;
+    x = wdt * 0.5;
+
+    push();
+    
+    if (mouseY < windowHeight * 0.7 ) {
+        var w = wdt * 0.0063; // scale
+        var n = 13.5;         // line density
+        var sw = wdt * 0.0005; // line width
+        var ts1 = timeScale[0];
+        var tsc1 = timeScaleCycle[1];
+        var alpha1 = 1 - tsc1;
+        var baseHue = 360 * ts1;
+    
+        noFill();
+        colorMode(HSB);
+        strokeWeight(sw * 0.6);
+    
+        var baseColor = color(100, 0, 100);
+        baseColor.setAlpha(alpha1);
+        stroke(baseColor);
+    
+        for (var i = 0; i < n; i++) {
+            var t = i / n;
+            var ww = w * (1 - t);
+            var hue = (360 * t + baseHue) % 361;
+    
+            var c = color(hue, 100, 100, alpha1);
+            stroke(c);
+            strokeWeight(sw);
+    
+            var ww2 = ww / 2;
+            ellipse(x - ww2, y, ww, ww * 1.5);
+            ellipse(x + ww2, y, ww, ww * 1.5);
+    
+            c.setAlpha(0.2 - 0.2 * tsc1);
+            stroke(c);
+            ellipse(x - ww2, y, ww, w * 1.5);
+            ellipse(x + ww2, y, ww, w * 1.5);
+        }
+    
+        colorMode(RGB);
+        pop();
+    } else {
+        var w = h * 0.999;     // scale
+        var n = 13.5;          // line density
+        var sw = wdt * 0.033;   // line width
+       // y = h * 0.5;
+        var ts1 = timeScale[0];
+        var tsc1 = timeScaleCycle[1];
+        var alpha1 = 1 - tsc1;
+        var baseHue = 360 * ts1;
+    
+        noFill();
+        colorMode(HSB);
+        strokeWeight(sw * 0.6);
+    
+        var baseColor = color(100, 0, 100);
+        baseColor.setAlpha(alpha1);
+        stroke(baseColor);
+    
+        for (var i = 0; i < n; i++) {
+            var t = i / n;
+            var ww = w * (1 - t);
+            var hue = (360 * t + baseHue) % 361;
+    
+            var c = color(hue, 100, 100, alpha1);
+            stroke(c);
+            strokeWeight(sw);
+            //inner glow
+            var ww2 = ww / 2;
+            c.setAlpha(0.3 - 0.3 * tsc1);
+            stroke(c);
+            ellipse(x - ww2, y, ww, ww * 1.5);
+            ellipse(x + ww2, y, ww, ww * 1.5);
+    
+            //owter glow
+            c.setAlpha(0.1 - 0.1 * tsc1);
+            stroke(c);
+            ellipse(x - ww2, y, ww, w * 1.5);
+            ellipse(x + ww2, y, ww, w * 1.5);
+
+            //rings
+            strokeWeight(sw * 0.05);
+            c.setAlpha(1 - 1 * tsc1);
+            stroke(c);
+            ellipse(x - ww2, y, ww, ww * 1.5);
+            ellipse(x + ww2, y, ww, ww * 1.5);
+        }
+
+    
+    
+        colorMode(RGB);
+        pop();
     }
-
-
-    noFill();
-    colorMode(HSB);
-    w = mother.width * .011; //animation scale
-
-    y = mother.height / 2 * 1.06;
-    x = mother.width / 2;
-    n = 27 * .5;
-    sw = mother.width * .005
-
-    strokeWeight(sw * .6);
-    f = color(100, 0, 100);
-    f.setAlpha(1 - timeScaleCycle[1])
-        // fill(f)
-    stroke(f)
-
-    for (let i = 0; i < n; i++) {
-        let ww = map(i, 0, n, w, 0)
-
-        c = color(rotateby(map(i, 0, n, 0, 360), 360 * timeScale[0]), 100, 100, 1 - timeScaleCycle[1])
-        stroke(c)
-
-        strokeWeight(sw)
-        ellipse((x) - (ww / 2), y, ww, ww * 1.5) /// internal path
-        ellipse((x) + (ww / 2), y, ww, ww * 1.5) /// internal path
-
-        c.setAlpha(.2 - .2 * timeScaleCycle[1])
-        stroke(c)
-
-        strokeWeight(sw)
-        ellipse(x - ww / 2, y, ww, w * 1.5)
-        ellipse(x + ww / 2, y, ww, w * 1.5)
-    }
-    colorMode(RGB)
-    pop()
 }
+
 // controlls emianation animation
 function emination(count) {
     push()
     cx = mother.width / 2
     cy = mother.height / 2
-        + (mother.height * .006)
+        + (mother.height * .0021)
     clockCenter = createVector(cx, cy)
 
     colorMode(HSB)
 
-    let length = windowHeight * .414
-    let eminationPoint = createVector(x, y + mother.height * .01)
+    let length = windowHeight * .5
+    let eminationPoint = createVector(x, y)// + mother.height * .01)
     let clockPoint = createVector(mother.width * .5, mother.height * .5)
     let direction = p5.Vector.sub(clockCenter, clockPoint)
 
@@ -1677,17 +1734,18 @@ function emination(count) {
     stroke(100, 100)
 
     // eye of eternity
+    let eyescale = .5
     stroke(0)
-    strokeWeight(mother.width * .00333);
+    strokeWeight(mother.width * .00333 *eyescale);
     ellipse(cx, cy, mother.width * .015, mother.width * .0025); //black background
     stroke(255)
-    strokeWeight(mother.width * .00333);
+    strokeWeight(mother.width * .00333*eyescale);
     ellipse(cx, cy, mother.width * .01, mother.width * .002); //whites
     stroke(map(n, 0, 1, -80, 260), 100, 70);
     strokeWeight(mother.width * .00444);
     point(cx, cy); //cornia
     stroke(0);
-    strokeWeight(mother.width * .00222);
+    strokeWeight(mother.width * .00222*eyescale);
     point(cx, cy); //pupil
 
     //jackal eyes
