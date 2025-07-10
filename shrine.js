@@ -511,24 +511,35 @@ function calandarSetup() {
                 }
         }
 
-            templeCalandar.push([])
-            for (let i = 0; i < calandarThisYear[13]; i++) {
-                // replace with X if day of year
-                if (D != dayCount) {
-                    //write sun days
-                    templeCalandar[13].push(['S-' + String(i+1) + '  '])
-                } else {
-                    templeCalandar[13].push('X ')
-                    M = 13
-                    dayOfMonth = dayOfMonthCount
+        templeCalandar.push([]) // Sundays
+        let sundayLength = calandarThisYear[13]
+        
+        for (let i = 0; i < sundayLength; i++) {
+            if (D != dayCount) {
+                // compute Gregorian date
+                let greg = DOYtoGregMD(dayCount)
+                let label = 'S-' + String(i + 1)
+        
+                if (i === 0) {
+                    label = `(${greg}) ` + label
+                } else if (i === sundayLength - 1) {
+                    label += ` (${greg})`
                 }
-                dayCount += 1
-                dayOfMonthCount += 1
+        
+                templeCalandar[13].push([label])
+            } else {
+                templeCalandar[13].push('X ')
+                M = 13
+                dayOfMonth = dayOfMonthCount
             }
+            dayCount += 1
+            dayOfMonthCount += 1
+        }
+        
+        
 
     templeDateDMY[1] = M
     templeDayOfMonth = dayOfMonth
-    // mondays = ["DEC01","DEC02","DEC03","DEC04","DEC05","DEC06","DEC07","DEC08","DEC09","DEC10","DEC11","DEC12","DEC13"] // test
 }
 
 // detects if mouse is hovering over trigger areas
