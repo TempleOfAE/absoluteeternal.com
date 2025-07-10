@@ -420,7 +420,7 @@ function calandarSetup() {
 
 
     function DOYtoGregMD(dayOfYear) {
-        const shiftedDay = ((dayOfYear - 1 + 14) % 365 + 365) % 365 + 1;
+        const shiftedDay = ((dayOfYear -1 + 14) % 365 + 365) % 365 + 1;
     
         const monthNames = ["NOV", "DEC", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT"];
         const monthLengths = [30, 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31];
@@ -433,11 +433,9 @@ function calandarSetup() {
             }
             day -= monthLengths[i];
         }
-    
-        throw new Error("Mapping failed");
     }
 
-    let D = templeDateDMY[0]
+    let D = ((templeDateDMY[0] - 1) % 365 + 365) % 365;
     let M = 0
     let Y = templeDateDMY[2]
 
@@ -463,6 +461,7 @@ function calandarSetup() {
 
         for (let i = 0; i < 13; i++) {
             let s
+            dayOfMonthCount = 0
                 //write month number
                 if (i < 9) {
                     s = 0 + String(i+1)
@@ -510,7 +509,6 @@ function calandarSetup() {
                             M = i                        }
                     }
                 }
-            dayOfMonthCount = 0
         }
 
             templeCalandar.push([])
