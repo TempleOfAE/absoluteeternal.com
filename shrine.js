@@ -247,16 +247,16 @@ function draw() {
     pop()
 
     //JACKAL DISPLAY LOGIC
-   // if (windowHeight < windowWidth * .85) 
-   // {
-    //    jackals = true
-   //         push()
-   //         imageMode(CENTER)
-          //  image(jackal, windowWidth * .5, windowHeight * .5)
-   //         pop()
-  //  }else {
-  //      jackals = false
-  //  }
+    if (windowHeight < windowWidth * .85) 
+    {
+        jackals = true
+            push()
+            imageMode(CENTER)
+            image(jackal, windowWidth * .5, windowHeight *.888)
+            pop()
+    }else {
+        jackals = false
+    }
 
     //disables UI if overlay 1 is active
     if (!overlays[1]) {
