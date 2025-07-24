@@ -250,10 +250,6 @@ function draw() {
     if (windowHeight < windowWidth * .85) 
     {
         jackals = true
-            push()
-            imageMode(CENTER)
-            image(jackal, windowWidth * .5, windowHeight *.888)
-            pop()
     }else {
         jackals = false
     }
@@ -1758,74 +1754,34 @@ function emination(count) {
     point(cx, cy); //pupil
 
     //jackal eyes
-    // if (jackals) {
-    //     let leftEyeX = cx - mother.width * .575
-    //     let rightEyeX = cx + mother.width * .575
-    //     let eyesY = cy + mother.height * .0666
-    //     let corniaSize = mother.width * .0222
-    //     let pupilSize = corniaSize * .5
-    //     //cornia
-    //     strokeWeight(corniaSize);
-    //     point(leftEyeX, eyesY);
-    //     point(rightEyeX, eyesY);
-    //     //pupils
-    //     stroke(0)
-    //     strokeWeight(pupilSize);
-    //     point(leftEyeX, eyesY);
-    //     point(rightEyeX, eyesY);
-    // }
+     if (jackals) {
+         let leftEyeX = cx - mother.width * .435
+         let rightEyeX = cx + mother.width * .435
+         let eyesY = cy + mother.height * .233
+         let corniaSize = mother.width * .0333
+         let pupilSize = corniaSize * .5
+
+         push()
+         imageMode(CENTER)
+         image(jackal, jackal.width*.25, windowHeight *.666)
+         pop()
+
+
+         let eyescale = .5
+         stroke(map(n, 0, 1, -80, 260), 100, 70);
+         strokeWeight(mother.width * .00444);
+         point(leftEyeX, eyesY); //cornia
+         stroke(0);
+         strokeWeight(mother.width * .00222*eyescale);
+         point(leftEyeX, eyesY); //pupil
+
+         stroke(map(n, 0, 1, -80, 260), 100, 70);
+         strokeWeight(mother.width * .00444);
+         point(rightEyeX, eyesY); //cornia
+         stroke(0);
+         strokeWeight(mother.width * .00222*eyescale);
+         point(rightEyeX, eyesY); //pupil
+     
+     }
     pop()
 }
-
-
-// function aboutTheTemple(s, x, y, r, spacing, ts) {
-
-//     // let center = createVector(center.x,center.y)
-//     //convert string to array
-//     push()
-//     // colorMode(RGB)
-//     // font()
-//     // rectMode(CENTER)
-//     s = s.split("")
-
-//     fill(255)
-//     stroke(0)
-//     textSize(ts)
-//     textAlign(CENTER, CENTER)
-//     textStyle(BOLD)
-//     noStroke()
-//     if (middle.dist(createVector(mouseX, mouseY)) > r-(ts*.75) & middle.dist(createVector(mouseX, mouseY)) < r+(ts*.75)) {
-//         stroke(0)
-//         // menuHover = true
-//         if (mouseIsPressed) {
-//             on(1)    
-//         }
-
-//         strokeWeight(ts*.0666)
-
-//         textStyle(NORMAL)
-
-//     } else {
-//         // menuHover = false
-//     }
-
-//     push()
-//     noFill()
-//     stroke(255)
-//     strokeWeight(ts*.1)
-//     circle(x,y,r*1.94)
-//     pop()
-
-//     for (let i = 0; i < s.length; i++){
-//         push()
-//         stroke(255)
-//         // strokeWeight(ts*.5)
-
-//         translate(x, y)
-//         rotate(spacing*-(s.length*.5)+(spacing*.5))
-//         rotate(spacing * i)
-//         text(s[i], 0,r*-1)
-//         pop()
-//     }
-//     pop()
-// }
