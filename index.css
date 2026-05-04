@@ -133,6 +133,10 @@ body {
   text-justify: inter-character
 }
 
+.overlay a {
+  color: white;
+}
+
 .overlay figure {
   font-size: medium;
   font-weight: bold;
