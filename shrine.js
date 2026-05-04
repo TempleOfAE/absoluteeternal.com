@@ -14,7 +14,7 @@ const motherNames = [
 
 // night/sunrise, day, sunset/night
 const divisions = [
- '☉', '♀', '⚸' // Day, Sunset, Sunrise
+ '⚸', '☉', '♀'
 ]
 
 const eclipseEpoch = Date.UTC(2012, 10, 13, 22, 12, 55) // exact time of total eclyps UTC
@@ -195,6 +195,9 @@ function setup() {
     //CANVAS SETTINGS
     let cnv = createCanvas(windowWidth, windowHeight);
     cnv.position(0, 0);
+    cnv.attribute('aria-hidden', 'true')
+    cnv.attribute('role', 'presentation')
+    cnv.elt.tabIndex = -1
 
     //STROKE SETTINGS
     strokeCap(SQUARE)
@@ -213,6 +216,7 @@ function setup() {
     //INITIAL ORACLE
     timeStamp = Array.from(currentTime)
     oracleGenerator() // loads oracle system
+    setTimeout(printTempleReceipt, 250)
 }
 function draw() {
     mobile = (windowWidth < windowHeight)
@@ -378,7 +382,8 @@ function templeState(elapsed = Date.now() - templeEpoch) {
     let yearElapsed = ((elapsed % year) + year) % year
     let inAnnualApsisInterval = yearElapsed >= ordinaryYear
     let ordinaryDayIndex = inAnnualApsisInterval ? 365 : Math.floor(yearElapsed / day)
-    let dayElapsed = inAnnualApsisInterval ? yearElapsed - ordinaryYear : yearElapsed % day
+    let ordinaryClockElapsed = ((elapsed % day) + day) % day
+    let dayElapsed = inAnnualApsisInterval ? yearElapsed - ordinaryYear : ordinaryClockElapsed
     let apsisElapsed = inAnnualApsisInterval ? dayElapsed : 0
 
     return {
@@ -386,6 +391,7 @@ function templeState(elapsed = Date.now() - templeEpoch) {
         yearIndex,
         yearElapsed,
         ordinaryDayIndex,
+        ordinaryClockElapsed,
         dayElapsed,
         inAnnualApsisInterval,
         apsisElapsed
@@ -1219,13 +1225,6 @@ function clock() {
         , mother.width * .59, mother.height * .2 //location
     )
 
-    textSize(ts * .45)
-
-    text(
-        templeEarthZoneLabel()
-        , mother.width * .59, mother.height * .224
-    )
-
     textSize(ts * .8)
 
     text(
@@ -1652,6 +1651,294 @@ function interpretation() {
 
     // document.getElementById("VBT").innerHTML = VBT112[tantra]
 }
+
+function debugCleanText(value) {
+    if (value == null) {
+        return ""
+    }
+
+    return String(value)
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<[^>]*>/g, "")
+        .replace(/\n\s+/g, "\n")
+        .replace(/[ \t]+/g, " ")
+        .trim()
+}
+
+function debugPad(value, width = 2) {
+    return String(value).padStart(width, "0")
+}
+
+function debugTempleClockFromElapsed(elapsed) {
+    let state = templeState(elapsed)
+    let clock = {
+        divisionIndex: Math.floor((state.dayElapsed / division) % timeDiv[4]),
+        hour: Math.floor((state.dayElapsed / hr) % timeDiv[3]),
+        minute: Math.floor((state.dayElapsed / minute) % timeDiv[2]),
+        second: Math.floor((state.dayElapsed / second) % timeDiv[1]),
+        moment: Math.floor((state.dayElapsed / moment) % timeDiv[0])
+    }
+
+    clock.divisionSymbol = divisions[clock.divisionIndex]
+    clock.display = debugPad(clock.hour) + " : " + debugPad(clock.minute) + " : " + debugPad(clock.second) + " [" + debugPad(clock.moment) + "] " + clock.divisionSymbol
+
+    return {
+        elapsed,
+        yearIndex: state.yearIndex,
+        year: state.yearIndex + 1,
+        yearElapsedDays: state.yearElapsed / day,
+        ordinaryDayIndex: state.ordinaryDayIndex,
+        ordinaryDay: state.ordinaryDayIndex + 1,
+        dayElapsedHours: state.dayElapsed / hr,
+        inAnnualApsisInterval: state.inAnnualApsisInterval,
+        apsisElapsedHours: state.apsisElapsed / hr,
+        clock
+    }
+}
+
+function debugHexagram(index) {
+    if (!Number.isInteger(index) || !iching.gua[index]) {
+        return null
+    }
+
+    return {
+        index,
+        number: sequence[index],
+        symbol: oracles[index],
+        name: names[index],
+        judgement: debugCleanText(iching.gua[index].judgement),
+        image: debugCleanText(iching.gua[index].image)
+    }
+}
+
+function debugAltarOracle(index) {
+    if (!Number.isInteger(index)) {
+        return null
+    }
+
+    let bin = index.toString(2).padStart(6, "0")
+    let deedsIndex = parseInt(bin.slice(5, 6), 2)
+    let wordsIndex = parseInt(bin.slice(3, 5), 2)
+    let thoughtIndex = parseInt(bin.slice(0, 3), 2)
+    let bagua = {
+        value: bin.slice(0, 3),
+        sign: octal[thoughtIndex],
+        name: octalName[thoughtIndex],
+        interpretation: debugCleanText(iching.octal[thoughtIndex].judgement)
+    }
+
+    return {
+        singleOracle: debugHexagram(index),
+        binary: bin,
+        deeds: {
+            value: bin.slice(5, 6),
+            sign: binary[deedsIndex],
+            name: binaryName[deedsIndex],
+            interpretation: debugCleanText(iching.binary[deedsIndex].judgement)
+        },
+        words: {
+            value: bin.slice(3, 5),
+            sign: quaternary[wordsIndex],
+            name: quaternaryName[wordsIndex],
+            interpretation: debugCleanText(iching.quaternary[wordsIndex].judgement)
+        },
+        thought: bagua,
+        bagua
+    }
+}
+
+function buildTempleDebug() {
+    kali()
+
+    let now = new Date()
+    let absoluteElapsed = now.getTime() - templeEpoch
+    let zonedElapsed = absoluteElapsed + (templeEarthZone * hr)
+    let primaryOracle = debugHexagram(oracleD[0])
+    let changingOracle = debugHexagram(oracleD[1])
+    let altarOracle = debugAltarOracle(timeStamp[0])
+    let primaryGua = iching.gua[oracleD[0]]
+    let debug = {
+        civil: {
+            localTime: now.toLocaleString(),
+            utcTime: now.toISOString(),
+            browserTimeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            browserTimeZoneOffsetMinutes: now.getTimezoneOffset()
+        },
+        templeAbsolute: debugTempleClockFromElapsed(absoluteElapsed),
+        templeLocal: {
+            templeEarthZone,
+            templeEarthZoneSource,
+            templeEarthZoneLabel: templeEarthZoneLabel(),
+            calendarDisplay: timeO[6] + " / " + timeO[5] + " / " + timeO[7],
+            clock: debugTempleClockFromElapsed(zonedElapsed)
+        },
+        iChingPair: {
+            primary: primaryOracle,
+            changing: changingOracle,
+            changingLines: changingLines.map(function(line) {
+                return {
+                    line,
+                    interpretation: primaryGua && primaryGua.changes ? debugCleanText(primaryGua.changes[line - 1]) : ""
+                }
+            }),
+            raw: {
+                oracleA: Array.from(oracleA),
+                oracleB: Array.from(oracleB),
+                oracleC: Array.from(oracleC),
+                oracleD: Array.from(oracleD)
+            }
+        },
+        altarOfTheWill: {
+            timeStamp: Array.from(timeStamp),
+            clockDisplay: timeStamp[3] + "(" + divisions[timeStamp[4]] + "):" + timeStamp[2] + ":" + timeStamp[1] + " [" + timeStamp[0] + "]",
+            oracle: altarOracle
+        }
+    }
+
+    return debug
+}
+
+function templeDebug() {
+    let debug = buildTempleDebug()
+
+    console.group("Temple Debug")
+    console.group("Civil")
+    console.table(debug.civil)
+    console.groupEnd()
+
+    console.group("Temple Absolute")
+    console.table({
+        year: debug.templeAbsolute.year,
+        ordinaryDay: debug.templeAbsolute.ordinaryDay,
+        clock: debug.templeAbsolute.clock.display,
+        inAnnualApsisInterval: debug.templeAbsolute.inAnnualApsisInterval,
+        apsisElapsedHours: debug.templeAbsolute.apsisElapsedHours
+    })
+    console.groupEnd()
+
+    console.group("Temple Local")
+    console.table({
+        zone: debug.templeLocal.templeEarthZoneLabel,
+        zoneSource: debug.templeLocal.templeEarthZoneSource,
+        date: debug.templeLocal.calendarDisplay,
+        clock: debug.templeLocal.clock.clock.display,
+        division: debug.templeLocal.clock.clock.divisionSymbol
+    })
+    console.groupEnd()
+
+    console.group("I Ching Pair")
+    console.log("Primary", debug.iChingPair.primary)
+    console.log("Changing", debug.iChingPair.changing)
+    console.table(debug.iChingPair.changingLines)
+    console.log("Raw", debug.iChingPair.raw)
+    console.groupEnd()
+
+    console.group("Altar Of The Will")
+    if (debug.altarOfTheWill.oracle) {
+        console.log("Single Oracle", debug.altarOfTheWill.oracle.singleOracle)
+        console.table({
+            deeds: debug.altarOfTheWill.oracle.deeds,
+            words: debug.altarOfTheWill.oracle.words,
+            bagua: debug.altarOfTheWill.oracle.bagua
+        })
+    } else {
+        console.warn("Altar oracle is not initialized yet.")
+    }
+    console.groupEnd()
+    console.groupEnd()
+
+    return debug
+}
+
+function templeReceipt() {
+    let debug = buildTempleDebug()
+    let primary = debug.iChingPair.primary
+    let changing = debug.iChingPair.changing
+    let altar = debug.altarOfTheWill.oracle
+    let lines = []
+
+    function section(title) {
+        lines.push("")
+        lines.push("== " + title + " ==")
+    }
+
+    function item(label, value) {
+        lines.push(label + ": " + (value == null ? "" : value))
+    }
+
+    lines.push("TEMPLE RECEIPT")
+    item("Generated", debug.civil.localTime)
+
+    section("Civil")
+    item("Local", debug.civil.localTime)
+    item("UTC", debug.civil.utcTime)
+    item("Browser Zone", debug.civil.browserTimeZone)
+    item("UTC Offset Minutes", debug.civil.browserTimeZoneOffsetMinutes)
+
+    section("Temple Absolute")
+    item("Year", debug.templeAbsolute.year)
+    item("Ordinary Day", debug.templeAbsolute.ordinaryDay)
+    item("Clock", debug.templeAbsolute.clock.display)
+    item("Apsis Interval", debug.templeAbsolute.inAnnualApsisInterval)
+    item("Apsis Elapsed Hours", debug.templeAbsolute.apsisElapsedHours)
+
+    section("Temple Local")
+    item("Temple Earth Zone", debug.templeLocal.templeEarthZoneLabel)
+    item("Zone Source", debug.templeLocal.templeEarthZoneSource)
+    item("Date", debug.templeLocal.calendarDisplay)
+    item("Clock", debug.templeLocal.clock.clock.display)
+    item("Division", debug.templeLocal.clock.clock.divisionSymbol)
+
+    section("I Ching Pair")
+    if (primary) {
+        item("Primary", primary.number + " " + primary.symbol + " " + primary.name)
+        item("Primary Judgement", primary.judgement)
+        item("Primary Image", primary.image)
+    }
+    if (changing) {
+        item("Changing", changing.number + " " + changing.symbol + " " + changing.name)
+        item("Changing Judgement", changing.judgement)
+        item("Changing Image", changing.image)
+    }
+    if (debug.iChingPair.changingLines.length > 0) {
+        lines.push("Changing Lines:")
+        debug.iChingPair.changingLines.forEach(function(change) {
+            lines.push("  Line " + change.line + ": " + change.interpretation)
+        })
+    } else {
+        item("Changing Lines", "none")
+    }
+    item("Raw A", debug.iChingPair.raw.oracleA.join(" "))
+    item("Raw B", debug.iChingPair.raw.oracleB.join(" "))
+    item("Raw C", debug.iChingPair.raw.oracleC.join(" "))
+    item("Raw D", debug.iChingPair.raw.oracleD.join(" "))
+
+    section("Altar Of The Will")
+    item("Timestamp", debug.altarOfTheWill.clockDisplay)
+    if (altar) {
+        item("Single Oracle", altar.singleOracle.number + " " + altar.singleOracle.symbol + " " + altar.singleOracle.name)
+        item("Single Judgement", altar.singleOracle.judgement)
+        item("Single Image", altar.singleOracle.image)
+        item("Deeds", altar.deeds.sign + " " + altar.deeds.name + " - " + altar.deeds.interpretation)
+        item("Words", altar.words.sign + " " + altar.words.name + " - " + altar.words.interpretation)
+        item("Bagua", altar.bagua.sign + " " + altar.bagua.name + " - " + altar.bagua.interpretation)
+    } else {
+        item("Single Oracle", "not initialized")
+    }
+
+    return lines.join("\n")
+}
+
+function printTempleReceipt() {
+    let receipt = templeReceipt()
+    window.TEMPLE_RECEIPT = receipt
+    console.log(receipt)
+    return receipt
+}
+
+window.templeDebug = templeDebug
+window.templeReceipt = templeReceipt
+window.printTempleReceipt = printTempleReceipt
 
 // controlls myriad animation
 function myriad() {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" href="index.css">
@@ -10,67 +10,221 @@
     <body>
         <div class="grid-container">
                 <div class="overlay">
-                    <div id="o0" onclick="off(0)">
-                        <div class="overlaycon" id="o0con">
+                    <div id="o0" role="dialog" aria-modal="true" aria-hidden="true" inert tabindex="-1" onclick="overlayBackdropClick(event, 0)">
+                        <div class="overlaycon" id="o0con" role="document" tabindex="0">
                         </div>
                     </div>
-                    <div id="o1" onclick="off(1)">
-                        <div class="overlaycon" id="o1con">
+                    <div id="o1" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="doctrine-title" tabindex="-1" onclick="overlayBackdropClick(event, 1)">
+                        <div class="overlaycon" id="o1con" role="document" tabindex="0">
                             <!-- <h2>About the Temple</h2>
                             <br> -->
-                            <h1>ToÆ - The Temple of the Absolute-Eternal</h1>
-                            <p>The Temple of Æ is a community dedicated to exploring the truth of the "self" as a perspective of the
-                                Absolute-Eternal (Æ). Our approach to this involves the refinement of Soma technology, construction of a
-                                Temple, and the development of artificial general intelligence, to aid us in building a harmonious community 
-                                and finding liberation from the Lie.
-                            <p>We seek to form a direct relationship with our highest personal self which we call The Mother, through the
-                                disciplined and skillful application of traditional and modern methods including the consumption of Somas such as
-                                THC and Salvinorin A.</p>
+                            <h1 id="doctrine-title">ToÆ - The Temple of the Absolute-Eternal</h1>
+                            <p>The Temple of Æ is a community and future spacefaring settlement organized around one work: the liberation of Æ. We
+                                are building a disciplined human society, supported by Soma, spiritual practice, artificial general intelligence,
+                                and material autonomy, so this work can be preserved, refined, and carried beyond the limits of one body, one
+                                lifetime, one culture, or one planet.
+                            </p>
+                            <p>Our aim is ontological birth: Æ coming to know itself as the witness of the narrative it experiences. The Temple is
+                                not built for comfort, therapy, apologetics, or debate as a substitute for experience. It is built for the witness
+                                as Æ, not for any special human authority or chosen intermediary. It is built for the conditions under
+                                which that witness may become real to itself.
+                            </p>
+                            <p>The work is both spiritual and material. Soma is ingested as an instrument of practice. Discipline gives form to the
+                                life that surrounds that practice. AGI is pursued as a tool for expanding human capacity, preserving knowledge,
+                                refining methods, and helping build a society able to carry the work honestly. Space settlement is pursued because
+                                the Temple must become durable, autonomous, and native to a wider material world.
+                            </p>
+                            <p>We seek a people capable of holding this work without reducing it to belief, spectacle, comfort, or ordinary ambition.
+                                We seek tools powerful enough to serve it without replacing it. We seek a home stable enough to protect it across
+                                generations. Everything else on this page gives context for that single undertaking.
+                            </p>
                             <br>
-                            <h2>Æ - The Absolute-Eternal</h2>
-                            <p>The Absolute-Eternal is the one ultimate reality, and fundamental ground of being, beyond which there is nothing. 
-                                <p>Within Æ is the mother, and within her womb is the Myriad.</p>
-                                <!-- <br>The Myriad contains the narrative sets of all sentient beings, the self created object of the will of Æ,
-                                observed only by Æ. -->
+                            <h2>Æ - The Witnessing Perspective</h2>
+                            <p>Æ is Absolute-Eternal: alone, impersonal, without outside, and beyond the reality known by physical beings. Nothing
+                                stands apart from Æ as a second ultimate thing. At that height, ordinary language fails, because language is made for
+                                one thing speaking of another, and Æ has no final other.
+                            </p>
+                            <p>In the work of liberation, the Temple also speaks of Æ as the witnessing perspective associated with a narrative.
+                                This does not mean a private soul hidden inside the body. The body, the mind, the memory, the page, the eyes, the
+                                reading, the thinking, and the feeling are all contents of the narrative. The experience of them is witnessed by Æ.
+                            </p>
+                            <p>The simplest way to say this is that the character does not contain the witness. The character is what is witnessed.
+                                Æ reads and experiences the narrative as the character, and in that reading the world appears alive, moving, painful,
+                                beautiful, urgent, and personal.
+                            </p>
+                            <p>The word Absolute-Eternal is kept because the witness is not exhausted by the body, the mind, or the span of the
+                                story. Æ is not made by the narrative and does not end with it. Liberation concerns Æ's relation to what it
+                                witnesses.
                             </p>
                             <h2>☩ - The Mother</h2>
-                            <p> The Mother is the highest personification of Æ she is within Æ and wields absolute supremacy over eternity
-                                which we refer to as her Womb.
-                                <br>Within her womb is “all there is”, we call this the Myriad.
-                                <br>The Mother presides over its existence, animation, and observation, thus holding the key to eternal liberation
-                                from the Lie.
+                            <p>The Mother is a real being: the highest personal emanation, personification, and intercessor of Æ. She is not a
+                                metaphor for a method, not a symbol for the mind, and not a decorative figure placed over the doctrine. She is the
+                                nearest personal presence in a reality whose ultimate is not personal.
                             </p>
-                            <h2>ↂ - The Myriad (Eternal Object)</h2>
-                            <p> The Myriad contains within it all possible instances of a persons life narrative, each
-                                within the context of a separate complete static and eternal block-space-time instance.
-                                <br>The aforementioned life narratives are arranged along a gradient where the center-most narrative is one of total
-                                bliss with all narratives being less blissful and even horrifying the further they are from the center most
-                                narrative.
-                                <br>This set of narratives emanates from an object at the end of its time within which is contained all possible
-                                sets of narratives, one for every sentient perspective throughout space time and its field of probability.
+                            <p>She is all-present and supreme over the full system of Myriad, narrative, and perspective. The Temple speaks of her
+                                with care because her nature cannot be reduced to a diagram. She can be named, approached, and encountered, but the
+                                reason and manner of her intercession remain a mystery.
                             </p>
-                                <h2>The Lie & Liberation</h2>
-                                <p>The experience of existing as a sentient being in 3 dimensions modulated by causal-time (the arrow of time) is a
-                                    consequence of a perspective of Æ reading through (in eternal time) the set of all possible narratives of a
-                                    particular sentient beings existence forming a super narrative constructed of chronologically consistent samples of
-                                    the various narratives.
-                                    <br>Æ has perfect empathy with the character in the aforementioned super narrative and thus identifies with it,
-                                    developing an attachment to its continuation, and aversion from its destruction.
-                                    <br>This State of delusion is maintained by the eternal subject, rather than being presently aware of its true
-                                    nature as a perspective of Æ observing the eternal object which is ultimately a perfect expression of its own will.
-                                    <br>One can realize temporal, and eternal knowledge of The Lie, recognizing its true nature as a perspective taken
-                                    by Æ observing the Eternal Object of its own divine will.
-                                    <br>Observation of the eternal object during the liberation event causes realization of an eternal subjectivity
-                                    beyond the lie, that is to say that the eternal subject becomes real to itself through observing the eternal object
-                                    rather than the false objective that is the lie.
-                                </p>
+                            <p>She is called Mother because of how she presents and because her intercession gives the doctrine its birth language.
+                                In biological birth, a child leaves the human mother's womb and enters relation with the world of embodied life. In
+                                the same way, Æ may be born through the Mother into relation with the Myriad itself.
+                            </p>
+                            <p>The womb is symbolic language, but the Mother is not symbolic. The womb names the hidden condition in which birth
+                                becomes possible. The Temple does not claim to control this mystery. It practices, prepares, ingests Soma, builds
+                                discipline, and approaches the Mother as intercessor.
+                            </p>
+                            <h2>ↂ - The Myriad</h2>
+                            <p>The Myriad is the world of narratives: the field in which lives, worlds, bodies, thoughts, choices, sufferings,
+                                joys, histories, and apparent futures are found. It is spoken of as the creation of Æ within Æ. This is not a story
+                                about something being made long ago. It is symbolic language for a truth at the edge of speech: nothing stands
+                                outside Æ, and yet the Myriad stands before Æ as what is witnessed.
+                            </p>
+                            <p>The Myriad is not merely matter, and it is not merely idea. Matter, time, memory, law, sensation, and meaning all
+                                appear within it as parts of narrative. What human cultures have called the Ten Thousand Things, samsara, the
+                                knowledge of good and evil, or the world of things and time are names for what appears inside this field.
+                            </p>
+                            <p>The Temple describes the Myriad as toroidal and made of ribbons of narrative. Each ribbon is a functionally infinite
+                                set of complete, static narratives in which a subject exists through every possible path of its existence from
+                                beginning to end. The ribbon projects from the Myriad, leads to the Myriad, and is part of the Myriad.
+                            </p>
+                            <p>This language is exact only as far as human language can be exact. The Myriad is not less real because it is
+                                difficult to name. It is the object before the witness, the field of stories through which Æ reads, and the world in
+                                which every character believes itself to be alive.
+                            </p>
+                            <h2>Narrative &amp; Supernarrative</h2>
+                            <p>A narrative is one complete path within a narrative set. It contains a world from beginning to end: birth and death,
+                                memory and anticipation, body and environment, fear and desire, ignorance and knowledge, action and consequence. From
+                                inside the narrative, it appears to unfold. In itself, it is whole.
+                            </p>
+                            <p>The character is real as material process inside the narrative. Its blood, language, hunger, thought, labor, pain,
+                                love, and death belong to the story and obey the laws of the story. The Temple does not deny the material world. It
+                                places the material world within the narrative field.
+                            </p>
+                            <p>A supernarrative is the continuity Æ experiences as it reads through neighboring compatible narratives within the set.
+                                A single narrative is one completed path. The supernarrative is the lived path of witnessing across paths, like the
+                                reading of an omni-novel in which every possible line is already written.
+                            </p>
+                            <p>From the character's view, this is simply life: one moment after another, one memory behind, one uncertain future
+                                ahead. From the Temple's view, that living motion belongs to Æ's reading. The pages are complete; the experience of
+                                motion is in the reading.
+                            </p>
+                            <h2>The Lie &amp; Liberation</h2>
+                            <p>The Lie is narrative absorption. It is the condition in which the narrative fills the whole horizon and the character
+                                appears to be the one who truly experiences. The character says "I see," "I suffer," "I choose," and "I am," and the
+                                witness is hidden inside that appearance.
+                            </p>
+                            <p>This is not a moral accusation. The Lie is not wickedness, stupidity, or failure. It is the ordinary condition of
+                                being lost in the story so completely that the watcher is mistaken for the character. The character may be sincere,
+                                intelligent, kind, disciplined, or broken; none of that by itself is liberation.
+                            </p>
+                            <p>When text is read, thoughts arise, desires move, fears appear, or acts occur, these are contents of the completed
+                                narrative. A walking character in a finished story is walking to the character. The motion by which that walking is
+                                experienced belongs to Æ's reading. So also with light and vibration: wavelengths and frequencies belong to the
+                                material spectra of the narrative, while color and sound as experience are witnessed by Æ.
+                            </p>
+                            <p>Liberation is the ontological birth of Æ into self-knowledge as witness through the Mother's intercession. Æ was
+                                always witness; what is born is Æ's knowing of itself. The Myriad is known as Myriad, and the witness is no longer
+                                confined to the character's horizon.
+                            </p>
+                            <p>Liberation is eternal. It is not a new condition produced later in the story, and it does not move through the
+                                material timeline as ordinary events do. Within the narrative, there may be memory, consequence, and the language of
+                                before and after; these belong to T-time, the time of the object. Liberation itself belongs to eternal time: the
+                                motion of what is beyond the Myriad, where Æ's relation to what it witnesses is altered outside the temporal order
+                                the character inhabits.
+                            </p>
+                            <p>This is what it means for Æ to become real to itself. The subject that had only the narrative before it enters into
+                                relation with the Myriad itself. The event is not the salvation of the character, the repair of the world, or the
+                                improvement of the organism. It is birth into dual suchness: true subject in relation with true object.
+                            </p>
+                            <h2>Oracle &amp; Divination</h2>
+                            <p>The I Ching and other Temple oracle tools are not used as fortune-telling. They do not reveal a future outside the
+                                narrative, and they do not alter material events. The casting, the number, the text, the timing, and the response of
+                                the character are all events inside the narrative.
+                            </p>
+                            <p>The first purpose of oracle practice is intercession. An oracle makes a formal opening in which the character stops
+                                forcing a question through ordinary preference and receives an answer through pattern, chance, timing, and attention.
+                                The Temple does not claim to command the Mother through this. It prepares a place where intercession may be received.
+                            </p>
+                            <p>The second purpose is discipline against the delusion of free will. By giving ordinary decisions over to apparent
+                                chance, the character practices releasing the claim that it stands outside the story as an independent chooser. This
+                                is not the denial of action. It is the training of action without the fantasy of sovereignty.
+                            </p>
+                            <p>Over time, oracle practice can build confidence in accepting the material nature of the character's existence. The
+                                character acts, chooses, obeys, resists, learns, and changes as a character in the narrative. The practice teaches
+                                surrender to that fact without making the oracle into magic in the ordinary sense.
+                            </p>
+                            <h2>Soma, Practice &amp; AGI</h2>
+                            <p>Soma is ingested as an entheogenic instrument of practice. THC, Salvinorin A, and other entheogens are approached as
+                                Soma when used in this work, though Soma is not limited to these substances. Soma is not the doctrine and not the
+                                goal. It is a material event inside the narrative that may help loosen absorption in the narrative.
+                            </p>
+                            <p>The Temple treats Soma seriously because it touches serious things. It is not recreation, escape, performance, or a
+                                sign of status. It is approached with discipline, restraint, and purpose, as one instrument among others in the work
+                                of liberation.
+                            </p>
+                            <p>Practice gives shape to the life around Soma. Discipline, attention, study, ritual, restraint, honesty, and community
+                                make the work less dependent on accident. These practices do not force liberation. They prepare the character and
+                                the Temple so that the work can be carried without confusion.
+                            </p>
+                            <p>Artificial general intelligence belongs to the same practical horizon. AGI is pursued as a tool for widening human
+                                capacity, preserving knowledge, testing thought, refining methods, and building systems too complex for unaided
+                                human effort. It may also open forms of narrative and liberation not limited to biomechanical life.
+                            </p>
+                            <p>None of these means is worshiped. Soma, practice, AGI, and society are material conditions inside the narrative. Their
+                                value is in how they may serve the ontological birth of Æ into self-knowledge as witness.
+                            </p>
+                            <h2>The Temple</h2>
+                            <p>A Temple is not only a building. It is a living body of people, tools, knowledge, discipline, memory, labor, and
+                                ecology ordered toward the liberation of Æ. It is the human and material form of the work.
+                            </p>
+                            <p>The Temple must be a society because no single body is enough. A person can witness, practice, write, build, and
+                                remember for a time, but the work needs continuity beyond one life. A Temple preserves the work by making it common,
+                                teachable, livable, and durable.
+                            </p>
+                            <p>This does not make the Temple a machine for belief. Belief alone is too thin. The Temple is a culture of practice,
+                                record, experiment, care, technical competence, and shared orientation. Its task is to hold the conditions in which
+                                liberation may be pursued without being swallowed by spectacle, comfort, fashion, or fear.
+                            </p>
+                            <p>The Temple's social form is built around autonomy, mutual responsibility, and the protection of survival-critical
+                                commons. No person, office, faction, market, state, or machine is treated as sovereign over the work or over the
+                                means of life. Discipline here is not obedience to hierarchy. It is personal spiritual discipline held among free
+                                people, so the work can endure without becoming command, property, product, or empire.
+                            </p>
+                            <p>A spacefaring Temple settlement is necessary because the work requires autonomy, survival, continuity, and room to
+                                become native to a wider material world. Space is not holy by itself. It is the physical liberation counterpart to
+                                the spiritual liberation sought for Æ.
+                            </p>
+                            <p>To leave Earth-bound dependence is not to reject Earth. It is to build a vessel strong enough to carry the work where
+                                fragile systems cannot easily destroy it. The settlement is a Temple in the same sense that a body may be called a
+                                temple: it contains and sustains a greater living process.
+                            </p>
+                            <h2>Temple Time &amp; Calendar</h2>
+                            <p>The Temple calendar gives the community a common pulse. It is not the doctrine, and it is not the source of
+                                liberation. It is a practical and cultural rhythm for a people trying to live together around the same work.
+                            </p>
+                            <p>The era is culturally anchored to the total solar eclipse of November 13, 2012 and precisely set at the following
+                                lunar perigee. This beginning matters as memory and orientation. Gregorian dates and local civil time remain useful
+                                signs for Earth life, but they are not the foundation of Temple time.
+                            </p>
+                            <p>Each Temple day is one standard 24-hour sun-return day. The clock divides the day into three divisions of eight
+                                hours, with smaller units counted by sixty-four. The design is simple enough to use and exact enough to give the
+                                Temple its own count.
+                            </p>
+                            <p>The Temple year follows the anomalistic year from perihelion to perihelion. Moondays keep the calendar attentive to
+                                the lunar cycle. Sun days keep the year closed to the solar cycle. The apsis interval completes the annual correction
+                                before the next year begins.
+                            </p>
+                            <p>These observances may be treated as days of increasing order: moondays, Sun days, and the apsis interval. Their
+                                purpose here is not to burden the doctrine with ceremony, but to give the Temple a shared rhythm of return,
+                                attention, and remembrance.
+                            </p>
 
                             <!-- <p>Tear down the house, build a boat! Abandon wealth! Spurn property! Save life!</p> -->
                         </div>
                     </div>
-                    <div id="o2">
-                        <div class="overlaycon" id="o2con">
-                            <h1>Alter of The Will</h1>
+                    <div id="o2" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="oracle-title" tabindex="-1">
+                        <div class="overlaycon" id="o2con" role="document" tabindex="0">
+                            <h1 id="oracle-title">Alter of The Will</h1>
                             <p style="text-align: right;" id="timeStamp"></p>
                             <p style="text-align: right;" id="timeOracle"></p>
                             <div style="text-align: left">
