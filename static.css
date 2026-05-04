@@ -1,0 +1,98 @@
+html {
+  background: #000;
+  color: #fff;
+  font-family: "Times New Roman", Times, serif;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: #fff;
+}
+
+.page {
+  margin: 0 auto;
+  max-width: 58rem;
+  padding: clamp(1.5rem, 5vw, 4rem);
+}
+
+.site-header {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+}
+
+.site-header img {
+  height: 4rem;
+  width: 4rem;
+}
+
+.site-title {
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.2rem;
+  margin: 1rem 0 2rem;
+}
+
+.site-nav a {
+  text-underline-offset: 0.25rem;
+}
+
+h1,
+h2 {
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: clamp(2rem, 7vw, 4rem);
+  margin: 0 0 1.2rem;
+}
+
+h2 {
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: clamp(1.35rem, 4vw, 2rem);
+  margin: 2.4rem 0 0.8rem;
+  padding-top: 1.4rem;
+}
+
+p,
+li {
+  font-size: clamp(1.05rem, 2vw, 1.2rem);
+  line-height: 1.6;
+}
+
+.lead {
+  font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+}
+
+.quiet {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.figure {
+  margin: 2rem auto;
+  max-width: 26rem;
+}
+
+.figure img {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  margin-top: 3rem;
+  padding-top: 1rem;
+}
