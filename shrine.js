@@ -2778,12 +2778,12 @@ function myriad() {
 }
 
 // controlls emianation animation
-function drawArkInstructionCuneiform(x, y) {
+function drawArkInstructionCuneiform(x, y, horizontalAlign) {
     push()
     noStroke()
     fill(255)
     textFont('"Noto Sans Cuneiform", "Segoe UI Historic", "Akkadian", "Times New Roman", serif')
-    textAlign(CENTER, CENTER)
+    textAlign(horizontalAlign, CENTER)
     textStyle(NORMAL)
     let scriptSize = mother.width * .016
     let scriptLeading = scriptSize * 1.35
@@ -2936,8 +2936,8 @@ function emination(count) {
          let jackalCenterY = windowHeight * .666
          image(jackal, jackalCenterX, jackalCenterY)
          let arkInstructionY = jackalCenterY - jackal.height * .47
-         drawArkInstructionCuneiform(jackalCenterX - jackal.width * .285, arkInstructionY)
-         drawArkInstructionCuneiform(jackalCenterX + jackal.width * .285, arkInstructionY)
+         drawArkInstructionCuneiform(jackalCenterX - jackal.width * .285, arkInstructionY, RIGHT)
+         drawArkInstructionCuneiform(jackalCenterX + jackal.width * .285, arkInstructionY, LEFT)
          pop()
 
 
