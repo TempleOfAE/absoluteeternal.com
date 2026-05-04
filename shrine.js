@@ -315,7 +315,11 @@ function draw() {
     clock(0)
 
     if (!circleHover && !menuHover) {
+        let largeMyriadActive = mouseY >= windowHeight * 0.7
         myriad()
+        if (largeMyriadActive) {
+            drawMotherImageLayer()
+        }
         emination(13, 1)
     }
 
@@ -681,8 +685,12 @@ function templeMonthLengthsForYear(yearIndex) {
     })
 }
 
+function templeGregorianDateForYearElapsed(yearIndex, yearElapsed) {
+    return new Date(templeEpoch + (yearIndex * year) + yearElapsed - (templeEarthZone * hr))
+}
+
 function templeGregorianDateForCalendarDay(yearIndex, ordinaryDayIndex) {
-    return new Date(templeEpoch + (yearIndex * year) + (ordinaryDayIndex * day) - (templeEarthZone * hr))
+    return templeGregorianDateForYearElapsed(yearIndex, ordinaryDayIndex * day)
 }
 
 function templeGregorianDateLabel(yearIndex, ordinaryDayIndex, includeYear = false) {
@@ -699,6 +707,24 @@ function templeGregorianDateLabel(yearIndex, ordinaryDayIndex, includeYear = fal
 
     let monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
     return monthNames[date.getMonth()] + " " + dayOfMonth + ", " + date.getFullYear()
+}
+
+function templeGregorianDateTimeLabel(date) {
+    if (Number.isNaN(date.getTime())) {
+        return ""
+    }
+
+    let monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+    return monthNames[date.getMonth()] + " " + date.getDate() + ", " + date.getFullYear() + " " + templePad(date.getHours()) + ":" + templePad(date.getMinutes()) + ":" + templePad(date.getSeconds())
+}
+
+function templeDurationLabel(duration) {
+    let totalSeconds = Math.round(duration / 1000)
+    let hours = Math.floor(totalSeconds / 3600)
+    let minutes = Math.floor((totalSeconds % 3600) / 60)
+    let seconds = totalSeconds % 60
+
+    return templePad(hours) + ":" + templePad(minutes) + ":" + templePad(seconds)
 }
 
 function templeGregorianNewYearDayIndex(yearIndex) {
@@ -1047,10 +1073,11 @@ function appendTempleApsisInterval(parent, context) {
     status.appendChild(apsisMarker)
 
     let statusText = document.createElement("span")
-    let apsisStart = templeGregorianDateLabel(context.yearIndex, 365, true)
-    let nextYearStart = templeGregorianDateLabel(context.yearIndex + 1, 0, true)
+    let apsisStart = templeGregorianDateTimeLabel(templeGregorianDateForYearElapsed(context.yearIndex, ordinaryYear))
+    let nextYearStart = templeGregorianDateTimeLabel(templeGregorianDateForYearElapsed(context.yearIndex, year))
+    let apsisDuration = templeDurationLabel(annualApsisInterval)
     let apsisStatus = templeInAnnualApsisInterval && context.isCurrentYear ? "Active now" : "After the Sun days"
-    statusText.textContent = apsisStatus + " - " + apsisStart + " to " + nextYearStart
+    statusText.textContent = apsisStatus + " - " + apsisStart + " to " + nextYearStart + " - Duration " + apsisDuration
     status.appendChild(statusText)
     section.appendChild(status)
 
@@ -1884,6 +1911,17 @@ function clock() {
     pop()
     pop()
 }
+
+function drawMotherImageLayer() {
+    push()
+    tint(
+        255 - 255 * timeScaleCycle[1],
+        255 - (255 * timeScaleCycle[1])
+    )
+    image(mother, 0, 0)
+    pop()
+}
+
 function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color) {
 
     function flower(x,y,circumradius){
@@ -2091,17 +2129,7 @@ function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color
     hexagram()
     somaLeaf()
 
-    push()
-    tint(
-        255
-        - 255 * timeScaleCycle[1]
-        , // black tint
-        255
-        - (255 * timeScaleCycle[1])
-    ); // transperancy
-
-    image(mother, 0, 0)
-    pop()
+    drawMotherImageLayer()
 
     SquaredCircle()
 }
