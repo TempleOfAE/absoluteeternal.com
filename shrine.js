@@ -12,6 +12,12 @@ const motherNames = [
     "THE PRYSM",
 ]
 
+const arkInstructionCuneiform = [
+    "𒂍𒁉𒌅𒈠 𒂊𒇷𒉿 𒂊𒉺𒁺",
+    "𒈠𒆪𒌑𒊒 𒊭𒋗 𒀀𒈾 𒉆𒉿𒋾 𒁍𒇻𒁺",
+    "𒍣𒂊𒊑 𒉆𒉿𒋾 𒆳𒈠 𒀀𒈾 𒅗𒁀 𒂊𒇷𒉿 𒌑𒊺𒇻",
+]
+
 // night/sunrise, day, sunset/night
 const divisions = [
  '⚸', '☉', '♀'
@@ -2772,6 +2778,24 @@ function myriad() {
 }
 
 // controlls emianation animation
+function drawArkInstructionCuneiform(x, y) {
+    push()
+    noStroke()
+    fill(255)
+    textFont('"Noto Sans Cuneiform", "Segoe UI Historic", "Akkadian", "Times New Roman", serif')
+    textAlign(CENTER, CENTER)
+    textStyle(NORMAL)
+    let scriptSize = mother.width * .016
+    let scriptLeading = scriptSize * 1.35
+    textSize(scriptSize)
+    stroke(0)
+    strokeWeight(scriptSize * .14)
+    for (let i = 0; i < arkInstructionCuneiform.length; i++) {
+        text(arkInstructionCuneiform[i], x, y + (i - 1) * scriptLeading)
+    }
+    pop()
+}
+
 function emination(count) {
     push()
     cx = mother.width / 2
@@ -2908,7 +2932,12 @@ function emination(count) {
 
          push()
          imageMode(CENTER)
-         image(jackal, jackal.width*.25, windowHeight *.666)
+         let jackalCenterX = jackal.width * .25
+         let jackalCenterY = windowHeight * .666
+         image(jackal, jackalCenterX, jackalCenterY)
+         let arkInstructionY = jackalCenterY - jackal.height * .47
+         drawArkInstructionCuneiform(jackalCenterX - jackal.width * .285, arkInstructionY)
+         drawArkInstructionCuneiform(jackalCenterX + jackal.width * .285, arkInstructionY)
          pop()
 
 
