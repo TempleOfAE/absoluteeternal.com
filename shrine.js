@@ -17,18 +17,22 @@ const divisions = [
  '☉', '♀', '⚸' // Day, Sunset, Sunrise
 ]
 
-const zerohour = Date.UTC(2012, 10, 13, 22, 12, 55) //exact time of total eclyps UTC
-//const zerohour = Date.UTC(2012, 10, 14, 0, 0, 0) //new day mark
-const date = new Date();
-const offset = (date.getTimezoneOffset() * 60000);
-var dateTemple = Date.now() - zerohour + offset
+const eclipseEpoch = Date.UTC(2012, 10, 13, 22, 12, 55) // exact time of total eclyps UTC
+const templeEpoch = Date.UTC(2012, 10, 14, 10, 21, 32, 641) // lunar perigee after eclyps UTC
+var dateTemple = Date.now() - templeEpoch
 
 //const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 //temple bsae 64 time units
-const year = 31557600000
-const LAM = 27.55454977 * 86400000 // lunar anomalistic month
 const day = 86400000
+const anomalisticYearDays = 365.259636
+const year = anomalisticYearDays * day
+const ordinaryYear = 365 * day
+const annualApsisInterval = year - ordinaryYear
+const templeDateLineLongitude = -159.270875
+const templeZoneCount = 24
+const templeZoneWidth = 360 / templeZoneCount
+const LAM = 27.55454977 * day // lunar anomalistic month
 const week = day * 9
 const month = week * 3
 const division = day / 3
@@ -49,7 +53,60 @@ var calandarThisYear = []
 var templeCalandar = []
 var templeDateDMY = []
 var templeDayOfMonth
+var templeInAnnualApsisInterval = false
+var templeApsisElapsed = 0
+var templeCalendarKey = ""
+var templeEarthZone = 0
+var templeEarthZoneSource = "TIMEZONE"
+var templeZonedDateTemple = dateTemple
 var mondays = []
+
+function wrap360(degrees) {
+    return ((degrees % 360) + 360) % 360
+}
+
+function templeZoneFromLongitude(longitude) {
+    return Math.floor(wrap360(longitude - templeDateLineLongitude) / templeZoneWidth)
+}
+
+function templeZoneFromCivilTimezone() {
+    let civilYear = new Date().getFullYear()
+    let january = new Date(civilYear, 0, 1)
+    let july = new Date(civilYear, 6, 1)
+    let standardOffsetMinutes = Math.max(january.getTimezoneOffset(), july.getTimezoneOffset())
+    let standardOffsetHours = -standardOffsetMinutes / 60
+    return templeZoneFromLongitude(standardOffsetHours * 15)
+}
+
+function setTempleEarthZone(zone, source = "TIMEZONE") {
+    templeEarthZone = ((Math.floor(zone) % templeZoneCount) + templeZoneCount) % templeZoneCount
+    templeEarthZoneSource = source
+    templeCalendarKey = ""
+}
+
+function templeEarthZoneLabel() {
+    return "TEZ-" + "00".substr(str(templeEarthZone).length) + str(templeEarthZone)
+}
+
+function initializeTempleEarthZone() {
+    setTempleEarthZone(templeZoneFromCivilTimezone(), "TIMEZONE")
+
+    if (typeof navigator != "undefined" && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                setTempleEarthZone(templeZoneFromLongitude(position.coords.longitude), "LOCATION")
+            },
+            function() {
+                setTempleEarthZone(templeZoneFromCivilTimezone(), "TIMEZONE")
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 5000,
+                maximumAge: 86400000
+            }
+        )
+    }
+}
 
 const measuresPerUnit = [64, 64, 64, 8, 3,27,14,64*8]
 const msPerUnit = [moment, second, minute, hr, division, day, month, year]
@@ -61,14 +118,14 @@ const timeUnitsMoment = [1, 64, 64 ** 2, 64 ** 2 * 8, 64 ** 3 * 8 * 3]
 var timeUnitsMax = [];
 var timeUnitsHalf = [];
 var timeUnitsQuarter = [];
-for (let i = 0; i < timeDiv.length; i++) {
+for (let i = 0; i < timeUnitsMoment.length; i++) {
     timeUnitsMax[i] = timeDiv[i] * timeUnitsMoment[i] - 1
     timeUnitsHalf[i] = timeUnitsMax[i] * .5
     timeUnitsQuarter[i] = timeUnitsMax[i] * .25
 }
 
 //time and timing variables
-var currentTime = [0, 0, 0, 0, 0,0,0] // time as human readable units
+var currentTime = [0, 0, 0, 0, 0,0,0,0] // time as human readable units
 var timeO = []
 var timeMoment = [0, 0, 0, 0, 0] // time as 0 - maxunit in moments
 var timeScale = [0, 0, 0, 0, 0] // time as 0 - 1
@@ -150,8 +207,8 @@ function setup() {
 
     //TIMING SETTINGS
     frameRate(fR) // set frame rate
-    kali(); // sets initial time
-    calandarSetup() // sets initial date
+    initializeTempleEarthZone()
+    kali(); // sets initial time and date
 
     //INITIAL ORACLE
     timeStamp = Array.from(currentTime)
@@ -316,37 +373,66 @@ function mouseReleased() {
 
 }
 
+function templeState(elapsed = Date.now() - templeEpoch) {
+    let yearIndex = Math.floor(elapsed / year)
+    let yearElapsed = ((elapsed % year) + year) % year
+    let inAnnualApsisInterval = yearElapsed >= ordinaryYear
+    let ordinaryDayIndex = inAnnualApsisInterval ? 365 : Math.floor(yearElapsed / day)
+    let dayElapsed = inAnnualApsisInterval ? yearElapsed - ordinaryYear : yearElapsed % day
+    let apsisElapsed = inAnnualApsisInterval ? dayElapsed : 0
+
+    return {
+        elapsed,
+        yearIndex,
+        yearElapsed,
+        ordinaryDayIndex,
+        dayElapsed,
+        inAnnualApsisInterval,
+        apsisElapsed
+    }
+}
+
 // converts ms time to base 64 temple time and controlls animation timing variables
 function kali() {
-    dateTemple = Date.now() - zerohour + offset; //temple date adjusted for viewers timezone
-    templeDateDMY[0] =
-        Math.floor((dateTemple % year) / 86400000) // day of year for callandar setup
-    templeDateDMY[2] = Math.floor((dateTemple / year))-1 // year of era for calandar
-    for (let i = 0; i < msPerUnit.length; i++) {
-        currentTime[i] = Math.floor((dateTemple / msPerUnit[i]) % measuresPerUnit[i])
+    dateTemple = Date.now() - templeEpoch
+    templeZonedDateTemple = dateTemple + (templeEarthZone * hr)
+    let state = templeState(templeZonedDateTemple)
+    templeDateDMY[0] = state.ordinaryDayIndex
+    templeDateDMY[2] = state.yearIndex
+    templeInAnnualApsisInterval = state.inAnnualApsisInterval
+    templeApsisElapsed = state.apsisElapsed
+
+    let calendarKey = [
+        templeDateDMY[2],
+        templeDateDMY[0],
+        templeInAnnualApsisInterval,
+        templeEarthZone
+    ].join(":")
+
+    if (calendarKey != templeCalendarKey) {
+        calandarSetup()
+        templeCalendarKey = calendarKey
     }
-    currentTime[5] = templeDayOfMonth
-    currentTime[6] = templeDateDMY[1]
+
+    currentTime[0] = Math.floor((state.dayElapsed / moment) % timeDiv[0])
+    currentTime[1] = Math.floor((state.dayElapsed / second) % timeDiv[1])
+    currentTime[2] = Math.floor((state.dayElapsed / minute) % timeDiv[2])
+    currentTime[3] = Math.floor((state.dayElapsed / hr) % timeDiv[3])
+    currentTime[4] = Math.floor((state.dayElapsed / division) % timeDiv[4])
+    currentTime[5] = templeInAnnualApsisInterval ? 0 : templeDayOfMonth
+    currentTime[6] = templeInAnnualApsisInterval ? 13 : templeDateDMY[1]
     currentTime[7] = templeDateDMY[2]
+
     //digital clock generator
-    for (let i = 0; i < currentTime.length; i++) {
-        currentTime[5] = templeDayOfMonth
-        currentTime[6] = templeDateDMY[1] 
-        currentTime[7] = templeDateDMY[2] 
-        // time as ms
-        currentTime[i] = Math.floor((dateTemple / msPerUnit[i]) % timeDiv[i])
-        if (i == 1) {
-            timeO[3] = "00".substr(str(currentTime[i]).length) + str(currentTime[i])
-        }
+    timeO[1] = "00".substr(str(currentTime[3]).length) + str(currentTime[3]) // 0 - 7
+    timeO[2] = "00".substr(str(currentTime[2]).length) + str(currentTime[2]) // 0 - 63
+    timeO[3] = "00".substr(str(currentTime[1]).length) + str(currentTime[1]) // 0 - 63
+    timeO[4] = divisions[currentTime[4]] // 0 - 2
+    timeO[5] = templeInAnnualApsisInterval ? "AI" : "00".substr(str(currentTime[5]).length) + str(currentTime[5] + 1) // 1 - 28
+    timeO[6] = templeInAnnualApsisInterval ? "AP" : "00".substr(str(currentTime[6]).length) + str(currentTime[6] + 1) // 1 - 14
+    timeO[7] = "000".substr(str(currentTime[7]).length) + str(currentTime[7] + 1) // 1 - x
 
-        timeO[1] = "00".substr(str(currentTime[3]).length) + str(currentTime[3]) // 0 - 23
-        timeO[2] = "00".substr(str(currentTime[2]).length) + str(currentTime[2]) // 0 - 63
-        timeO[3] = "00".substr(str(currentTime[1]).length) + str(currentTime[1]) // 0 - 63
-        timeO[4] = divisions[currentTime[4]] // 0 - 2
-        timeO[5] = "00".substr(str(currentTime[5]).length) + str(currentTime[5]+1) // 1 - 27
-        timeO[6] = "00".substr(str(currentTime[6]).length) + str(currentTime[6]+1) // 1 - 13
-        timeO[7] = "000".substr(str(currentTime[7]).length) + str(currentTime[7]+1) // 1 - x
-
+    for (let i = 0; i < timeUnitsMoment.length; i++) {
         // timing
         // time expressed as moments
         timeMoment[i] = currentTime[i] * timeUnitsMoment[i]
@@ -368,6 +454,11 @@ function kali() {
 } 
 // calculates the temple calandar for current year starting from beginging of temple era
 function calandarSetup() {
+    calandar = []
+    calandarByMonth = []
+    calandarThisYear = []
+    templeCalandar = []
+    mondays = []
 
     function calandarCount(x = [27.55454977, 27, 0.55454977, 27, 27, 1]) {
         let calandarYear = [x]
@@ -431,7 +522,7 @@ function calandarSetup() {
         }
     }
 
-    let D = ((templeDateDMY[0] - 1) % 365 + 365) % 365;
+    let D = templeDateDMY[0]
     let M = 0
     let Y = templeDateDMY[2]
 
@@ -439,13 +530,13 @@ function calandarSetup() {
     calandarCount()
 
     //iterate calandar to current year
-    for (i = 0; i < Y; i++) {
+    for (let i = 0; i < Y; i++) {
         calandarCount(calandar[i][14])
     }
-    for (i = 0; i < Y + 1; i++) {
+    for (let i = 0; i < Y + 1; i++) {
         calandar[i].pop()
         calandarByMonth.push([])
-        for (ii = 0; ii < 14; ii++) {
+        for (let ii = 0; ii < 14; ii++) {
             calandarByMonth[i].push(calandar[i][ii][3])
         }
     }
@@ -530,6 +621,11 @@ function calandarSetup() {
             }
             dayCount += 1
             dayOfMonthCount += 1
+        }
+
+        if (templeInAnnualApsisInterval) {
+            M = 13
+            dayOfMonth = 0
         }
         
         
@@ -989,9 +1085,9 @@ function displays(c) {
             for (let i = 0; i < rowText.length; i++) {
                 let char = rowText[i]
                 if (char == 'g') {
-                    fill(180)
+                    fill(144)
                 } else if (char == 'T') {
-                    fill(180)
+                    fill(144)
                 } else {
                     continue
                 }
@@ -1009,9 +1105,10 @@ function displays(c) {
         text('YEAR ' + str(currentTime[7]+1) + " (Temple Era)", mother.width * .5, y - (TempleCalandartextSize * 2))
         textAlign(LEFT,CENTER)
         for (let i = 0; i < templeCalandar.length; i++){
-            if (i == templeCalandar.length-1) {
+            if (i >= 13) {
                 textAlign(CENTER, CENTER)
                 text(templeCalandar[i].join(" "), mother.width * .5, y + (TempleCalandartextSize * i * 1.333))
+                textAlign(LEFT, CENTER)
             } else {
                 calendarRowText(templeCalandar[i].join(" "), mother.width * .222, y + (TempleCalandartextSize * i * 1.333))
 
@@ -1024,6 +1121,11 @@ function displays(c) {
         text(mondays.slice(0, 6).join(" "), mother.width * .5, y + (TempleCalandartextSize * 15.5 * 1.333))
         text(mondays.slice(6, 11).join(" "), mother.width * .5, y + (TempleCalandartextSize * 16.5 * 1.333))
         text(mondays.slice(11).join(" "), mother.width * .5, y + (TempleCalandartextSize * 17.5 * 1.333))
+        if (templeInAnnualApsisInterval) {
+            calendarRowText("APSIS INTERVAL T", mother.width * .5 - textWidth("APSIS INTERVAL T") * .5, y + (TempleCalandartextSize * 17.5 * 1.333))
+        } else {
+            text("APSIS INTERVAL", mother.width * .5, y + (TempleCalandartextSize * 17.5 * 1.333))
+        }
 
 
         // text(text(templeCalandar[i].join(" "), mother.width * .5, y + (TempleCalandartextSize * i * 1.333)))
@@ -1110,12 +1212,21 @@ function clock() {
     )
 
     text(
-        + str(timeO[6]) //month
+        str(timeO[6]) //month
         + ' / ' + str(timeO[5]) //day
         + ' / ' + str(timeO[7]) //year
 
         , mother.width * .59, mother.height * .2 //location
     )
+
+    textSize(ts * .45)
+
+    text(
+        templeEarthZoneLabel()
+        , mother.width * .59, mother.height * .224
+    )
+
+    textSize(ts * .8)
 
     text(
             oracles[currentTime[1]]
