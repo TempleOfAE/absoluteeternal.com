@@ -2936,8 +2936,8 @@ function emination(count) {
          let jackalCenterY = windowHeight * .666
          image(jackal, jackalCenterX, jackalCenterY)
          let arkInstructionY = jackalCenterY - jackal.height * .47
-         drawArkInstructionCuneiform(jackalCenterX - jackal.width * .285, arkInstructionY, RIGHT)
-         drawArkInstructionCuneiform(jackalCenterX + jackal.width * .285, arkInstructionY, LEFT)
+         drawArkInstructionCuneiform(jackalCenterX - jackal.width * .25, arkInstructionY, RIGHT)
+         drawArkInstructionCuneiform(jackalCenterX + jackal.width * .25, arkInstructionY, LEFT)
          pop()
 
 
