@@ -916,7 +916,7 @@ function displays(c) {
                 let nameNumberYPos = mother.height * .57
                 for (i = 0; i < 2; i++) {
                     textSize(os * .25);
-                    if (c = 6)
+                    if (c == 6)
                     text(sequence[oracleD[i]], mother.width * .3632  +((mother.width * .3632*.75)*i), mother.width * .365)
                     push()
                     textSize(os * .08)
@@ -983,6 +983,23 @@ function displays(c) {
     function templeCalandarDisplay() {
         TempleCalandartextSize = mother.width*.0211
 
+        function calendarRowText(rowText, x, y) {
+            fill(255)
+            text(rowText, x, y)
+            for (let i = 0; i < rowText.length; i++) {
+                let char = rowText[i]
+                if (char == 'g') {
+                    fill(180)
+                } else if (char == 'T') {
+                    fill(180)
+                } else {
+                    continue
+                }
+                text(char, x + textWidth(rowText.slice(0, i)), y)
+            }
+            fill(255)
+        }
+
         // textStyle(CENTER, CENTER)
         push()
         noStroke()
@@ -996,7 +1013,7 @@ function displays(c) {
                 textAlign(CENTER, CENTER)
                 text(templeCalandar[i].join(" "), mother.width * .5, y + (TempleCalandartextSize * i * 1.333))
             } else {
-                text(templeCalandar[i].join(" "), mother.width * .222, y + (TempleCalandartextSize * i * 1.333))
+                calendarRowText(templeCalandar[i].join(" "), mother.width * .222, y + (TempleCalandartextSize * i * 1.333))
 
             }
         }
