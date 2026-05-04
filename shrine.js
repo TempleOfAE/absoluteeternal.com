@@ -29,6 +29,7 @@ const anomalisticYearDays = 365.259636
 const year = anomalisticYearDays * day
 const ordinaryYear = 365 * day
 const annualApsisInterval = year - ordinaryYear
+const aphelionDayIndex = Math.floor(anomalisticYearDays / 2)
 const templeDateLineLongitude = -159.270875
 const templeZoneCount = 24
 const templeZoneWidth = 360 / templeZoneCount
@@ -132,6 +133,7 @@ var timeScale = [0, 0, 0, 0, 0] // time as 0 - 1
 var timeScaleCycle = [0, 0, 0, 0, 0] // time as 0 - 1
 var LunarCalandarCycleValue = [0, 0, 0, 0, 0, 0, 0, 0, 0] // 0-255-0
 var LunarCalandarCycleValueDouble = [0, 0, 0, 0, 0, 0, 0, 0, 0] // 0-255-0-255-0
+var templeCalendarDisplayYearIndex = 0
 
 //oracle variables
 var oracleA = [] // first set of 6 coin flips generating first oracle
@@ -352,8 +354,8 @@ function draw() {
         jackals = false
     }
 
-    //disables UI if overlay 1 is active
-    if (!overlays[1]) {
+    //disables UI while overlays are active
+    if (!templeOverlayActive()) {
         UI() // checks location of mouse and updates variables to controll zoom and select functions  
     }
 }
@@ -363,8 +365,18 @@ function windowResized() {
     // menuBar(principles,(windowHeight*menuYMod))
 }
 
+function templeOverlayActive() {
+    return typeof overlays != "undefined" && overlays.some(function(isOpen) {
+        return isOpen
+    })
+}
+
 // P5 user input functions
 function keyTyped() {
+    if (templeOverlayActive()) {
+        return false
+    }
+
     // timeStamp = Array.from(time)
     if (keyCode == ENTER) {
         if (dateHover) {
@@ -382,6 +394,10 @@ function keyTyped() {
     }
 }
 function mousePressed() {
+    if (templeOverlayActive()) {
+        return false
+    }
+
     if (dateHover) {
         openTempleCalendarOverlay()
     } else if (changeHover) {
@@ -401,13 +417,17 @@ function mousePressed() {
     }
 }
 function mouseheld() {
-    if (mouseIsPressed) {
+    if (!templeOverlayActive() && mouseIsPressed) {
         return true
     } else {
         return false
     }
 }
 function mouseReleased() {
+    if (templeOverlayActive()) {
+        return false
+    }
+
     if (timeOracleHover) {
         if (!overlays[2]) { //prevents new oracle if overlay 2 is active
             oracleGenerator("TIME ONLY")
@@ -472,6 +492,7 @@ function kali() {
     currentTime[5] = templeInAnnualApsisInterval ? 0 : templeDayOfMonth
     currentTime[6] = templeInAnnualApsisInterval ? 13 : templeDateDMY[1]
     currentTime[7] = templeDateDMY[2]
+    currentTime[8] = state.ordinaryDayIndex
 
     //digital clock generator
     timeO[1] = "00".substr(str(currentTime[3]).length) + str(currentTime[3]) // 0 - 7
@@ -517,6 +538,178 @@ function templeDOYtoGregMD(dayOfYear) {
     }
 
     return ""
+}
+
+function templePad(value, width = 2) {
+    return String(value).padStart(width, "0")
+}
+
+function templeOrdinaryDayFromTimeParts(timeParts) {
+    if (Number.isInteger(timeParts[8])) {
+        return timeParts[8]
+    }
+
+    let monthIndex = timeParts[6]
+    let dayOfMonth = timeParts[5]
+    let ordinaryDayIndex = 0
+    for (let i = 0; i < monthIndex && i < calandarThisYear.length; i++) {
+        ordinaryDayIndex += calandarThisYear[i]
+    }
+
+    return ordinaryDayIndex + dayOfMonth
+}
+
+function templeDateFields(timeParts = currentTime) {
+    let yearNumber = (timeParts[7] || 0) + 1
+    let ordinaryDayIndex = templeOrdinaryDayFromTimeParts(timeParts)
+    let ordinaryDayNumber = ordinaryDayIndex + 1
+    let monthDays = 0
+
+    for (let i = 0; i < 13 && i < calandarThisYear.length; i++) {
+        let monthLength = calandarThisYear[i]
+
+        if (ordinaryDayIndex < monthDays + monthLength) {
+            let dayInMonth = ordinaryDayIndex - monthDays
+            let weekNumber = Math.floor(dayInMonth / 9) + 1
+            let dayNumber = (dayInMonth % 9) + 1
+            let kind = dayInMonth >= 27 ? "Moonday" : "Month Day"
+
+            return {
+                yearNumber,
+                monthNumber: i + 1,
+                weekNumber,
+                dayNumber,
+                ordinaryDayNumber,
+                kind
+            }
+        }
+
+        monthDays += monthLength
+    }
+
+    if (ordinaryDayIndex < 365) {
+        let sunDayIndex = ordinaryDayIndex - monthDays
+        return {
+            yearNumber,
+            monthNumber: 14,
+            weekNumber: Math.floor(sunDayIndex / 9) + 1,
+            dayNumber: (sunDayIndex % 9) + 1,
+            ordinaryDayNumber,
+            kind: "Sun Day " + (sunDayIndex + 1)
+        }
+    }
+
+    return {
+        yearNumber,
+        monthNumber: "AP",
+        weekNumber: "AI",
+        dayNumber: "AI",
+        ordinaryDayNumber,
+        kind: "Apsis"
+    }
+}
+
+function templeDateDisplay(timeParts = currentTime) {
+    let fields = templeDateFields(timeParts)
+    let month = typeof fields.monthNumber == "number" ? templePad(fields.monthNumber) : fields.monthNumber
+    let week = typeof fields.weekNumber == "number" ? templePad(fields.weekNumber) : fields.weekNumber
+    let day = typeof fields.dayNumber == "number" ? templePad(fields.dayNumber) : fields.dayNumber
+    let ordinaryDay = templePad(fields.ordinaryDayNumber, 3)
+    let date = "Year " + templePad(fields.yearNumber, 3) + " - Month " + month + " / Week " + week + " / Day " + day + " / Ordinary Day " + ordinaryDay
+
+    if (fields.kind != "Month Day") {
+        date += " (" + fields.kind + ")"
+    }
+
+    return date
+}
+
+function templeClockDisplay(timeParts = currentTime) {
+    return str(timeParts[3]) + "(" + str(divisions[timeParts[4]]) + "):" + str(timeParts[2]) + ":" + str(timeParts[1]) + " [" + str(timeParts[0]) + "]"
+}
+
+function templeCalendarYearFromSeed(seed = [27.55454977, 27, 0.55454977, 27, 27, 1]) {
+    let calendarYear = [Array.from(seed)]
+    calendarYear[0][4] = calendarYear[0][3]
+
+    for (let i = 0; i < 15; i++) {
+        let monthLength = 0
+        if (i > 0) {
+            if (i % 13 == 0) {
+                monthLength = 365 - calendarYear[i - 1][4]
+            } else if (calendarYear[i - 1][2] > 0.44545023) {
+                monthLength = 28
+            } else {
+                monthLength = 27
+            }
+
+            calendarYear.push([0, 0, 0, 0, calendarYear[i - 1][4] + monthLength, 0])
+            calendarYear[i][3] = monthLength
+
+            if (i % 13 == 0) {
+                calendarYear[i][0] = calendarYear[i - 1][0] + calendarYear[i][3]
+            } else {
+                calendarYear[i][0] = calendarYear[i - 1][0] + 27.55454977
+            }
+
+            calendarYear[i][1] = calendarYear[i - 1][1] + calendarYear[i][3]
+            calendarYear[i][2] = calendarYear[i][0] - calendarYear[i][1]
+        }
+
+        if (i == 14) {
+            if (calendarYear[13][3] > calendarYear[13][5]) {
+                calendarYear[14][5] = 27 + calendarYear[13][5] - calendarYear[13][3]
+            } else {
+                calendarYear[14][5] = calendarYear[13][5] - calendarYear[13][3]
+            }
+        } else {
+            calendarYear[i][5] = calendarYear[0][5]
+        }
+    }
+
+    return calendarYear
+}
+
+function templeMonthLengthsForYear(yearIndex) {
+    let calendarYear = templeCalendarYearFromSeed()
+    for (let i = 0; i < yearIndex; i++) {
+        calendarYear = templeCalendarYearFromSeed(calendarYear[14])
+    }
+
+    return calendarYear.slice(0, 14).map(function(monthData) {
+        return monthData[3]
+    })
+}
+
+function templeGregorianDateForCalendarDay(yearIndex, ordinaryDayIndex) {
+    return new Date(templeEpoch + (yearIndex * year) + (ordinaryDayIndex * day) - (templeEarthZone * hr))
+}
+
+function templeGregorianDateLabel(yearIndex, ordinaryDayIndex, includeYear = false) {
+    let date = templeGregorianDateForCalendarDay(yearIndex, ordinaryDayIndex)
+    if (Number.isNaN(date.getTime())) {
+        return ""
+    }
+
+    let month = date.getMonth() + 1
+    let dayOfMonth = date.getDate()
+    if (!includeYear) {
+        return month + "/" + dayOfMonth
+    }
+
+    let monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+    return monthNames[date.getMonth()] + " " + dayOfMonth + ", " + date.getFullYear()
+}
+
+function templeGregorianNewYearDayIndex(yearIndex) {
+    for (let dayIndex = 0; dayIndex < 365; dayIndex++) {
+        let date = templeGregorianDateForCalendarDay(yearIndex, dayIndex)
+        if (date.getMonth() == 0 && date.getDate() == 1) {
+            return dayIndex
+        }
+    }
+
+    return -1
 }
 
 // calculates the temple calandar for current year starting from beginging of temple era
@@ -613,15 +806,17 @@ function calandarSetup() {
                         let wom = []
                         //write days of week
                         for (let dow = 1; dow < 10; dow++){
-                            if(dayCount == 48){
-                                wom.push('g') // mark gregorian new year
-                            } else if (dayCount != D) {
-                                wom.push(String(dow))
-                             // wom.push(String(templeDOYtoGregMD(dayCount)))
-                            }  else {
+                            if(dayCount == D) {
                                 wom.push('T')
                                 M = i
                                 dayOfMonth = dayOfMonthCount
+                            } else if (dayCount == 48){
+                                wom.push('g') // mark gregorian new year
+                            } else if (dayCount == aphelionDayIndex) {
+                                wom.push('a') // mark aphelion
+                            } else {
+                                wom.push(String(dow))
+                             // wom.push(String(templeDOYtoGregMD(dayCount)))
                             }
                             dayCount++
 
@@ -692,20 +887,26 @@ function appendTempleCalendarText(parent, text, className = "calendar-heading") 
     return element
 }
 
-function templeCalendarMarker(dayOfYear, label, currentLabel = "T") {
+function templeCalendarMarker(dayOfYear, label, currentLabel = "T", context = {}) {
     let marker = {
         label,
         className: "",
         title: ""
     }
 
-    if (dayOfYear == 48) {
+    if (dayOfYear == context.gregorianNewYearDayIndex) {
         marker.label = "g"
         marker.className += " calendar-gregorian"
         marker.title = "Gregorian new year"
     }
 
-    if (dayOfYear == templeDateDMY[0]) {
+    if (dayOfYear == aphelionDayIndex) {
+        marker.label = "a"
+        marker.className += " calendar-aphelion"
+        marker.title = marker.title ? marker.title + "; aphelion" : "Aphelion"
+    }
+
+    if (context.isCurrentYear && dayOfYear == context.currentDayIndex) {
         marker.label = currentLabel
         marker.className += " calendar-current"
         marker.title = marker.title ? marker.title + "; current Temple day" : "Current Temple day"
@@ -714,23 +915,36 @@ function templeCalendarMarker(dayOfYear, label, currentLabel = "T") {
     return marker
 }
 
-function applyTempleCalendarMarker(element, dayOfYear, label, currentLabel = "T") {
-    let marker = templeCalendarMarker(dayOfYear, label, currentLabel)
-    element.textContent = marker.label
+function applyTempleCalendarMarker(element, dayOfYear, label, currentLabel = "T", context = {}) {
+    let marker = templeCalendarMarker(dayOfYear, label, currentLabel, context)
+    let markerText = document.createElement("span")
+    markerText.className = "calendar-day-marker"
+    markerText.textContent = marker.label
+    element.appendChild(markerText)
+
+    let count = document.createElement("span")
+    count.className = "calendar-day-count"
+    count.textContent = templePad(dayOfYear + 1, 3)
+    element.appendChild(count)
+
+    let gregorianDate = document.createElement("span")
+    gregorianDate.className = "calendar-gregorian-date"
+    gregorianDate.textContent = templeGregorianDateLabel(context.yearIndex, dayOfYear)
+    element.appendChild(gregorianDate)
     element.className += marker.className
     if (marker.title) {
         element.title = marker.title
         element.setAttribute("aria-label", marker.title + ": " + marker.label)
     }
-    if (dayOfYear == templeDateDMY[0]) {
+    if (context.isCurrentYear && dayOfYear == context.currentDayIndex) {
         element.setAttribute("aria-current", "date")
     }
 }
 
-function appendTempleCalendarMonth(parent, monthIndex, startDayOfYear, monthLength) {
+function appendTempleCalendarMonth(parent, context, monthIndex, startDayOfYear, monthLength) {
     let monthElement = document.createElement("section")
     monthElement.className = "calendar-month"
-    if (monthIndex == templeDateDMY[1]) {
+    if (context.isCurrentYear && monthIndex == context.currentMonthIndex) {
         monthElement.className += " calendar-active-month"
     }
 
@@ -741,20 +955,9 @@ function appendTempleCalendarMonth(parent, monthIndex, startDayOfYear, monthLeng
     let table = document.createElement("table")
     table.setAttribute("aria-label", "Temple month " + String(monthIndex + 1))
 
-    let header = document.createElement("thead")
-    let headerRow = document.createElement("tr")
-    for (let dayOfWeek = 1; dayOfWeek <= 9; dayOfWeek++) {
-        let headingCell = document.createElement("th")
-        headingCell.scope = "col"
-        headingCell.textContent = String(dayOfWeek)
-        headerRow.appendChild(headingCell)
-    }
-    header.appendChild(headerRow)
-    table.appendChild(header)
-
     let body = document.createElement("tbody")
     let dayOffset = 0
-    let activeWeekIndex = monthIndex == templeDateDMY[1] && templeDayOfMonth < 27 ? Math.floor(templeDayOfMonth / 9) : -1
+    let activeWeekIndex = context.isCurrentYear && monthIndex == context.currentMonthIndex && context.currentDayOfMonth < 27 ? Math.floor(context.currentDayOfMonth / 9) : -1
     for (let weekIndex = 0; weekIndex < 3; weekIndex++) {
         let row = document.createElement("tr")
         if (weekIndex == activeWeekIndex) {
@@ -763,7 +966,8 @@ function appendTempleCalendarMonth(parent, monthIndex, startDayOfYear, monthLeng
         for (let dayOfWeek = 1; dayOfWeek <= 9; dayOfWeek++) {
             let cell = document.createElement("td")
             cell.className = "calendar-day"
-            applyTempleCalendarMarker(cell, startDayOfYear + dayOffset, String(dayOfWeek))
+            let dayOfYear = startDayOfYear + dayOffset
+            applyTempleCalendarMarker(cell, dayOfYear, String(dayOfWeek), String(dayOfWeek), context)
             row.appendChild(cell)
             dayOffset++
         }
@@ -776,17 +980,17 @@ function appendTempleCalendarMonth(parent, monthIndex, startDayOfYear, monthLeng
         let moondayDayOfYear = startDayOfYear + 27
         let moonday = document.createElement("div")
         moonday.className = "calendar-special-day"
-        if (moondayDayOfYear == templeDateDMY[0]) {
+        if (context.isCurrentYear && moondayDayOfYear == context.currentDayIndex) {
             moonday.className += " calendar-active-week"
         }
 
         let moondayMarker = document.createElement("span")
         moondayMarker.className = "calendar-special-marker"
-        applyTempleCalendarMarker(moondayMarker, moondayDayOfYear, "M", "M")
+        applyTempleCalendarMarker(moondayMarker, moondayDayOfYear, "M", "M", context)
         moonday.appendChild(moondayMarker)
 
         let moondayLabel = document.createElement("span")
-        moondayLabel.textContent = "Moonday " + templeDOYtoGregMD(moondayDayOfYear)
+        moondayLabel.textContent = "Moonday " + templeGregorianDateLabel(context.yearIndex, moondayDayOfYear, true)
         moonday.appendChild(moondayLabel)
         monthElement.appendChild(moonday)
     }
@@ -794,7 +998,7 @@ function appendTempleCalendarMonth(parent, monthIndex, startDayOfYear, monthLeng
     parent.appendChild(monthElement)
 }
 
-function appendTempleSunDays(parent, startDayOfYear, sunDayLength) {
+function appendTempleSunDays(parent, context, startDayOfYear, sunDayLength) {
     let section = document.createElement("section")
     section.className = "calendar-section"
     appendTempleCalendarText(section, "Sun Days", "calendar-heading")
@@ -804,7 +1008,8 @@ function appendTempleSunDays(parent, startDayOfYear, sunDayLength) {
     for (let i = 0; i < sunDayLength; i++) {
         let sunDay = document.createElement("div")
         sunDay.className = "calendar-sun-day"
-        applyTempleCalendarMarker(sunDay, startDayOfYear + i, "S-" + String(i + 1), "S-" + String(i + 1))
+        let dayOfYear = startDayOfYear + i
+        applyTempleCalendarMarker(sunDay, dayOfYear, "S-" + String(i + 1), "S-" + String(i + 1), context)
         sunGrid.appendChild(sunDay)
     }
 
@@ -812,17 +1017,169 @@ function appendTempleSunDays(parent, startDayOfYear, sunDayLength) {
     parent.appendChild(section)
 }
 
-function appendTempleApsisInterval(parent) {
+function appendTempleApsisInterval(parent, context) {
     let section = document.createElement("section")
     section.className = "calendar-section calendar-apsis"
     appendTempleCalendarText(section, "Annual Apsis Interval", "calendar-heading")
 
     let status = document.createElement("div")
     status.className = templeInAnnualApsisInterval ? "calendar-center calendar-current-text" : "calendar-center"
-    status.textContent = templeInAnnualApsisInterval ? "Active now" : "After the Sun days"
+    status.className += " calendar-apsis-status"
+
+    let apsisMarker = document.createElement("span")
+    apsisMarker.className = "calendar-apsis-marker"
+
+    let markerText = document.createElement("span")
+    markerText.className = "calendar-day-marker"
+    markerText.textContent = "APSIS"
+    apsisMarker.appendChild(markerText)
+
+    let count = document.createElement("span")
+    count.className = "calendar-day-count"
+    count.textContent = templePad(366, 3)
+    apsisMarker.appendChild(count)
+
+    let apsisDate = document.createElement("span")
+    apsisDate.className = "calendar-gregorian-date"
+    apsisDate.textContent = templeGregorianDateLabel(context.yearIndex, 365)
+    apsisMarker.appendChild(apsisDate)
+
+    status.appendChild(apsisMarker)
+
+    let statusText = document.createElement("span")
+    let apsisStart = templeGregorianDateLabel(context.yearIndex, 365, true)
+    let nextYearStart = templeGregorianDateLabel(context.yearIndex + 1, 0, true)
+    let apsisStatus = templeInAnnualApsisInterval && context.isCurrentYear ? "Active now" : "After the Sun days"
+    statusText.textContent = apsisStatus + " - " + apsisStart + " to " + nextYearStart
+    status.appendChild(statusText)
     section.appendChild(status)
 
     parent.appendChild(section)
+}
+
+function appendTempleCalendarKey(parent) {
+    let section = document.createElement("section")
+    section.className = "calendar-section calendar-key"
+    appendTempleCalendarText(section, "Key", "calendar-heading")
+
+    let keyGrid = document.createElement("div")
+    keyGrid.className = "calendar-key-grid"
+    let keyItems = [
+        ["T", "Current Temple day"],
+        ["g", "Gregorian new year"],
+        ["a", "Aphelion"],
+        ["M", "Moonday"],
+        ["S", "Sun day"],
+        ["APSIS", "Annual apsis interval"],
+        ["1/1", "Gregorian equivalent"],
+        ["001", "Ordinary day count"]
+    ]
+
+    keyItems.forEach(function(item) {
+        let keyItem = document.createElement("div")
+        keyItem.className = "calendar-key-item"
+
+        let symbol = document.createElement("span")
+        symbol.className = "calendar-key-symbol"
+        symbol.textContent = item[0]
+        keyItem.appendChild(symbol)
+
+        let label = document.createElement("span")
+        label.textContent = item[1]
+        keyItem.appendChild(label)
+
+        keyGrid.appendChild(keyItem)
+    })
+
+    section.appendChild(keyGrid)
+    parent.appendChild(section)
+}
+
+function templeCalendarDisplayContext() {
+    let yearIndex = Math.max(0, Math.floor(templeCalendarDisplayYearIndex || 0))
+    let monthLengths = templeMonthLengthsForYear(yearIndex)
+    let isCurrentYear = yearIndex == currentTime[7]
+
+    return {
+        yearIndex,
+        monthLengths,
+        isCurrentYear,
+        currentDayIndex: isCurrentYear ? templeDateDMY[0] : -1,
+        currentMonthIndex: isCurrentYear ? templeDateDMY[1] : -1,
+        currentDayOfMonth: isCurrentYear ? templeDayOfMonth : -1,
+        gregorianNewYearDayIndex: templeGregorianNewYearDayIndex(yearIndex)
+    }
+}
+
+function templeCalendarYearMeta(context) {
+    let yearLabel = "Year " + templePad(context.yearIndex + 1, 3)
+    if (context.isCurrentYear) {
+        return yearLabel + " - Current Temple Year"
+    }
+
+    return yearLabel
+}
+
+function setTempleCalendarDisplayYear(yearIndex) {
+    templeCalendarDisplayYearIndex = Math.max(0, Math.floor(Number(yearIndex) || 0))
+    renderTempleCalendarOverlay()
+}
+
+function changeTempleCalendarDisplayYear(delta) {
+    setTempleCalendarDisplayYear(templeCalendarDisplayYearIndex + delta)
+}
+
+function setTempleCalendarDisplayYearFromInput(value) {
+    setTempleCalendarDisplayYear(Math.max(1, Number(value) || 1) - 1)
+}
+
+function appendTempleCalendarControls(parent, context) {
+    let controls = document.createElement("div")
+    controls.className = "calendar-controls"
+
+    let previousButton = document.createElement("button")
+    previousButton.className = "calendar-control"
+    previousButton.type = "button"
+    previousButton.textContent = "Previous Year"
+    previousButton.disabled = context.yearIndex <= 0
+    previousButton.addEventListener("click", function() {
+        changeTempleCalendarDisplayYear(-1)
+    })
+    controls.appendChild(previousButton)
+
+    let currentButton = document.createElement("button")
+    currentButton.className = "calendar-control"
+    currentButton.type = "button"
+    currentButton.textContent = "Current Year"
+    currentButton.addEventListener("click", function() {
+        setTempleCalendarDisplayYear(currentTime[7])
+    })
+    controls.appendChild(currentButton)
+
+    let nextButton = document.createElement("button")
+    nextButton.className = "calendar-control"
+    nextButton.type = "button"
+    nextButton.textContent = "Next Year"
+    nextButton.addEventListener("click", function() {
+        changeTempleCalendarDisplayYear(1)
+    })
+    controls.appendChild(nextButton)
+
+    let yearLabel = document.createElement("label")
+    yearLabel.className = "calendar-year-control"
+    yearLabel.textContent = "Year "
+    let yearInput = document.createElement("input")
+    yearInput.type = "number"
+    yearInput.min = "1"
+    yearInput.step = "1"
+    yearInput.value = String(context.yearIndex + 1)
+    yearInput.addEventListener("change", function() {
+        setTempleCalendarDisplayYearFromInput(yearInput.value)
+    })
+    yearLabel.appendChild(yearInput)
+    controls.appendChild(yearLabel)
+
+    parent.appendChild(controls)
 }
 
 function renderTempleCalendarOverlay() {
@@ -834,25 +1191,31 @@ function renderTempleCalendarOverlay() {
         return
     }
 
-    calendarMeta.textContent = "YEAR " + str(currentTime[7] + 1) + " (Temple Era) - " + timeO[6] + " / " + timeO[5] + " / " + timeO[7]
+    let context = templeCalendarDisplayContext()
+    calendarMeta.textContent = templeCalendarYearMeta(context)
     calendarBody.textContent = ""
+    calendarBody.className = "calendar-page"
 
+    appendTempleCalendarControls(calendarBody, context)
     appendTempleCalendarText(calendarBody, "LUNISOLAR TEMPLE CALENDAR")
 
     let yearGrid = document.createElement("div")
     yearGrid.className = "calendar-year-grid"
     let dayOfYear = 0
     for (let i = 0; i < 13; i++) {
-        appendTempleCalendarMonth(yearGrid, i, dayOfYear, calandarThisYear[i])
-        dayOfYear += calandarThisYear[i]
+        appendTempleCalendarMonth(yearGrid, context, i, dayOfYear, context.monthLengths[i])
+        dayOfYear += context.monthLengths[i]
     }
     calendarBody.appendChild(yearGrid)
 
-    appendTempleSunDays(calendarBody, dayOfYear, calandarThisYear[13])
-    appendTempleApsisInterval(calendarBody)
+    appendTempleSunDays(calendarBody, context, dayOfYear, context.monthLengths[13])
+    appendTempleApsisInterval(calendarBody, context)
+    appendTempleCalendarKey(calendarBody)
 }
 
 function openTempleCalendarOverlay() {
+    kali()
+    templeCalendarDisplayYearIndex = currentTime[7]
     renderTempleCalendarOverlay()
     on(3)
 }
@@ -1308,6 +1671,8 @@ function displays(c) {
             for (let i = 0; i < rowText.length; i++) {
                 let char = rowText[i]
                 if (char == 'g') {
+                    fill(144)
+                } else if (char == 'a') {
                     fill(144)
                 } else if (char == 'T') {
                     fill(144)
@@ -1822,7 +2187,7 @@ function oracleGenerator(option = false) {
 function interpretation() {
     let oracle = sequence[oracleD[0]]
     let changingLinesList = ""
-    let intTimeStamp = str(timeO[6]) + ' / ' + str(timeO[5]) + ' / ' + str(timeO[7]) + " - " +str(timeStamp[3]) + '(' + str(divisions[timeStamp[4]]) + ')' + ':' + str(timeStamp[2]) + ':' + str(timeStamp[1]) + ' [' + str(timeStamp[0]) + ']' + oracles[timeStamp[0]]
+    let intTimeStamp = templeDateDisplay(timeStamp) + " - " + templeClockDisplay(timeStamp) + " " + oracles[timeStamp[0]]
     let intTimeOracle =
         "In matters of action: " + iching.binary[timeOracle[0][0]].judgement+ " ["+ iching.binary[timeOracle[0][0]].sign + "]<br>"
         + "In matters of communication: " + iching.quaternary[timeOracle[0][1]].judgement + " ["+ iching.quaternary[timeOracle[0][1]].sign + "]<br>"
@@ -1861,7 +2226,9 @@ function interpretation() {
         // document.getElementById("divinationcom").innerHTML = "<a href=\"https://divination.com/iching/lookup/" + sequence[oracleD[0]] + "-2/\"" + "target=\"_blank\">interpretation by divination.com</a>"
     }
 
+    setTempleOracleRecordStatus("")
     // document.getElementById("VBT").innerHTML = VBT112[tantra]
+    updateTempleOracleRecordDisplay()
 }
 
 function debugCleanText(value) {
@@ -1981,7 +2348,7 @@ function buildTempleDebug() {
             templeEarthZone,
             templeEarthZoneSource,
             templeEarthZoneLabel: templeEarthZoneLabel(),
-            calendarDisplay: timeO[6] + " / " + timeO[5] + " / " + timeO[7],
+            calendarDisplay: templeDateDisplay(currentTime),
             clock: debugTempleClockFromElapsed(zonedElapsed)
         },
         iChingPair: {
@@ -2002,7 +2369,8 @@ function buildTempleDebug() {
         },
         altarOfTheWill: {
             timeStamp: Array.from(timeStamp),
-            clockDisplay: timeStamp[3] + "(" + divisions[timeStamp[4]] + "):" + timeStamp[2] + ":" + timeStamp[1] + " [" + timeStamp[0] + "]",
+            dateDisplay: templeDateDisplay(timeStamp),
+            clockDisplay: templeClockDisplay(timeStamp),
             oracle: altarOracle
         }
     }
@@ -2047,6 +2415,7 @@ function templeDebug() {
 
     console.group("Altar Of The Will")
     if (debug.altarOfTheWill.oracle) {
+        console.log("Temple Time", debug.altarOfTheWill.dateDisplay + " - " + debug.altarOfTheWill.clockDisplay)
         console.log("Single Oracle", debug.altarOfTheWill.oracle.singleOracle)
         console.table({
             deeds: debug.altarOfTheWill.oracle.deeds,
@@ -2062,7 +2431,7 @@ function templeDebug() {
     return debug
 }
 
-function templeReceipt() {
+function templeOracleRecord() {
     let debug = buildTempleDebug()
     let primary = debug.iChingPair.primary
     let changing = debug.iChingPair.changing
@@ -2078,8 +2447,8 @@ function templeReceipt() {
         lines.push(label + ": " + (value == null ? "" : value))
     }
 
-    lines.push("TEMPLE RECEIPT")
-    item("Generated", debug.civil.localTime)
+    lines.push("ORACLE RECORD")
+    item("Record Created", debug.civil.localTime)
 
     section("Civil")
     item("Local", debug.civil.localTime)
@@ -2126,7 +2495,7 @@ function templeReceipt() {
     item("Raw D", debug.iChingPair.raw.oracleD.join(" "))
 
     section("Altar Of The Will")
-    item("Timestamp", debug.altarOfTheWill.clockDisplay)
+    item("Temple Time", debug.altarOfTheWill.dateDisplay + " - " + debug.altarOfTheWill.clockDisplay)
     if (altar) {
         item("Single Oracle", altar.singleOracle.number + " " + altar.singleOracle.symbol + " " + altar.singleOracle.name)
         item("Single Judgement", altar.singleOracle.judgement)
@@ -2141,11 +2510,99 @@ function templeReceipt() {
     return lines.join("\n")
 }
 
+function templeReceipt() {
+    return templeOracleRecord()
+}
+
+function setTempleOracleRecordStatus(message) {
+    let status = document.getElementById("oracle-record-status")
+    if (status) {
+        status.textContent = message
+    }
+}
+
+function updateTempleOracleRecordDisplay() {
+    let record = templeOracleRecord()
+    let recordElement = document.getElementById("oracle-record")
+    if (recordElement) {
+        recordElement.textContent = record
+    }
+
+    return record
+}
+
+function copyTempleTextFallback(text) {
+    let textarea = document.createElement("textarea")
+    textarea.value = text
+    textarea.setAttribute("readonly", "")
+    textarea.style.left = "-9999px"
+    textarea.style.position = "fixed"
+    textarea.style.top = "0"
+    document.body.appendChild(textarea)
+    textarea.select()
+
+    try {
+        return document.execCommand("copy")
+    } finally {
+        document.body.removeChild(textarea)
+    }
+}
+
+function copyTempleOracleRecord() {
+    let record = updateTempleOracleRecordDisplay()
+    window.TEMPLE_ORACLE_RECORD = record
+    window.TEMPLE_RECEIPT = record
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(record).then(function() {
+            setTempleOracleRecordStatus("Oracle Record copied.")
+        }).catch(function() {
+            if (copyTempleTextFallback(record)) {
+                setTempleOracleRecordStatus("Oracle Record copied.")
+            } else {
+                setTempleOracleRecordStatus("Copy failed.")
+            }
+        })
+    } else if (copyTempleTextFallback(record)) {
+        setTempleOracleRecordStatus("Oracle Record copied.")
+    } else {
+        setTempleOracleRecordStatus("Copy failed.")
+    }
+
+    return record
+}
+
+function clearTempleOraclePrintMode() {
+    if (document.body) {
+        document.body.classList.remove("printing-oracle-record")
+    }
+}
+
+function printTempleOracleRecord() {
+    let record = updateTempleOracleRecordDisplay()
+    window.TEMPLE_ORACLE_RECORD = record
+    window.TEMPLE_RECEIPT = record
+    console.log(record)
+
+    if (document.body) {
+        document.body.classList.add("printing-oracle-record")
+    }
+
+    window.addEventListener("afterprint", clearTempleOraclePrintMode, { once: true })
+    window.print()
+    return record
+}
+
+function logTempleOracleRecord() {
+    let record = updateTempleOracleRecordDisplay()
+    window.TEMPLE_ORACLE_RECORD = record
+    window.TEMPLE_RECEIPT = record
+    console.log(record)
+    return record
+}
+
 function printTempleReceipt() {
-    let receipt = templeReceipt()
-    window.TEMPLE_RECEIPT = receipt
-    console.log(receipt)
-    return receipt
+    return logTempleOracleRecord()
 }
 
 function templeDebugEnabled() {
@@ -2161,6 +2618,10 @@ function templeDebugEnabled() {
 
 function registerTempleDebugGlobals() {
     window.templeDebug = templeDebug
+    window.templeOracleRecord = templeOracleRecord
+    window.logTempleOracleRecord = logTempleOracleRecord
+    window.copyTempleOracleRecord = copyTempleOracleRecord
+    window.printTempleOracleRecord = printTempleOracleRecord
     window.templeReceipt = templeReceipt
     window.printTempleReceipt = printTempleReceipt
 }

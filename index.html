@@ -252,6 +252,11 @@
                         <div class="overlaycon" id="o2con" role="document" tabindex="0">
                             <button class="overlay-close" type="button" aria-label="Close oracle" onclick="off(2)">×</button>
                             <h1 id="oracle-title">Alter of The Will</h1>
+                            <div class="oracle-controls" aria-label="Oracle record actions">
+                                <button class="oracle-action" type="button" onclick="printTempleOracleRecord()">Print Oracle Record</button>
+                                <button class="oracle-action" type="button" onclick="copyTempleOracleRecord()">Copy Oracle Record</button>
+                            </div>
+                            <p class="oracle-status" id="oracle-record-status" aria-live="polite"></p>
                             <p style="text-align: right;" id="timeStamp"></p>
                             <p style="text-align: right;" id="timeOracle"></p>
                             <div style="text-align: left">
@@ -264,6 +269,10 @@
 <!--                                 <br>
                                 <h1>Meathod from the Vijñāna Bhairava Tantra</h1>
                                 <p id="VBT"></p> -->
+                            </div>
+                            <div class="oracle-record-section" role="region" aria-labelledby="oracle-record-title">
+                                <h2 id="oracle-record-title">Oracle Record</h2>
+                                <pre class="oracle-record" id="oracle-record"></pre>
                             </div>
                         </div>
                     </div>
