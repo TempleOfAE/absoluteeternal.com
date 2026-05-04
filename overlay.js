@@ -1,5 +1,5 @@
 var overlays = [false,false,false,false,false,false,false]
-var overlayPreviousFocus = null
+var overlayPreviousFocus = []
 
 function overlayPanel(d) {
   return document.getElementById("o" + d)
@@ -24,11 +24,46 @@ function focusOverlayContent(d) {
 }
 
 function focusElement(element) {
+  if (!element || !element.focus) {
+    return
+  }
+
   try {
     element.focus({ preventScroll: true })
   } catch (error) {
     element.focus()
   }
+}
+
+function overlayFocusableElements(panel) {
+  return Array.from(panel.querySelectorAll([
+    "a[href]",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    "[tabindex]:not([tabindex='-1'])"
+  ].join(","))).filter(function(element) {
+    return element.offsetParent != null
+  })
+}
+
+function topOverlayIndex() {
+  for (let i = overlays.length - 1; i >= 0; i--) {
+    if (overlays[i]) {
+      return i
+    }
+  }
+
+  return -1
+}
+
+function updateOverlayAnimationPause() {
+  if (typeof window.setTempleAnimationPaused != "function") {
+    return
+  }
+
+  window.setTempleAnimationPaused(topOverlayIndex() >= 0)
 }
 
 function moveFocusBeforeHide(d, panel) {
@@ -38,8 +73,8 @@ function moveFocusBeforeHide(d, panel) {
   }
 
   let target = document.body
-  if (d == 1 && overlayPreviousFocus && overlayPreviousFocus.focus && !panel.contains(overlayPreviousFocus)) {
-    target = overlayPreviousFocus
+  if (overlayPreviousFocus[d] && overlayPreviousFocus[d].focus && !panel.contains(overlayPreviousFocus[d])) {
+    target = overlayPreviousFocus[d]
   }
 
   focusElement(target)
@@ -59,17 +94,14 @@ function on(d) {
     return
   }
 
-  if (d == 1) {
-    overlayPreviousFocus = document.activeElement
-  }
+  overlayPreviousFocus[d] = document.activeElement
 
   panel.style.display = "block";
   panel.removeAttribute("inert")
   panel.setAttribute("aria-hidden", "false")
-  if (d == 1) {
-    focusOverlayContent(d)
-  }
+  focusOverlayContent(d)
   overlays[d] = true
+  updateOverlayAnimationPause()
 }
 
 function off(d){
@@ -87,6 +119,7 @@ function off(d){
   panel.setAttribute("inert", "")
   panel.style.display = "none";
   overlays[d] = false
+  updateOverlayAnimationPause()
 }
 
 function overlayBackdropClick(event, d) {
@@ -96,14 +129,36 @@ function overlayBackdropClick(event, d) {
 }
 
 document.addEventListener("keydown", function(event) {
-  if (event.key != "Escape") {
+  let activeOverlayIndex = topOverlayIndex()
+
+  if (event.key == "Escape") {
+    if (activeOverlayIndex >= 0) {
+      off(activeOverlayIndex)
+      event.preventDefault()
+    }
     return
   }
 
-  for (let i = overlays.length - 1; i >= 0; i--) {
-    if (overlays[i]) {
-      off(i)
-      return
-    }
+  if (event.key != "Tab" || activeOverlayIndex < 0) {
+    return
+  }
+
+  let panel = overlayPanel(activeOverlayIndex)
+  let focusableElements = overlayFocusableElements(panel)
+  if (focusableElements.length == 0) {
+    event.preventDefault()
+    focusOverlayContent(activeOverlayIndex)
+    return
+  }
+
+  let first = focusableElements[0]
+  let last = focusableElements[focusableElements.length - 1]
+
+  if (event.shiftKey && document.activeElement == first) {
+    event.preventDefault()
+    focusElement(last)
+  } else if (!event.shiftKey && document.activeElement == last) {
+    event.preventDefault()
+    focusElement(first)
   }
 })

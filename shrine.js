@@ -179,6 +179,52 @@ var menuSelectTitle = ''
 var menuSelectDescription = ""
 
 var mobile = false
+var shrineViewportWidth = 0
+var shrineViewportHeight = 0
+var templeAnimationPaused = false
+
+function updateShrineImageSizes(force = false) {
+    if (!force && shrineViewportWidth == windowWidth && shrineViewportHeight == windowHeight) {
+        return
+    }
+
+    shrineViewportWidth = windowWidth
+    shrineViewportHeight = windowHeight
+
+    if (windowHeight < windowWidth) {
+        mother.width = windowHeight * motherSizeMod
+        mother.height = mother.width
+        jackal.width = mother.width * 2
+        jackal.height = mother.height
+    } else {
+        mother.height = windowHeight * motherSizeMod
+        mother.width = mother.height
+    }
+}
+
+function setTempleAnimationPaused(paused) {
+    templeAnimationPaused = paused
+
+    if (typeof noLoop != "function" || typeof loop != "function") {
+        return
+    }
+
+    if (templeAnimationPaused || document.hidden) {
+        noLoop()
+    } else {
+        loop()
+    }
+}
+
+if (typeof window != "undefined") {
+    window.setTempleAnimationPaused = setTempleAnimationPaused
+}
+
+if (typeof document != "undefined") {
+    document.addEventListener("visibilitychange", function() {
+        setTempleAnimationPaused(templeAnimationPaused)
+    })
+}
 
 // P5 main functions
 function preload() {
@@ -187,10 +233,7 @@ function preload() {
 }
 function setup() {
     //set image sizes
-    mother.width = windowHeight * motherSizeMod;
-    mother.height = mother.width
-    jackal.width = mother.width *2
-    jackal.height = mother.height
+    updateShrineImageSizes(true)
 
     //CANVAS SETTINGS
     let cnv = createCanvas(windowWidth, windowHeight);
@@ -216,7 +259,11 @@ function setup() {
     //INITIAL ORACLE
     timeStamp = Array.from(currentTime)
     oracleGenerator() // loads oracle system
-    setTimeout(printTempleReceipt, 250)
+    if (templeDebugEnabled()) {
+        setTimeout(function() {
+            enableTempleDebug(true)
+        }, 250)
+    }
 }
 function draw() {
     mobile = (windowWidth < windowHeight)
@@ -249,17 +296,7 @@ function draw() {
         userInterface = true
     }
 
-    if (windowHeight < windowWidth) {
-        mother.width = windowHeight*motherSizeMod;
-        mother.height = mother.width
-        jackal.width = mother.width *2
-        jackal.height = mother.height
-    } else {
-        mother.height = windowHeight *motherSizeMod;
-        mother.width = mother.height
-        // jackal.width = mother.width *2
-        // jackal.height = mother.height
-    }
+    updateShrineImageSizes()
 
     middle = createVector(window.width * .5, window.height * .5) // defines center of circle
 
@@ -321,10 +358,7 @@ function draw() {
     }
 }
 function windowResized() {
-    mother.width = windowHeight * motherSizeMod
-    mother.height = mother.width
-    jackal.width = mother.width *2
-    jackal.height = mother.height
+    updateShrineImageSizes(true)
     resizeCanvas(windowWidth, windowHeight);
     // menuBar(principles,(windowHeight*menuYMod))
 }
@@ -333,7 +367,10 @@ function windowResized() {
 function keyTyped() {
     // timeStamp = Array.from(time)
     if (keyCode == ENTER) {
-        if (timeOracleHover) {
+        if (changeHover) {
+            interpretation()
+            on(2)
+        } else if (timeOracleHover) {
             timeStamp = Array.from(currentTime)
             oracleGenerator("TIME ONLY")
         } else {
@@ -343,7 +380,10 @@ function keyTyped() {
     }
 }
 function mousePressed() {
-    if (timeOracleHover) {
+    if (changeHover) {
+        interpretation()
+        on(2)
+    } else if (timeOracleHover) {
         timeStamp = Array.from(currentTime)
     } else if (circleHover) {
         timeStamp = Array.from(currentTime)
@@ -1179,11 +1219,6 @@ function displays(c) {
         basicDisplay()
     }
 
-    if (changeHover) {
-        on(2)
-    } else {
-        off(2)
-    }
     pop()
 
     pop()
@@ -1936,9 +1971,38 @@ function printTempleReceipt() {
     return receipt
 }
 
-window.templeDebug = templeDebug
-window.templeReceipt = templeReceipt
-window.printTempleReceipt = printTempleReceipt
+function templeDebugEnabled() {
+    if (typeof window == "undefined") {
+        return false
+    }
+
+    let search = window.location && window.location.search ? window.location.search : ""
+    let hash = window.location && window.location.hash ? window.location.hash : ""
+    let params = new URLSearchParams(search)
+    return params.get("debug") == "1" || params.get("templeDebug") == "1" || hash == "#debug"
+}
+
+function registerTempleDebugGlobals() {
+    window.templeDebug = templeDebug
+    window.templeReceipt = templeReceipt
+    window.printTempleReceipt = printTempleReceipt
+}
+
+function enableTempleDebug(printReceipt = true) {
+    registerTempleDebugGlobals()
+    if (printReceipt) {
+        return printTempleReceipt()
+    }
+
+    return buildTempleDebug()
+}
+
+if (typeof window != "undefined") {
+    window.enableTempleDebug = enableTempleDebug
+    if (templeDebugEnabled()) {
+        registerTempleDebugGlobals()
+    }
+}
 
 // controlls myriad animation
 function myriad() {

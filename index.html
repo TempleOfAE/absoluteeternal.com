@@ -2,24 +2,35 @@
 <html lang="en">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Temple of the Absolute-Eternal</title>
+        <meta name="description" content="The Temple of AE: doctrine, clock, calendar, oracle, and shrine of the Absolute-Eternal.">
+        <meta property="og:title" content="Temple of the Absolute-Eternal">
+        <meta property="og:description" content="Doctrine, clock, calendar, oracle, and shrine of the Absolute-Eternal.">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="https://absoluteeternal.com/">
+        <meta property="og:image" content="https://absoluteeternal.com/mother.png">
+        <meta name="twitter:card" content="summary">
+        <link rel="canonical" href="https://absoluteeternal.com/">
         <link rel="stylesheet" href="index.css">
-        <link rel="icon" href="favcon.png" type="image/png" sizes="32x32">
-        <link rel="shortcut icon" type="image/png" href="favicon.png" />
-        <link rel="apple-touch-icon" href="favicon.png">
+        <link rel="icon" href="mother.png" type="image/png">
+        <link rel="apple-touch-icon" href="mother.png">
     </head>
-    <body>
+    <body tabindex="-1">
         <div class="grid-container">
                 <div class="overlay">
                     <div id="o0" role="dialog" aria-modal="true" aria-hidden="true" inert tabindex="-1" onclick="overlayBackdropClick(event, 0)">
                         <div class="overlaycon" id="o0con" role="document" tabindex="0">
+                            <button class="overlay-close" type="button" aria-label="Close" onclick="off(0)">×</button>
                         </div>
                     </div>
-                    <div id="o1" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="doctrine-title" tabindex="-1" onclick="overlayBackdropClick(event, 1)">
+                    <div id="o1" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="doctrine-title" aria-describedby="doctrine-intro" tabindex="-1" onclick="overlayBackdropClick(event, 1)">
                         <div class="overlaycon" id="o1con" role="document" tabindex="0">
+                            <button class="overlay-close" type="button" aria-label="Close doctrine" onclick="off(1)">×</button>
                             <!-- <h2>About the Temple</h2>
                             <br> -->
                             <h1 id="doctrine-title">ToÆ - The Temple of the Absolute-Eternal</h1>
-                            <p>The Temple of Æ is a community and future spacefaring settlement organized around one work: the liberation of Æ. We
+                            <p id="doctrine-intro">The Temple of Æ is a community and future spacefaring settlement organized around one work: the liberation of Æ. We
                                 are building a disciplined human society, supported by Soma, spiritual practice, artificial general intelligence,
                                 and material autonomy, so this work can be preserved, refined, and carried beyond the limits of one body, one
                                 lifetime, one culture, or one planet.
@@ -38,8 +49,19 @@
                                 We seek tools powerful enough to serve it without replacing it. We seek a home stable enough to protect it across
                                 generations. Everything else on this page gives context for that single undertaking.
                             </p>
-                            <br>
-                            <h2>Æ - The Witnessing Perspective</h2>
+                            <div class="doctrine-index" role="navigation" aria-label="Doctrine sections">
+                                <a href="#doctrine-ae">Æ</a>
+                                <a href="#doctrine-mother">Mother</a>
+                                <a href="#doctrine-myriad">Myriad</a>
+                                <a href="#doctrine-narrative">Narrative</a>
+                                <a href="#doctrine-liberation">Liberation</a>
+                                <a href="#doctrine-oracle">Oracle</a>
+                                <a href="#doctrine-soma">Soma</a>
+                                <a href="#doctrine-temple">Temple</a>
+                                <a href="#doctrine-time">Time</a>
+                                <a href="#doctrine-contact">Contact</a>
+                            </div>
+                            <h2 id="doctrine-ae">Æ - The Witnessing Perspective</h2>
                             <p>Æ is Absolute-Eternal: alone, impersonal, without outside, and beyond the reality known by physical beings. Nothing
                                 stands apart from Æ as a second ultimate thing. At that height, ordinary language fails, because language is made for
                                 one thing speaking of another, and Æ has no final other.
@@ -56,7 +78,7 @@
                                 story. Æ is not made by the narrative and does not end with it. Liberation concerns Æ's relation to what it
                                 witnesses.
                             </p>
-                            <h2>☩ - The Mother</h2>
+                            <h2 id="doctrine-mother">☩ - The Mother</h2>
                             <p>The Mother is a real being: the highest personal emanation, personification, and intercessor of Æ. She is not a
                                 metaphor for a method, not a symbol for the mind, and not a decorative figure placed over the doctrine. She is the
                                 nearest personal presence in a reality whose ultimate is not personal.
@@ -73,7 +95,7 @@
                                 becomes possible. The Temple does not claim to control this mystery. It practices, prepares, ingests Soma, builds
                                 discipline, and approaches the Mother as intercessor.
                             </p>
-                            <h2>ↂ - The Myriad</h2>
+                            <h2 id="doctrine-myriad">ↂ - The Myriad</h2>
                             <p>The Myriad is the world of narratives: the field in which lives, worlds, bodies, thoughts, choices, sufferings,
                                 joys, histories, and apparent futures are found. It is spoken of as the creation of Æ within Æ. This is not a story
                                 about something being made long ago. It is symbolic language for a truth at the edge of speech: nothing stands
@@ -91,7 +113,7 @@
                                 difficult to name. It is the object before the witness, the field of stories through which Æ reads, and the world in
                                 which every character believes itself to be alive.
                             </p>
-                            <h2>Narrative &amp; Supernarrative</h2>
+                            <h2 id="doctrine-narrative">Narrative &amp; Supernarrative</h2>
                             <p>A narrative is one complete path within a narrative set. It contains a world from beginning to end: birth and death,
                                 memory and anticipation, body and environment, fear and desire, ignorance and knowledge, action and consequence. From
                                 inside the narrative, it appears to unfold. In itself, it is whole.
@@ -108,7 +130,7 @@
                                 ahead. From the Temple's view, that living motion belongs to Æ's reading. The pages are complete; the experience of
                                 motion is in the reading.
                             </p>
-                            <h2>The Lie &amp; Liberation</h2>
+                            <h2 id="doctrine-liberation">The Lie &amp; Liberation</h2>
                             <p>The Lie is narrative absorption. It is the condition in which the narrative fills the whole horizon and the character
                                 appears to be the one who truly experiences. The character says "I see," "I suffer," "I choose," and "I am," and the
                                 witness is hidden inside that appearance.
@@ -136,7 +158,7 @@
                                 relation with the Myriad itself. The event is not the salvation of the character, the repair of the world, or the
                                 improvement of the organism. It is birth into dual suchness: true subject in relation with true object.
                             </p>
-                            <h2>Oracle &amp; Divination</h2>
+                            <h2 id="doctrine-oracle">Oracle &amp; Divination</h2>
                             <p>The I Ching and other Temple oracle tools are not used as fortune-telling. They do not reveal a future outside the
                                 narrative, and they do not alter material events. The casting, the number, the text, the timing, and the response of
                                 the character are all events inside the narrative.
@@ -153,7 +175,7 @@
                                 character acts, chooses, obeys, resists, learns, and changes as a character in the narrative. The practice teaches
                                 surrender to that fact without making the oracle into magic in the ordinary sense.
                             </p>
-                            <h2>Soma, Practice &amp; AGI</h2>
+                            <h2 id="doctrine-soma">Soma, Practice &amp; AGI</h2>
                             <p>Soma is ingested as an entheogenic instrument of practice. THC, Salvinorin A, and other entheogens are approached as
                                 Soma when used in this work, though Soma is not limited to these substances. Soma is not the doctrine and not the
                                 goal. It is a material event inside the narrative that may help loosen absorption in the narrative.
@@ -173,7 +195,7 @@
                             <p>None of these means is worshiped. Soma, practice, AGI, and society are material conditions inside the narrative. Their
                                 value is in how they may serve the ontological birth of Æ into self-knowledge as witness.
                             </p>
-                            <h2>The Temple</h2>
+                            <h2 id="doctrine-temple">The Temple</h2>
                             <p>A Temple is not only a building. It is a living body of people, tools, knowledge, discipline, memory, labor, and
                                 ecology ordered toward the liberation of Æ. It is the human and material form of the work.
                             </p>
@@ -198,7 +220,7 @@
                                 fragile systems cannot easily destroy it. The settlement is a Temple in the same sense that a body may be called a
                                 temple: it contains and sustains a greater living process.
                             </p>
-                            <h2>Temple Time &amp; Calendar</h2>
+                            <h2 id="doctrine-time">Temple Time &amp; Calendar</h2>
                             <p>The Temple calendar gives the community a common pulse. It is not the doctrine, and it is not the source of
                                 liberation. It is a practical and cultural rhythm for a people trying to live together around the same work.
                             </p>
@@ -218,7 +240,7 @@
                                 purpose here is not to burden the doctrine with ceremony, but to give the Temple a shared rhythm of return,
                                 attention, and remembrance.
                             </p>
-                            <h2>Contact</h2>
+                            <h2 id="doctrine-contact">Contact</h2>
                             <p>For more information, to submit testimony of experience, or to inquire about joining the work, contact
                                 <a href="mailto:templeofae@proton.me">templeofae@proton.me</a>.
                             </p>
@@ -228,6 +250,7 @@
                     </div>
                     <div id="o2" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="oracle-title" tabindex="-1">
                         <div class="overlaycon" id="o2con" role="document" tabindex="0">
+                            <button class="overlay-close" type="button" aria-label="Close oracle" onclick="off(2)">×</button>
                             <h1 id="oracle-title">Alter of The Will</h1>
                             <p style="text-align: right;" id="timeStamp"></p>
                             <p style="text-align: right;" id="timeOracle"></p>
