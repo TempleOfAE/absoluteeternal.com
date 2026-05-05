@@ -249,6 +249,9 @@ function setup() {
     cnv.attribute('aria-hidden', 'true')
     cnv.attribute('role', 'presentation')
     cnv.elt.tabIndex = -1
+    cnv.elt.style.touchAction = 'none'
+    cnv.elt.style.userSelect = 'none'
+    cnv.elt.style.webkitUserSelect = 'none'
 
     //STROKE SETTINGS
     strokeCap(SQUARE)
@@ -411,12 +414,16 @@ function keyTyped() {
         }
     }
 }
-function mousePressed() {
+function templePressInteraction() {
     if (templeOverlayActive()) {
-        return false
+        return true
     }
 
-    if (dateHover) {
+    UI()
+
+    if (titleHover) {
+        on(1)
+    } else if (dateHover) {
         openTempleCalendarOverlay()
     } else if (changeHover) {
         interpretation()
@@ -430,9 +437,13 @@ function mousePressed() {
         return false
     }
 
-    if (titleHover) {
-        on(1)
-    }
+    return false
+}
+function mousePressed() {
+    return templePressInteraction()
+}
+function touchStarted() {
+    return templePressInteraction()
 }
 function mouseheld() {
     if (!templeOverlayActive() && mouseIsPressed) {
@@ -441,10 +452,12 @@ function mouseheld() {
         return false
     }
 }
-function mouseReleased() {
+function templeReleaseInteraction() {
     if (templeOverlayActive()) {
-        return false
+        return true
     }
+
+    UI()
 
     if (timeOracleHover) {
         if (!overlays[2]) { //prevents new oracle if overlay 2 is active
@@ -457,6 +470,21 @@ function mouseReleased() {
         return false
     }
 
+    return false
+}
+function mouseReleased() {
+    return templeReleaseInteraction()
+}
+function touchEnded() {
+    return templeReleaseInteraction()
+}
+function touchMoved() {
+    if (templeOverlayActive()) {
+        return true
+    }
+
+    UI()
+    return false
 }
 
 function templeState(elapsed = Date.now() - templeEpoch) {
@@ -1361,9 +1389,6 @@ function UI(UIShow = false) {
         ],
         UIShow)    
 
-    if (titleHover && mouseIsPressed) {
-        on(1)
-    }
 }
 //displays oracle
 function displays(c) {
