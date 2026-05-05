@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict")
 
-const divisions = ["⚸", "☉", "♀"]
+const divisions = ["⚸", "☩", "♀"]
 
 const templeEpoch = Date.UTC(2012, 10, 14, 10, 21, 32, 641)
 const day = 86400000
@@ -159,7 +159,7 @@ assertClock("Portland 2026-05-04 10:41 PDT sample", portlandClock, {
   year: 14,
   ordinaryDay: 172,
   inAnnualApsisInterval: false,
-  divisionSymbol: "☉",
+  divisionSymbol: "☩",
   hour: 1,
   minute: 20,
   second: 48

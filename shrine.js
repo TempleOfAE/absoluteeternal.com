@@ -18,9 +18,9 @@ const arkInstructionCuneiform = [
     "𒍣𒂊𒊑 𒉆𒉿𒋾 𒆳𒈠 𒀀𒈾 𒅗𒁀 𒂊𒇷𒉿 𒌑𒊺𒇻",
 ]
 
-// night/sunrise, day, sunset/night
+// hidden/womb, Mother center, evening return
 const divisions = [
- '⚸', '☉', '♀'
+ '⚸', '☩', '♀'
 ]
 
 const eclipseEpoch = Date.UTC(2012, 10, 13, 22, 12, 55) // exact time of total eclyps UTC
