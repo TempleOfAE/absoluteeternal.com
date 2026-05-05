@@ -1647,7 +1647,7 @@ function displays(c) {
         text(stamp, mother.width / 2, timeOracleNameY)
     }
 
-    function timeOracleCompass(x, y, radius, directionIndex, label, marks) {
+    function timeOracleCompass(x, y, radius, directionIndex, label, marks, showPointer = true) {
         let normalizedDirection = templeTrigramClockDirection(directionIndex)
         let angle = -HALF_PI + (TWO_PI / 8) * normalizedDirection
         let pointerBase = radius * .18
@@ -1697,26 +1697,48 @@ function displays(c) {
             }
         })
 
-        stroke(0)
-        strokeWeight(radius * .2)
-        line(directionX * pointerBase, directionY * pointerBase, directionX * pointerTip, directionY * pointerTip)
-        stroke(255)
-        strokeWeight(radius * .09)
-        line(directionX * pointerBase, directionY * pointerBase, directionX * pointerTip, directionY * pointerTip)
-        noStroke()
-        fill(255)
-        triangle(
-            directionX * pointerTip,
-            directionY * pointerTip,
-            directionX * (pointerTip - pointerHeadLength) + tangentX * pointerHeadWidth,
-            directionY * (pointerTip - pointerHeadLength) + tangentY * pointerHeadWidth,
-            directionX * (pointerTip - pointerHeadLength) - tangentX * pointerHeadWidth,
-            directionY * (pointerTip - pointerHeadLength) - tangentY * pointerHeadWidth
-        )
+        if (showPointer) {
+            stroke(0)
+            strokeWeight(radius * .2)
+            line(directionX * pointerBase, directionY * pointerBase, directionX * pointerTip, directionY * pointerTip)
+            stroke(255)
+            strokeWeight(radius * .09)
+            line(directionX * pointerBase, directionY * pointerBase, directionX * pointerTip, directionY * pointerTip)
+            noStroke()
+            fill(255)
+            triangle(
+                directionX * pointerTip,
+                directionY * pointerTip,
+                directionX * (pointerTip - pointerHeadLength) + tangentX * pointerHeadWidth,
+                directionY * (pointerTip - pointerHeadLength) + tangentY * pointerHeadWidth,
+                directionX * (pointerTip - pointerHeadLength) - tangentX * pointerHeadWidth,
+                directionY * (pointerTip - pointerHeadLength) - tangentY * pointerHeadWidth
+            )
+        }
 
+        fill(255)
+        stroke(0)
+        strokeWeight(radius * .08)
         textSize(radius * .42)
-        text(label, 0, radius * 1.72)
+        text(label, 0, 0)
         pop()
+    }
+
+    function timeOracleModeTextSize(labels, maxSize, maxWidth) {
+        let size = maxSize
+        textSize(size)
+
+        while (labels.some(function(label) { return textWidth(label) > maxWidth }) && size > maxSize * .42) {
+            size *= .92
+            textSize(size)
+        }
+
+        return size
+    }
+
+    function timeOracleModeText(label, y, size) {
+        textSize(size)
+        text(label, mother.width / 2, y)
     }
 
     function timeOracleBreakdownDisplay() {
@@ -1733,8 +1755,19 @@ function displays(c) {
         let binaryY = timeOracleBreakdownY 
         let quaternaryY = binaryY + (timeOracleBreakdownSize * .5)
         let octalY = quaternaryY + (timeOracleBreakdownSize * .5)
+        let oracleStrokeW = (timeOracleCharacterBreakdownSize * 1.61803398875) / 11
+        let binaryLabelY = binaryY
+        let quaternaryLabelY = quaternaryY + (oracleStrokeW * .5)
+        let octalLabelY = octalY + (oracleStrokeW * .5)
+        let modeTextWidth = timeOracleBreakdownSize * 1.08
+        let modeTextSize = timeOracleModeTextSize(
+            binaryName.concat(quaternaryName, octalName),
+            timeOracleNameBreakdownSize,
+            modeTextWidth
+        )
 
         textAlign(CENTER, CENTER)
+        let showDecisionOutput = !(timeOracleHover && mouseheld())
 
         let directions = templeOracleDirectionCompasses(timeStamp[0])
         let compassRadius = mother.width * .038
@@ -1748,13 +1781,13 @@ function displays(c) {
             right: "R",
             bottom: "B",
             left: "L"
-        })
+        }, showDecisionOutput)
         timeOracleCompass(mother.width - compassX, mother.height * .315, compassRadius, directions.y, "Y", {
             top: "U",
             right: "F",
             bottom: "D",
             left: "B"
-        })
+        }, showDecisionOutput)
 
         for (let i = 0; i < 2; i++){
 
@@ -1766,12 +1799,11 @@ function displays(c) {
 
             printOracle(str(timeOracle[1][2]), timeOracleCharacterBreakdownSize, timeOracleCharacterBreakdownSize * 1.61803398875,  mother.width / 2 - timeOracleBreakdownSize + (timeOracleBreakdownSize * 2 * i), octalY, 3, 0)
 
-
-            textSize(timeOracleNameBreakdownSize)
-            text(binaryName[timeOracle[0][0]], mother.width / 2, binaryY)
-            text(quaternaryName[timeOracle[0][1]], mother.width / 2, quaternaryY)
-            text(octalName[timeOracle[0][2]], mother.width / 2, octalY)
         }
+
+        timeOracleModeText(binaryName[timeOracle[0][0]], binaryLabelY, modeTextSize)
+        timeOracleModeText(quaternaryName[timeOracle[0][1]], quaternaryLabelY, modeTextSize)
+        timeOracleModeText(octalName[timeOracle[0][2]], octalLabelY, modeTextSize)
 
         push()
         noStroke()
@@ -1779,17 +1811,19 @@ function displays(c) {
         textSize(timeOracleNameBreakdownSize * .62)
         text("CHOICE", mother.width / 2, mother.height * .742)
 
-        let choices = templeChoiceLadder(timeStamp[0])
-        let firstChoiceRow = choices.slice(0, 3).map(function(choice) {
-            return choice.optionCount + ":" + choice.choice
-        }).join("   ")
-        let secondChoiceRow = choices.slice(3).map(function(choice) {
-            return choice.optionCount + ":" + choice.choice
-        }).join("   ")
+        if (showDecisionOutput) {
+            let choices = templeChoiceLadder(timeStamp[0])
+            let firstChoiceRow = choices.slice(0, 3).map(function(choice) {
+                return choice.optionCount + ":" + choice.choice
+            }).join("   ")
+            let secondChoiceRow = choices.slice(3).map(function(choice) {
+                return choice.optionCount + ":" + choice.choice
+            }).join("   ")
 
-        fill(255)
-        text(firstChoiceRow, mother.width / 2, mother.height * .766)
-        text(secondChoiceRow, mother.width / 2, mother.height * .79)
+            fill(255)
+            text(firstChoiceRow, mother.width / 2, mother.height * .766)
+            text(secondChoiceRow, mother.width / 2, mother.height * .79)
+        }
         pop()
 
     pop()
@@ -2471,9 +2505,9 @@ function interpretation() {
     let directions = templeOracleDirectionCompasses(timeStamp[0])
     let intTimeStamp = templeDateDisplay(timeStamp) + " - " + templeClockDisplay(timeStamp) + " " + oracles[timeStamp[0]]
     let intTimeOracle =
-        "In matters of action: " + iching.binary[timeOracle[0][0]].judgement+ " ["+ iching.binary[timeOracle[0][0]].sign + "]<br>"
-        + "In matters of communication: " + iching.quaternary[timeOracle[0][1]].judgement + " ["+ iching.quaternary[timeOracle[0][1]].sign + "]<br>"
-        + "In matters of thought: Be like " + iching.octal[timeOracle[0][2]].judgement + " ["+ iching.octal[timeOracle[0][2]].sign + "]<br>"
+        "Action: " + iching.binary[timeOracle[0][0]].judgement+ " ["+ iching.binary[timeOracle[0][0]].sign + "]<br>"
+        + "Engagement: " + iching.quaternary[timeOracle[0][1]].judgement + " ["+ iching.quaternary[timeOracle[0][1]].sign + "]<br>"
+        + "Mind: " + iching.octal[timeOracle[0][2]].judgement + " ["+ iching.octal[timeOracle[0][2]].sign + "]<br>"
         + "X compass: " + directions.x + " " + octalName[directions.x] + " [" + octal[directions.x] + "] direction " + templeTrigramClockDirection(directions.x) + " in F/R/B/L frame<br>"
         + "Y compass: " + directions.y + " " + octalName[directions.y] + " [" + octal[directions.y] + "] direction " + templeTrigramClockDirection(directions.y) + " in U/F/D/B frame<br>"
 
@@ -2723,9 +2757,9 @@ function templeDebug() {
         console.log("Temple Time", debug.altarOfTheWill.dateDisplay + " - " + debug.altarOfTheWill.clockDisplay)
         console.log("Single Oracle", debug.altarOfTheWill.oracle.singleOracle)
         console.table({
-            deeds: debug.altarOfTheWill.oracle.deeds,
-            words: debug.altarOfTheWill.oracle.words,
-            bagua: debug.altarOfTheWill.oracle.bagua,
+            action: debug.altarOfTheWill.oracle.deeds,
+            engagement: debug.altarOfTheWill.oracle.words,
+            mind: debug.altarOfTheWill.oracle.bagua,
             x: debug.altarOfTheWill.oracle.coordinates.x,
             y: debug.altarOfTheWill.oracle.coordinates.y
         })
@@ -2812,9 +2846,9 @@ function templeOracleRecord() {
         item("Single Image", altar.singleOracle.image)
         item("X Compass", altar.coordinates.x.value + " " + altar.coordinates.x.sign + " " + altar.coordinates.x.name + " - direction " + altar.coordinates.x.clockDirection + " in " + altar.coordinates.x.frame + " frame")
         item("Y Compass", altar.coordinates.y.value + " " + altar.coordinates.y.sign + " " + altar.coordinates.y.name + " - direction " + altar.coordinates.y.clockDirection + " in " + altar.coordinates.y.frame + " frame")
-        item("Deeds", altar.deeds.sign + " " + altar.deeds.name + " - " + altar.deeds.interpretation)
-        item("Words", altar.words.sign + " " + altar.words.name + " - " + altar.words.interpretation)
-        item("Bagua", altar.bagua.sign + " " + altar.bagua.name + " - " + altar.bagua.interpretation)
+        item("Action", altar.deeds.sign + " " + altar.deeds.name + " - " + altar.deeds.interpretation)
+        item("Engagement", altar.words.sign + " " + altar.words.name + " - " + altar.words.interpretation)
+        item("Mind", altar.bagua.sign + " " + altar.bagua.name + " - " + altar.bagua.interpretation)
     } else {
         item("Single Oracle", "not initialized")
     }

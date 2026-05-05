@@ -4,7 +4,7 @@ const binary = [
 ]
 
 const binaryName = [
-    "DON'T", 'DO'
+    "NON-ACTION", "ACTION"
 ]
 
 // four symbols
@@ -14,8 +14,8 @@ const quaternary = [
 ]
 
 const quaternaryName = [
-    'YIELD', 'COOPERATE', 
-    'COMPETE', 'IMPOSE'
+    "PASSIVE-COOPERATION", "ACTIVE-COOPERATION",
+    "PASSIVE-RESISTANCE", "ACTIVE-RESISTANCE"
 ]
 
 // bagua
@@ -79,13 +79,13 @@ const iching = {
                 "bin": "0",
                 "sign": "⚋",
                 "name": "yin",
-                "judgement": "do not"
+                "judgement": "non-action"
             },
             {
                 "bin": "1",
                 "sign": "⚊",
                 "name": "yang",
-                "judgement": "do"
+                "judgement": "action"
             }
         ],
     "quaternary":
@@ -94,28 +94,28 @@ const iching = {
                 "bin": "00",
                 "sign": "⚏",
                 "name": "old yin",
-                "judgement": "yield"
+                "judgement": "passive-cooperation"
             
             },
             {
                 "bin": "01",
                 "sign": "⚎",
                 "name": "young yin",
-                "judgement": "cooperate"
+                "judgement": "active-cooperation"
             
             },
             {
                 "bin": "10",
                 "sign": "⚍",
                 "name": "young yang",
-                "judgement": "compete"
+                "judgement": "passive-resistance"
             
             },
             {
                 "bin": "11",
                 "sign": "⚌",
                 "name": "old yang",
-                "judgement": "impose"
+                "judgement": "active-resistance"
             
             }
         ],
@@ -1201,4 +1201,3 @@ const iching = {
             }
         ],
 }
-
