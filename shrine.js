@@ -47,6 +47,7 @@ const hr = division / 8
 const minute = hr / 64
 const second = minute / 64
 const moment = second / 64
+const submoment = moment / 64
 
 //temple month length structure
 //const months = [
@@ -132,7 +133,7 @@ for (let i = 0; i < timeUnitsMoment.length; i++) {
 }
 
 //time and timing variables
-var currentTime = [0, 0, 0, 0, 0,0,0,0] // time as human readable units
+var currentTime = [0, 0, 0, 0, 0,0,0,0,0,0] // time as human readable units
 var timeO = []
 var timeMoment = [0, 0, 0, 0, 0] // time as 0 - maxunit in moments
 var timeScale = [0, 0, 0, 0, 0] // time as 0 - 1
@@ -264,6 +265,235 @@ function templeChoiceLadder(index) {
             choice: templeChoiceForOptions(index, optionCount)
         }
     })
+}
+
+function templeColorHex(red, green, blue) {
+    return "#" + [red, green, blue].map(function(channel) {
+        return channel.toString(16).padStart(2, "0")
+    }).join("").toUpperCase()
+}
+
+const templeColorFamilyHues = [
+    0,
+    30,
+    55,
+    120,
+    180,
+    225,
+    270,
+    315
+]
+const templeMinimumDetectableSaturation = .18
+const templeIntegratedSaturationSteps = 8
+
+function templeHueDistance(startHue, endHue) {
+    return ((endHue - startHue) + 360) % 360
+}
+
+function templeHueBetween(startHue, endHue, fraction) {
+    return (startHue + (templeHueDistance(startHue, endHue) * fraction)) % 360
+}
+
+function templeNormalizeColorFamily(value) {
+    let normalizedValue = Math.floor(Number(value))
+
+    if (!Number.isFinite(normalizedValue)) {
+        normalizedValue = 0
+    }
+
+    return ((normalizedValue % templeColorFamilyHues.length) + templeColorFamilyHues.length) % templeColorFamilyHues.length
+}
+
+function templeColorFamilyBoundary(familyIndex, side) {
+    let normalizedFamily = templeNormalizeColorFamily(familyIndex)
+    let centerHue = templeColorFamilyHues[normalizedFamily]
+
+    if (side == "start") {
+        let previousHue = templeColorFamilyHues[templeNormalizeColorFamily(normalizedFamily - 1)]
+        return templeHueBetween(previousHue, centerHue, .5)
+    }
+
+    let nextHue = templeColorFamilyHues[templeNormalizeColorFamily(normalizedFamily + 1)]
+    return templeHueBetween(centerHue, nextHue, .5)
+}
+
+function templeColorFamilySlotHue(familyIndex, slot) {
+    let startHue = templeColorFamilyBoundary(familyIndex, "start")
+    let endHue = templeColorFamilyBoundary(familyIndex, "end")
+    let slotPosition = (Number(slot) + .5) / 8
+
+    return templeHueBetween(startHue, endHue, slotPosition)
+}
+
+function templePerceptualColor(hue, saturation = 1) {
+    let normalizedHue = ((Number(hue) % 360) + 360) % 360
+    saturation = Number(saturation)
+
+    if (!Number.isFinite(saturation)) {
+        saturation = 1
+    }
+
+    saturation = Math.min(1, Math.max(0, saturation))
+    let hueSector = normalizedHue / 60
+    let chroma = saturation
+    let secondChannel = chroma * (1 - Math.abs((hueSector % 2) - 1))
+    let match = .5 - (chroma * .5)
+    let red = 0
+    let green = 0
+    let blue = 0
+
+    if (hueSector < 1) {
+        red = chroma
+        green = secondChannel
+    } else if (hueSector < 2) {
+        red = secondChannel
+        green = chroma
+    } else if (hueSector < 3) {
+        green = chroma
+        blue = secondChannel
+    } else if (hueSector < 4) {
+        green = secondChannel
+        blue = chroma
+    } else if (hueSector < 5) {
+        red = secondChannel
+        blue = chroma
+    } else {
+        red = chroma
+        blue = secondChannel
+    }
+
+    red = Math.round((red + match) * 255)
+    green = Math.round((green + match) * 255)
+    blue = Math.round((blue + match) * 255)
+
+    return {
+        hue: normalizedHue,
+        red,
+        green,
+        blue,
+        hex: templeColorHex(red, green, blue)
+    }
+}
+
+function templeOracleColorFamilyFromValue(value) {
+    let normalizedValue = templeNormalizeColorFamily(value)
+    let familyColor = templePerceptualColor(templeColorFamilyHues[normalizedValue])
+    let binary = normalizedValue.toString(2)
+
+    return {
+        binary: "000".substr(binary.length) + binary,
+        hue: familyColor.hue,
+        red: familyColor.red,
+        green: familyColor.green,
+        blue: familyColor.blue,
+        hex: familyColor.hex
+    }
+}
+
+function templeOracleHue(index) {
+    let normalizedIndex = templeNormalizeOracleIndex(index)
+    let oracleBinary = normalizedIndex.toString(2)
+    oracleBinary = "000000".substr(oracleBinary.length) + oracleBinary
+    let familyIndex = Math.floor(normalizedIndex / 8)
+    let familySlot = normalizedIndex % 8
+    let oracleColor = templePerceptualColor(templeColorFamilySlotHue(familyIndex, familySlot))
+
+    return {
+        binary: oracleBinary,
+        hue: oracleColor.hue,
+        red: oracleColor.red,
+        green: oracleColor.green,
+        blue: oracleColor.blue,
+        hex: oracleColor.hex
+    }
+}
+
+function templeOracleColor(index) {
+    return templeOracleHue(index)
+}
+
+function templeOracleColorFamily(index) {
+    return templeOracleColorFamilyFromValue(Math.floor(templeNormalizeOracleIndex(index) / 8))
+}
+
+function templeOracleSaturation(index) {
+    let normalizedIndex = templeNormalizeOracleIndex(index)
+
+    return {
+        index: normalizedIndex,
+        value: templeMinimumDetectableSaturation
+            + ((normalizedIndex / 63) * (1 - templeMinimumDetectableSaturation))
+    }
+}
+
+function templeOracleAdjustedColor(index, saturationIndex) {
+    let oracleColor = templeOracleHue(index)
+    let oracleSaturation = templeOracleSaturation(saturationIndex)
+    let adjustedColor = templePerceptualColor(oracleColor.hue, oracleSaturation.value)
+
+    return {
+        binary: oracleColor.binary,
+        hue: oracleColor.hue,
+        saturationIndex: oracleSaturation.index,
+        red: adjustedColor.red,
+        green: adjustedColor.green,
+        blue: adjustedColor.blue,
+        hex: adjustedColor.hex
+    }
+}
+
+function templeOracleIntegratedColorColumn(index, steps = templeIntegratedSaturationSteps) {
+    let normalizedSteps = Math.max(1, Math.floor(Number(steps)) || 1)
+
+    return Array.from({ length: normalizedSteps }, function(item, step) {
+        let saturationIndex = normalizedSteps == 1
+            ? 63
+            : Math.round(step * 63 / (normalizedSteps - 1))
+        return templeOracleAdjustedColor(index, saturationIndex)
+    })
+}
+
+function templeOraclePolarity(index) {
+    let value = templeNormalizeOracleIndex(index) < 32 ? 0 : 255
+
+    return {
+        binary: value > 0 ? "1" : "0",
+        value,
+        red: value,
+        green: value,
+        blue: value,
+        hex: templeColorHex(value, value, value)
+    }
+}
+
+function templeOracleBlackWhite(index) {
+    return templeOraclePolarity(index)
+}
+
+function templeOracleValue(index) {
+    let value = Math.round(templeNormalizeOracleIndex(index) * 255 / 63)
+
+    return {
+        value,
+        red: value,
+        green: value,
+        blue: value,
+        hex: templeColorHex(value, value, value)
+    }
+}
+
+function templeOracleGrayscale(index) {
+    return templeOracleValue(index)
+}
+
+function templeRainbowColor(index, steps) {
+    let normalizedSteps = Math.max(1, Math.floor(Number(steps)) || 1)
+    let normalizedIndex = ((index % normalizedSteps) + normalizedSteps) % normalizedSteps
+    let scaledIndex = normalizedIndex / normalizedSteps * 64
+    let familyIndex = Math.min(7, Math.floor(scaledIndex / 8))
+    let familySlot = scaledIndex - (familyIndex * 8)
+
+    return templePerceptualColor(templeColorFamilySlotHue(familyIndex, familySlot))
 }
 
 // image size settings
@@ -640,6 +870,7 @@ function kali() {
     currentTime[6] = templeInAnnualApsisInterval ? 13 : templeDateDMY[1]
     currentTime[7] = templeDateDMY[2]
     currentTime[8] = state.ordinaryDayIndex
+    currentTime[9] = Math.floor((state.dayElapsed / submoment) % timeDiv[0])
 
     //digital clock generator
     timeO[1] = "00".substr(str(currentTime[3]).length) + str(currentTime[3]) // 0 - 7
@@ -1741,6 +1972,53 @@ function displays(c) {
         text(label, mother.width / 2, y)
     }
 
+    function timeOracleSelectionColorBar(x, y, barWidth, barHeight, selectedColor, heldColors, showDecisionOutput) {
+        push()
+        rectMode(CENTER)
+        noStroke()
+        fill(0)
+        rect(x, y, barWidth, barHeight)
+
+        if (showDecisionOutput) {
+            fill(selectedColor.red, selectedColor.green, selectedColor.blue)
+            rect(x, y, barWidth, barHeight)
+        } else {
+            let segments = heldColors.length
+            let segmentWidth = barWidth / segments
+            for (let i = 0; i < segments; i++) {
+                let segmentColor = heldColors[i]
+                if (Array.isArray(segmentColor)) {
+                    let rows = segmentColor.length
+                    let rowHeight = barHeight / rows
+                    for (let row = 0; row < rows; row++) {
+                        let rowColor = segmentColor[row]
+                        fill(rowColor.red, rowColor.green, rowColor.blue)
+                        rect(
+                            x - (barWidth * .5) + (segmentWidth * (i + .5)),
+                            y - (barHeight * .5) + (rowHeight * (row + .5)),
+                            segmentWidth + 1,
+                            rowHeight + 1
+                        )
+                    }
+                } else {
+                    fill(segmentColor.red, segmentColor.green, segmentColor.blue)
+                    rect(
+                        x - (barWidth * .5) + (segmentWidth * (i + .5)),
+                        y,
+                        segmentWidth + 1,
+                        barHeight
+                    )
+                }
+            }
+        }
+
+        noFill()
+        stroke(112)
+        strokeWeight(barHeight * .08)
+        rect(x, y, barWidth, barHeight)
+        pop()
+    }
+
     function timeOracleBreakdownDisplay() {
         push()
 
@@ -1768,6 +2046,12 @@ function displays(c) {
 
         textAlign(CENTER, CENTER)
         let showDecisionOutput = !(timeOracleHover && mouseheld())
+        let binaryOracleString = showDecisionOutput ? str(timeOracle[1][0]) : "0"
+        let quaternaryOracleString = showDecisionOutput ? str(timeOracle[1][1]) : "00"
+        let octalOracleString = showDecisionOutput ? str(timeOracle[1][2]) : "000"
+        let binaryModeLabel = showDecisionOutput ? binaryName[timeOracle[0][0]] : "ACTION"
+        let quaternaryModeLabel = showDecisionOutput ? quaternaryName[timeOracle[0][1]] : "INTERACTION"
+        let octalModeLabel = showDecisionOutput ? octalName[timeOracle[0][2]] : "MIND"
 
         let directions = templeOracleDirectionCompasses(timeStamp[0])
         let compassRadius = mother.width * .038
@@ -1791,39 +2075,112 @@ function displays(c) {
 
         for (let i = 0; i < 2; i++){
 
-            printOracle(str(timeOracle[1][0]), timeOracleCharacterBreakdownSize, timeOracleCharacterBreakdownSize * 1.61803398875,  mother.width / 2 - timeOracleBreakdownSize + (timeOracleBreakdownSize * 2 * i), binaryY, 1, 0)
+            printOracle(binaryOracleString, timeOracleCharacterBreakdownSize, timeOracleCharacterBreakdownSize * 1.61803398875,  mother.width / 2 - timeOracleBreakdownSize + (timeOracleBreakdownSize * 2 * i), binaryY, 1, 0)
 
 
-            printOracle(str(timeOracle[1][1]), timeOracleCharacterBreakdownSize, timeOracleCharacterBreakdownSize * 1.61803398875, mother.width / 2 - timeOracleBreakdownSize + (timeOracleBreakdownSize * 2 * i), quaternaryY, 2, 0)
+            printOracle(quaternaryOracleString, timeOracleCharacterBreakdownSize, timeOracleCharacterBreakdownSize * 1.61803398875, mother.width / 2 - timeOracleBreakdownSize + (timeOracleBreakdownSize * 2 * i), quaternaryY, 2, 0)
 
 
-            printOracle(str(timeOracle[1][2]), timeOracleCharacterBreakdownSize, timeOracleCharacterBreakdownSize * 1.61803398875,  mother.width / 2 - timeOracleBreakdownSize + (timeOracleBreakdownSize * 2 * i), octalY, 3, 0)
+            printOracle(octalOracleString, timeOracleCharacterBreakdownSize, timeOracleCharacterBreakdownSize * 1.61803398875,  mother.width / 2 - timeOracleBreakdownSize + (timeOracleBreakdownSize * 2 * i), octalY, 3, 0)
 
         }
 
-        timeOracleModeText(binaryName[timeOracle[0][0]], binaryLabelY, modeTextSize)
-        timeOracleModeText(quaternaryName[timeOracle[0][1]], quaternaryLabelY, modeTextSize)
-        timeOracleModeText(octalName[timeOracle[0][2]], octalLabelY, modeTextSize)
+        timeOracleModeText(binaryModeLabel, binaryLabelY, modeTextSize)
+        timeOracleModeText(quaternaryModeLabel, quaternaryLabelY, modeTextSize)
+        timeOracleModeText(octalModeLabel, octalLabelY, modeTextSize)
 
         push()
         noStroke()
         fill(255)
-        textSize(timeOracleNameBreakdownSize * .62)
-        text("CHOICE", mother.width / 2, mother.height * .742)
+        textSize(modeTextSize)
+        text("SELECTION", mother.width / 2, mother.height * .705)
+
+        let choices = templeChoiceLadder(timeStamp[0])
+        let selectionValue = function(choice) {
+            let value = showDecisionOutput ? choice.choice : 0
+            return String(value).padStart(String(choice.optionCount).length, "0")
+        }
+        let firstChoiceRow = choices.slice(0, 3).map(function(choice) {
+            return choice.optionCount + ":" + selectionValue(choice)
+        }).join("   ")
+        let secondChoiceRow = choices.slice(3).map(function(choice) {
+            return choice.optionCount + ":" + selectionValue(choice)
+        }).join("   ")
 
         if (showDecisionOutput) {
-            let choices = templeChoiceLadder(timeStamp[0])
-            let firstChoiceRow = choices.slice(0, 3).map(function(choice) {
-                return choice.optionCount + ":" + choice.choice
-            }).join("   ")
-            let secondChoiceRow = choices.slice(3).map(function(choice) {
-                return choice.optionCount + ":" + choice.choice
-            }).join("   ")
-
             fill(255)
-            text(firstChoiceRow, mother.width / 2, mother.height * .766)
-            text(secondChoiceRow, mother.width / 2, mother.height * .79)
         }
+        text(firstChoiceRow, mother.width / 2, mother.height * .726)
+        text(secondChoiceRow, mother.width / 2, mother.height * .749)
+        let polaritySpectrum = [
+            templeOraclePolarity(0),
+            templeOraclePolarity(32)
+        ]
+        let valueSpectrum = Array.from({ length: 64 }, function(item, index) {
+            return templeOracleValue(index)
+        })
+        let colorFamilySpectrum = Array.from({ length: 8 }, function(item, index) {
+            return templeOracleColorFamilyFromValue(index)
+        })
+        let hueSpectrum = Array.from({ length: 64 }, function(item, index) {
+            return templeOracleHue(index)
+        })
+        let saturationIndex = timeStamp[9]
+        let adjustedColorSpectrum = Array.from({ length: 64 }, function(item, index) {
+            return templeOracleIntegratedColorColumn(index)
+        })
+        let polarityColor = templeOraclePolarity(timeStamp[0])
+        let valueColor = templeOracleValue(timeStamp[0])
+        let colorFamily = templeOracleColorFamily(timeStamp[0])
+        let hueColor = templeOracleHue(timeStamp[0])
+        let adjustedColor = templeOracleAdjustedColor(timeStamp[0], saturationIndex)
+        let selectionBarWidth = timeOracleBreakdownSize * 1.08
+        let selectionBarHeight = mother.height * .0075
+        timeOracleSelectionColorBar(
+            mother.width / 2,
+            mother.height * .773,
+            selectionBarWidth,
+            selectionBarHeight,
+            polarityColor,
+            polaritySpectrum,
+            showDecisionOutput
+        )
+        timeOracleSelectionColorBar(
+            mother.width / 2,
+            mother.height * .786,
+            selectionBarWidth,
+            selectionBarHeight,
+            valueColor,
+            valueSpectrum,
+            showDecisionOutput
+        )
+        timeOracleSelectionColorBar(
+            mother.width / 2,
+            mother.height * .799,
+            selectionBarWidth,
+            selectionBarHeight,
+            colorFamily,
+            colorFamilySpectrum,
+            showDecisionOutput
+        )
+        timeOracleSelectionColorBar(
+            mother.width / 2,
+            mother.height * .812,
+            selectionBarWidth,
+            selectionBarHeight,
+            hueColor,
+            hueSpectrum,
+            showDecisionOutput
+        )
+        timeOracleSelectionColorBar(
+            mother.width / 2,
+            mother.height * .825,
+            selectionBarWidth,
+            selectionBarHeight,
+            adjustedColor,
+            adjustedColorSpectrum,
+            showDecisionOutput
+        )
         pop()
 
     pop()
@@ -2568,7 +2925,8 @@ function debugTempleClockFromElapsed(elapsed) {
         hour: Math.floor((state.dayElapsed / hr) % timeDiv[3]),
         minute: Math.floor((state.dayElapsed / minute) % timeDiv[2]),
         second: Math.floor((state.dayElapsed / second) % timeDiv[1]),
-        moment: Math.floor((state.dayElapsed / moment) % timeDiv[0])
+        moment: Math.floor((state.dayElapsed / moment) % timeDiv[0]),
+        submoment: Math.floor((state.dayElapsed / submoment) % timeDiv[0])
     }
 
     clock.divisionSymbol = divisions[clock.divisionIndex]
@@ -2756,6 +3114,14 @@ function templeDebug() {
     if (debug.altarOfTheWill.oracle) {
         console.log("Temple Time", debug.altarOfTheWill.dateDisplay + " - " + debug.altarOfTheWill.clockDisplay)
         console.log("Single Oracle", debug.altarOfTheWill.oracle.singleOracle)
+        let oracleColor = debugOracleColor(debug.altarOfTheWill.timeStamp[0], debug.altarOfTheWill.timeStamp[9])
+        console.table({
+            blackWhite: oracleColor.blackWhiteHex,
+            grayscale: oracleColor.grayscaleHex,
+            colorFamily: oracleColor.familyHex,
+            color: oracleColor.hex,
+            adjustedColor: oracleColor.adjustedHex
+        })
         console.table({
             action: debug.altarOfTheWill.oracle.deeds,
             engagement: debug.altarOfTheWill.oracle.words,
@@ -2770,6 +3136,32 @@ function templeDebug() {
     console.groupEnd()
 
     return debug
+}
+
+function debugOracleColor(index, saturationIndex) {
+    let polarity = templeOraclePolarity(index)
+    let value = templeOracleValue(index)
+    let oracleColor = templeOracleHue(index)
+    let colorFamily = templeOracleColorFamily(index)
+    let adjustedColor = templeOracleAdjustedColor(index, saturationIndex)
+
+    return {
+        blackWhiteHex: polarity.hex,
+        blackWhiteBinary: polarity.binary,
+        grayscaleHex: value.hex,
+        grayscaleValue: value.value,
+        hex: oracleColor.hex,
+        hue: oracleColor.hue,
+        rgb: oracleColor.red + ", " + oracleColor.green + ", " + oracleColor.blue,
+        binary: oracleColor.binary,
+        familyHex: colorFamily.hex,
+        familyHue: colorFamily.hue,
+        familyRgb: colorFamily.red + ", " + colorFamily.green + ", " + colorFamily.blue,
+        familyBinary: colorFamily.binary,
+        adjustedHex: adjustedColor.hex,
+        adjustedHue: adjustedColor.hue,
+        adjustedRgb: adjustedColor.red + ", " + adjustedColor.green + ", " + adjustedColor.blue
+    }
 }
 
 function templeOracleRecord() {
@@ -2846,6 +3238,12 @@ function templeOracleRecord() {
         item("Single Image", altar.singleOracle.image)
         item("X Compass", altar.coordinates.x.value + " " + altar.coordinates.x.sign + " " + altar.coordinates.x.name + " - direction " + altar.coordinates.x.clockDirection + " in " + altar.coordinates.x.frame + " frame")
         item("Y Compass", altar.coordinates.y.value + " " + altar.coordinates.y.sign + " " + altar.coordinates.y.name + " - direction " + altar.coordinates.y.clockDirection + " in " + altar.coordinates.y.frame + " frame")
+        let oracleColor = debugOracleColor(timeStamp[0], timeStamp[9])
+        item("Black/White", oracleColor.blackWhiteHex + " bit(" + oracleColor.blackWhiteBinary + ")")
+        item("Grayscale", oracleColor.grayscaleHex + " value(" + oracleColor.grayscaleValue + ")")
+        item("Color Family", oracleColor.familyHex + " hue(" + oracleColor.familyHue + ") rgb(" + oracleColor.familyRgb + ")")
+        item("Color", oracleColor.hex + " hue(" + oracleColor.hue + ") rgb(" + oracleColor.rgb + ")")
+        item("Adjusted Color", oracleColor.adjustedHex + " hue(" + oracleColor.adjustedHue + ") rgb(" + oracleColor.adjustedRgb + ")")
         item("Action", altar.deeds.sign + " " + altar.deeds.name + " - " + altar.deeds.interpretation)
         item("Engagement", altar.words.sign + " " + altar.words.name + " - " + altar.words.interpretation)
         item("Mind", altar.bagua.sign + " " + altar.bagua.name + " - " + altar.bagua.interpretation)
@@ -3115,6 +3513,18 @@ if (typeof module != "undefined" && module.exports) {
         templeAllLinesChangingText,
         templeChangingLinesHtml,
         templeIsAllLinesChanging,
+        templeOracleAdjustedColor,
+        templeOracleBlackWhite,
+        templeOracleColor,
+        templeOracleColorFamily,
+        templeOracleColorFamilyFromValue,
+        templeOracleGrayscale,
+        templeOracleHue,
+        templeOracleIntegratedColorColumn,
+        templeOraclePolarity,
+        templeOracleSaturation,
+        templeOracleValue,
+        templeRainbowColor,
         templeOracleDirectionCompasses,
         templeOracleClockAngle,
         templeTrigramClockDirection
