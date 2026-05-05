@@ -72,6 +72,51 @@ li {
   line-height: 1.6;
 }
 
+table {
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  width: 100%;
+}
+
+th,
+td {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  font-size: clamp(1rem, 1.8vw, 1.1rem);
+  line-height: 1.5;
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 640px) {
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td {
+    display: block;
+  }
+
+  tr {
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    margin: 0 0 1rem;
+  }
+
+  th,
+  td {
+    border-width: 0 0 1px;
+  }
+
+  tr > :last-child {
+    border-bottom-width: 0;
+  }
+}
+
 .lead {
   font-size: clamp(1.2rem, 2.4vw, 1.45rem);
 }
