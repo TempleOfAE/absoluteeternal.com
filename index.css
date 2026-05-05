@@ -6,6 +6,36 @@ body {
   /* background-color: blue; */
 }
 
+.visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.visually-hidden:focus,
+.visually-hidden:active {
+  background: black;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  clip: auto;
+  color: white;
+  font: inherit;
+  height: auto;
+  left: 1rem;
+  margin: 0;
+  overflow: visible;
+  padding: 0.5rem 0.75rem;
+  position: fixed;
+  top: 1rem;
+  width: auto;
+  z-index: 20;
+}
+
 #AE {
   /* text-align: center; */
   color: white;
@@ -151,6 +181,12 @@ body {
 
 .doctrine-index a {
   font-size: 0.95rem;
+}
+
+.doctrine-subtitle {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: -0.5rem 0 1.25rem;
 }
 
 .overlay figure {

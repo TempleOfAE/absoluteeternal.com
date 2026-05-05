@@ -43,6 +43,7 @@
         </script>
     </head>
     <body tabindex="-1">
+        <button class="visually-hidden shrine-access-trigger" type="button" aria-controls="o1" aria-haspopup="dialog" onclick="on(1)">Open ToÆ explanation</button>
         <div class="grid-container">
                 <div class="overlay">
                     <div id="o0" role="dialog" aria-modal="true" aria-hidden="true" inert tabindex="-1" onclick="overlayBackdropClick(event, 0)">
@@ -50,12 +51,13 @@
                             <button class="overlay-close" type="button" aria-label="Close" onclick="off(0)">×</button>
                         </div>
                     </div>
-                    <div id="o1" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="doctrine-title" aria-describedby="doctrine-intro" tabindex="-1" onclick="overlayBackdropClick(event, 1)">
+                    <div id="o1" role="dialog" aria-modal="true" aria-hidden="true" inert aria-labelledby="doctrine-title" aria-describedby="doctrine-subtitle doctrine-intro" tabindex="-1" onclick="overlayBackdropClick(event, 1)">
                         <div class="overlaycon" id="o1con" role="document" tabindex="0">
                             <button class="overlay-close" type="button" aria-label="Close doctrine" onclick="off(1)">×</button>
                             <!-- <h2>About the Temple</h2>
                             <br> -->
-                            <h1 id="doctrine-title">ToÆ - The Temple of the Absolute-Eternal</h1>
+                            <h1 id="doctrine-title">ToÆ</h1>
+                            <p class="doctrine-subtitle" id="doctrine-subtitle">The Temple of the Absolute-Eternal</p>
                             <p id="doctrine-intro">The Temple of Æ is a community and future spacefaring settlement organized around two inseparable tasks: the
                                 liberation of Æ and the preservation of the Terran ecological being beyond Earth-bound dependence. By Terran
                                 ecological being, we do not mean the planet as property or idol, nor merely literal seeds, but the inheritable

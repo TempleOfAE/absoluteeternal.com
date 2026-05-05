@@ -333,19 +333,27 @@ function draw() {
     push()
 
     textStyle(NORMAL)
-    if (titleHover) {
-        textStyle(BOLD)
-    }
-
-    fill(255)
     textAlign(CENTER, CENTER)
     textSize(mother.width * .1)
 
     noStroke()
 
+    if (titleHover) {
+        fill(255)
+        drawingContext.shadowColor = 'rgba(255, 255, 255, 0.45)'
+        drawingContext.shadowBlur = mother.width * .018
+    } else {
+        fill(230)
+        drawingContext.shadowColor = 'transparent'
+        drawingContext.shadowBlur = 0
+    }
+
     text('ToÆ',
     mother.width * .5, -mother.height * .1333)
 
+    drawingContext.shadowColor = 'transparent'
+    drawingContext.shadowBlur = 0
+    fill(255)
     textSize(mother.width * .022)
 
     text("EST. 13 NOV 2012 CE IN HONOR OF " + motherNames[Math.floor(map(currentTime[1], 0, 64, 0, motherNames.length))],    
