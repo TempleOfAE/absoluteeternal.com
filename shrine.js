@@ -165,6 +165,45 @@ var squareWidth
 
 var consoleDisplay = []
 
+function templeIsAllLinesChanging(lines) {
+    if (!Array.isArray(lines) || lines.length != 6) {
+        return false
+    }
+
+    return lines.every(function(line, index) {
+        return line == index + 1
+    })
+}
+
+function templeAllLinesChangingText(primaryGua, lines) {
+    if (!templeIsAllLinesChanging(lines) || !primaryGua || !primaryGua.changes || primaryGua.changes.length < 7) {
+        return ""
+    }
+
+    return primaryGua.changes[6]
+}
+
+function templeChangingLinesHtml(primaryGua, lines) {
+    if (!primaryGua || !primaryGua.changes || !Array.isArray(lines)) {
+        return ""
+    }
+
+    let changingLinesList = ""
+    let allLinesChangingText = templeAllLinesChangingText(primaryGua, lines)
+
+    if (allLinesChangingText) {
+        changingLinesList += "<p>All lines changing: " + String(allLinesChangingText) + "</p>"
+    }
+
+    for (let item of lines) {
+        changingLinesList += "<p>"
+        changingLinesList += "Change in line " + item + " means: " + String(primaryGua.changes[item - 1])
+        changingLinesList += "</p>"
+    }
+
+    return changingLinesList
+}
+
 // image size settings
 motherSizeMod = .666; // controlls size of shrine
 jackalSizeMod = .2; // controlls size of shrine
@@ -2253,7 +2292,9 @@ function oracleGenerator(option = false) {
 }
 function interpretation() {
     let oracle = sequence[oracleD[0]]
-    let changingLinesList = ""
+    let primaryGua = iching.gua[oracleD[0]]
+    let changingLinesList = templeChangingLinesHtml(primaryGua, changingLines)
+    let allLinesChangingText = templeAllLinesChangingText(primaryGua, changingLines)
     let intTimeStamp = templeDateDisplay(timeStamp) + " - " + templeClockDisplay(timeStamp) + " " + oracles[timeStamp[0]]
     let intTimeOracle =
         "In matters of action: " + iching.binary[timeOracle[0][0]].judgement+ " ["+ iching.binary[timeOracle[0][0]].sign + "]<br>"
@@ -2261,11 +2302,6 @@ function interpretation() {
         + "In matters of thought: Be like " + iching.octal[timeOracle[0][2]].judgement + " ["+ iching.octal[timeOracle[0][2]].sign + "]<br>"
 
     // let tantra = Math.floor(Math.random() * VBT112.length)
-    for (item of changingLines) {
-        changingLinesList += "<p>"
-        changingLinesList += "Change in line "+item+" means: "+str(iching.gua[oracleD[0]].changes[item-1])
-        changingLinesList+="</p>"
-    }
 
     let intTitle
     if (oracleD[0] != oracleD[1]) {
@@ -2286,7 +2322,7 @@ function interpretation() {
         // document.getElementById("ifate").innerHTML = "<a href=\"https://www.ifate.com/iching-meanings.html\"target=\"_blank\">interpretation by ifate.com</a>"
         // document.getElementById("divinationcom").innerHTML = "<a href=\"https://divination.com/iching/lookup/" + sequence[oracleD[0]] + "-2/\"" + "target=\"_blank\">interpretation by divination.com</a>"
     } else {
-        document.getElementById("isChanging").innerHTML = "Changing Lines"
+        document.getElementById("isChanging").innerHTML = allLinesChangingText ? "All Lines Changing" : "Changing Lines"
         document.getElementById("images").innerHTML = "<tr><th style=\"width: 50%;\">Symbolic Interpretation: "+sequence[oracleD[0]] + "[" + oracles[oracleD[0]]+ "] \"" +names[oracleD[0]]+ "\"</th><th style=\"width: 50%;\">Symbolic Interpretation: "+sequence[oracleD[1]] +"["+ oracles[oracleD[1]]+ "] "+ "\"" +names[oracleD[1]]+"\"</th></tr><tr><td>" + iching.gua[oracleD[0]].image + "</td><td>" + iching.gua[oracleD[1]].image + "</td></tr>"
         document.getElementById("intChangingLines").innerHTML = changingLinesList
         // document.getElementById("ifate").innerHTML = "<a href=\"https://www.ifate.com/i-ching-changes/iching-hexagram-" + sequence[oracleD[0]] + "-changing-to-" + sequence[oracleD[1]] + ".html\"target=\"_blank\">interpretation by ifate.com</a>"
@@ -2403,6 +2439,7 @@ function buildTempleDebug() {
     let changingOracle = debugHexagram(oracleD[1])
     let altarOracle = debugAltarOracle(timeStamp[0])
     let primaryGua = iching.gua[oracleD[0]]
+    let allLinesChangingText = templeAllLinesChangingText(primaryGua, changingLines)
     let debug = {
         civil: {
             localTime: now.toLocaleString(),
@@ -2421,6 +2458,7 @@ function buildTempleDebug() {
         iChingPair: {
             primary: primaryOracle,
             changing: changingOracle,
+            allLinesChanging: allLinesChangingText ? debugCleanText(allLinesChangingText) : "",
             changingLines: changingLines.map(function(line) {
                 return {
                     line,
@@ -2476,6 +2514,9 @@ function templeDebug() {
     console.group("I Ching Pair")
     console.log("Primary", debug.iChingPair.primary)
     console.log("Changing", debug.iChingPair.changing)
+    if (debug.iChingPair.allLinesChanging) {
+        console.log("All Lines Changing", debug.iChingPair.allLinesChanging)
+    }
     console.table(debug.iChingPair.changingLines)
     console.log("Raw", debug.iChingPair.raw)
     console.groupEnd()
@@ -2549,6 +2590,9 @@ function templeOracleRecord() {
         item("Changing Image", changing.image)
     }
     if (debug.iChingPair.changingLines.length > 0) {
+        if (debug.iChingPair.allLinesChanging) {
+            item("All Lines Changing", debug.iChingPair.allLinesChanging)
+        }
         lines.push("Changing Lines:")
         debug.iChingPair.changingLines.forEach(function(change) {
             lines.push("  Line " + change.line + ": " + change.interpretation)
@@ -2827,6 +2871,14 @@ function drawArkInstructionCuneiform(x, y, horizontalAlign) {
         text(arkInstructionCuneiform[i], x, y + (i - 1) * scriptLeading)
     }
     pop()
+}
+
+if (typeof module != "undefined" && module.exports) {
+    module.exports = {
+        templeAllLinesChangingText,
+        templeChangingLinesHtml,
+        templeIsAllLinesChanging
+    }
 }
 
 function emination(count) {
