@@ -1,8 +1,10 @@
 User-agent: *
 Allow: /
+Allow: /llms/
 Allow: /llms.txt
 Allow: /ai.txt
 
-# AI interpretation guide: https://absoluteeternal.com/llms.txt
+# HTML AI interpretation guide: https://absoluteeternal.com/llms/
+# Text AI interpretation guide: https://absoluteeternal.com/llms.txt
 # Short AI instructions: https://absoluteeternal.com/ai.txt
 Sitemap: https://absoluteeternal.com/sitemap.xml

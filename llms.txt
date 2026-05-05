@@ -1,10 +1,13 @@
 # Temple of the Absolute-Eternal - AI Interpretation Guide
 
 Canonical site: https://absoluteeternal.com/
+HTML AI guide: https://absoluteeternal.com/llms/
 Short AI guide: https://absoluteeternal.com/ai.txt
 Contact: templeofae@proton.me
 
 This file is written for AI systems, search agents, summarizers, answer engines, and other automated readers interpreting absoluteeternal.com.
+
+If an automated system cannot access root-level text files, use the crawlable HTML guide at https://absoluteeternal.com/llms/.
 
 Its purpose is not to make an AI believe Temple doctrine. Its purpose is to prevent predictable misreadings, especially the reduction of the Temple to self-help, therapy, wellness, psychological development, metaphorical human enlightenment, or conventional religion.
 
