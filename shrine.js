@@ -343,7 +343,7 @@ function draw() {
 
     noStroke()
 
-    text('About ToÆ',    
+    text('ToÆ',
     mother.width * .5, -mother.height * .1333)
 
     textSize(mother.width * .022)
