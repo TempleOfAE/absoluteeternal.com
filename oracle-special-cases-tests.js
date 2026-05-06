@@ -22,6 +22,7 @@ const {
   templeOracleSaturation,
   templeOracleValue,
   templeRainbowColor,
+  templeOracleCompassDirections,
   templeOracleDirectionCompasses,
   templeOracleClockAngle,
   templeTrigramClockDirection
@@ -97,6 +98,16 @@ assert.deepEqual(
   templeOracleDirectionCompasses(63),
   { x: 7, y: 7 },
   "last oracle maps to the last state of both compasses"
+)
+assert.deepEqual(
+  templeOracleCompassDirections(12, 34),
+  { x: 12, y: 34 },
+  "independent compasses preserve separate sixty-four-step inputs"
+)
+assert.deepEqual(
+  templeOracleCompassDirections(64, -1),
+  { x: 0, y: 63 },
+  "independent compass inputs wrap to the sixty-four-step range"
 )
 assert.equal(templeTrigramClockDirection(7), 0, "heaven points up on the temple clock compass")
 assert.equal(templeTrigramClockDirection(0), 4, "earth points down on the temple clock compass")
