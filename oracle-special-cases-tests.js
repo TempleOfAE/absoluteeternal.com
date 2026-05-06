@@ -16,6 +16,7 @@ const {
   templeOracleColorFamilyFromValue,
   templeOracleGrayscale,
   templeOracleHue,
+  templeOracleHueSpectrumColor,
   templeOracleIntegratedColorColumn,
   templeOraclePolarity,
   templeOracleSaturation,
@@ -126,18 +127,34 @@ assert.deepEqual(
 
 assert.deepEqual(
   templeOracleColor(0),
-  { binary: "000000", hue: 339.84375, red: 255, green: 0, blue: 86, hex: "#FF0056" },
+  { binary: "000000", hue: 339.29999999999995, red: 255, green: 0, blue: 88, hex: "#FF0058" },
   "first oracle maps to the first perceptual hue"
 )
 assert.deepEqual(
   templeOracleColor(63),
-  { binary: "111111", hue: 334.6875, red: 255, green: 0, blue: 108, hex: "#FF006C" },
+  { binary: "111111", hue: 335.70000000000005, red: 255, green: 0, blue: 103, hex: "#FF0067" },
   "last oracle wraps near the first perceptual hue"
 )
 assert.deepEqual(
   templeOracleColor(39),
-  { binary: "100111", hue: 199.21875, red: 0, green: 173, blue: 255, hex: "#00ADFF" },
+  { binary: "100111", hue: 200.70000000000005, red: 0, green: 167, blue: 255, hex: "#00A7FF" },
   "six oracle bits map to one of sixty-four perceptual hues"
+)
+assert.deepEqual(
+  Array.from({ length: 8 }, function(item, index) {
+    return templeOracleColor(index).hue
+  }),
+  [
+    339.29999999999995,
+    345.6,
+    351.9,
+    358.20000000000005,
+    1.1999999999999886,
+    5.399999999999977,
+    9.600000000000023,
+    13.800000000000011
+  ],
+  "each color family gives four hue choices below and four above its center"
 )
 assert.deepEqual(
   templeOracleHue(39),
@@ -241,10 +258,19 @@ assert.deepEqual(
 )
 assert.deepEqual(
   [0, 16, 32, 48].map(function(index) {
+    return templeOracleHueSpectrumColor(index, 64).hex
+  }),
+  ["#FF0058", "#FFB900", "#00FF8A", "#2800FF"],
+  "held RGB color bar renders the exact selectable hue swatches"
+)
+assert.deepEqual(
+  [0, 16, 32, 48].map(function(index) {
     return templeRainbowColor(index, 64).hex
   }),
-  ["#FF0056", "#FFC100", "#00FF8D", "#2C00FF"],
-  "held RGB color bar renders a tuned fully saturated rainbow spectrum"
+  [0, 16, 32, 48].map(function(index) {
+    return templeOracleHueSpectrumColor(index, 64).hex
+  }),
+  "legacy rainbow helper follows the exact selector swatches"
 )
 assert.deepEqual(
   templeOracleSaturation(0),
@@ -258,17 +284,17 @@ assert.deepEqual(
 )
 assert.deepEqual(
   templeOracleAdjustedColor(39, 0),
-  { binary: "100111", hue: 199.21875, saturationIndex: 0, red: 105, green: 136, blue: 150, hex: "#698896" },
+  { binary: "100111", hue: 200.70000000000005, saturationIndex: 0, red: 105, green: 135, blue: 150, hex: "#698796" },
   "adjusted color remains visibly chromatic at minimum saturation"
 )
 assert.deepEqual(
   templeOracleAdjustedColor(39, 31),
-  { binary: "100111", hue: 199.21875, saturationIndex: 31, red: 53, green: 154, blue: 202, hex: "#359ACA" },
+  { binary: "100111", hue: 200.70000000000005, saturationIndex: 31, red: 53, green: 151, blue: 202, hex: "#3597CA" },
   "adjusted color uses the next-depth saturation level"
 )
 assert.deepEqual(
   templeOracleAdjustedColor(39, 63),
-  { binary: "100111", hue: 199.21875, saturationIndex: 63, red: 0, green: 173, blue: 255, hex: "#00ADFF" },
+  { binary: "100111", hue: 200.70000000000005, saturationIndex: 63, red: 0, green: 167, blue: 255, hex: "#00A7FF" },
   "adjusted color matches the detailed hue at full saturation"
 )
 assert.deepEqual(
@@ -276,14 +302,14 @@ assert.deepEqual(
     return color.hex
   }),
   [
-    "#698896",
-    "#5A8DA5",
-    "#4B92B4",
-    "#3C98C3",
-    "#2D9DD2",
-    "#1EA3E1",
-    "#0FA8F0",
-    "#00ADFF"
+    "#698796",
+    "#5A8BA5",
+    "#4B90B4",
+    "#3C95C3",
+    "#2D99D2",
+    "#1E9EE1",
+    "#0FA2F0",
+    "#00A7FF"
   ],
   "integrated color column statically combines hue with saturation range"
 )

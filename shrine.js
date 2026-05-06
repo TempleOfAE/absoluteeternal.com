@@ -285,6 +285,7 @@ const templeColorFamilyHues = [
 ]
 const templeMinimumDetectableSaturation = .18
 const templeIntegratedSaturationSteps = 8
+const templeColorFamilyHueInset = .08
 
 function templeHueDistance(startHue, endHue) {
     return ((endHue - startHue) + 360) % 360
@@ -318,6 +319,28 @@ function templeColorFamilyBoundary(familyIndex, side) {
 }
 
 function templeColorFamilySlotHue(familyIndex, slot) {
+    let centerHue = templeColorFamilyHues[templeNormalizeColorFamily(familyIndex)]
+    let normalizedSlot = Math.max(0, Math.min(7, Math.floor(Number(slot))))
+
+    if (!Number.isFinite(normalizedSlot)) {
+        normalizedSlot = 0
+    }
+
+    function sidePosition(sideSlot) {
+        return templeColorFamilyHueInset
+            + ((sideSlot / 3) * (1 - (templeColorFamilyHueInset * 2)))
+    }
+
+    if (normalizedSlot < 4) {
+        let startHue = templeColorFamilyBoundary(familyIndex, "start")
+        return templeHueBetween(startHue, centerHue, sidePosition(normalizedSlot))
+    }
+
+    let endHue = templeColorFamilyBoundary(familyIndex, "end")
+    return templeHueBetween(centerHue, endHue, sidePosition(normalizedSlot - 4))
+}
+
+function templeColorFamilySpectrumHue(familyIndex, slot) {
     let startHue = templeColorFamilyBoundary(familyIndex, "start")
     let endHue = templeColorFamilyBoundary(familyIndex, "end")
     let slotPosition = (Number(slot) + .5) / 8
@@ -486,14 +509,16 @@ function templeOracleGrayscale(index) {
     return templeOracleValue(index)
 }
 
-function templeRainbowColor(index, steps) {
+function templeOracleHueSpectrumColor(index, steps) {
     let normalizedSteps = Math.max(1, Math.floor(Number(steps)) || 1)
     let normalizedIndex = ((index % normalizedSteps) + normalizedSteps) % normalizedSteps
-    let scaledIndex = normalizedIndex / normalizedSteps * 64
-    let familyIndex = Math.min(7, Math.floor(scaledIndex / 8))
-    let familySlot = scaledIndex - (familyIndex * 8)
+    let selectorIndex = Math.floor(normalizedIndex / normalizedSteps * 64)
 
-    return templePerceptualColor(templeColorFamilySlotHue(familyIndex, familySlot))
+    return templeOracleHue(selectorIndex)
+}
+
+function templeRainbowColor(index, steps) {
+    return templeOracleHueSpectrumColor(index, steps)
 }
 
 // image size settings
@@ -3520,6 +3545,7 @@ if (typeof module != "undefined" && module.exports) {
         templeOracleColorFamilyFromValue,
         templeOracleGrayscale,
         templeOracleHue,
+        templeOracleHueSpectrumColor,
         templeOracleIntegratedColorColumn,
         templeOraclePolarity,
         templeOracleSaturation,
