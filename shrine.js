@@ -912,6 +912,7 @@ function templePressInteraction() {
         return true
     }
 
+    templeRequestFieldCompass()
     UI()
 
     if (titleHover) {
