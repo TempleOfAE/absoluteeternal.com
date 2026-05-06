@@ -107,7 +107,7 @@ function initializeTempleEarthZone() {
     templeRequestLocationForCalendarAndCompass()
 }
 
-function templeLocationNotice(message, autoDismiss = false) {
+function templeLocationNotice(message, autoDismiss = false, showLocationButton = false) {
     if (typeof document == "undefined" || !document.body) {
         return
     }
@@ -123,20 +123,52 @@ function templeLocationNotice(message, autoDismiss = false) {
         let text = document.createElement("p")
         text.id = "temple-location-notice-text"
 
+        let actions = document.createElement("div")
+        actions.className = "temple-location-actions"
+
+        let locationRequest = document.createElement("button")
+        locationRequest.id = "temple-location-request"
+        locationRequest.type = "button"
+        locationRequest.textContent = "ALLOW LOCATION"
+        locationRequest.addEventListener("click", function() {
+            templeRequestLocationForCalendarAndCompass(true)
+        })
+
+        let compassRequest = document.createElement("button")
+        compassRequest.id = "temple-compass-request"
+        compassRequest.type = "button"
+        compassRequest.textContent = "ALLOW COMPASS"
+        compassRequest.addEventListener("click", function() {
+            templeRequestFieldCompass()
+        })
+
         let close = document.createElement("button")
         close.type = "button"
         close.setAttribute("aria-label", "Dismiss location notice")
         close.textContent = "×"
         close.addEventListener("click", templeDismissLocationNotice)
 
+        actions.appendChild(locationRequest)
+        actions.appendChild(compassRequest)
+        actions.appendChild(close)
         notice.appendChild(text)
-        notice.appendChild(close)
+        notice.appendChild(actions)
         document.body.appendChild(notice)
     }
 
     let noticeText = document.getElementById("temple-location-notice-text")
     if (noticeText) {
         noticeText.textContent = message
+    }
+
+    let requestButton = document.getElementById("temple-location-request")
+    if (requestButton) {
+        requestButton.hidden = !showLocationButton
+    }
+
+    let compassButton = document.getElementById("temple-compass-request")
+    if (compassButton) {
+        compassButton.hidden = !showLocationButton
     }
 
     notice.hidden = false
@@ -163,13 +195,13 @@ function templeDismissLocationNotice() {
     }
 }
 
-function templeRequestLocationForCalendarAndCompass() {
-    if (templeLocationPermissionRequested) {
+function templeRequestLocationForCalendarAndCompass(force = false) {
+    if (templeLocationPermissionRequested && !force) {
         return
     }
 
     templeLocationPermissionRequested = true
-    templeLocationNotice("Requesting location access for the Temple calendar and compass.")
+    templeLocationNotice("Location sets the Temple calendar zone. Motion sensor access orients the compass. If the browser does not ask automatically, use the buttons here.", false, true)
 
     if (typeof navigator == "undefined" || !navigator.geolocation) {
         templeLocationNotice("Location access is unavailable. Using the civil time-zone estimate for the Temple calendar and compass.", true)
@@ -179,11 +211,12 @@ function templeRequestLocationForCalendarAndCompass() {
     navigator.geolocation.getCurrentPosition(
         function(position) {
             setTempleEarthZone(templeZoneFromLongitude(position.coords.longitude), "LOCATION")
-            templeLocationNotice("Location access set the Temple calendar zone for the calendar and compass.", true)
+            templeLocationNotice("Location access set the Temple calendar zone. Motion sensor access may still be needed for compass orientation.", true)
         },
         function() {
             setTempleEarthZone(templeZoneFromCivilTimezone(), "TIMEZONE")
-            templeLocationNotice("Location access was not granted. Using the civil time-zone estimate for the Temple calendar and compass.", true)
+            templeLocationPermissionRequested = false
+            templeLocationNotice("Location access was not granted. Using the civil time-zone estimate for the calendar. Motion sensor access may still orient the compass.", false, true)
         },
         {
             enableHighAccuracy: false,
@@ -213,15 +246,6 @@ function templeExtractCompassHeading(event) {
     return null
 }
 
-function templeSmoothCompassHeading(previousHeading, nextHeading) {
-    if (previousHeading == null) {
-        return nextHeading
-    }
-
-    let delta = ((nextHeading - previousHeading + 540) % 360) - 180
-    return wrap360(previousHeading + (delta * .35))
-}
-
 function templeHandleCompassOrientation(event) {
     let heading = templeExtractCompassHeading(event)
 
@@ -236,7 +260,7 @@ function templeHandleCompassOrientation(event) {
     }
 
     templeFieldCompassLastAcceptedTick = currentTick
-    templeFieldCompassHeading = templeSmoothCompassHeading(templeFieldCompassHeading, heading)
+    templeFieldCompassHeading = heading
 }
 
 function templeAddFieldCompassListeners() {
