@@ -72,6 +72,8 @@ var templeFieldCompassPermission = "unrequested"
 var templeFieldCompassHeading = null
 var templeFieldCompassLastAcceptedTick = null
 var templeFieldCompassListening = false
+var templeLocationPermissionRequested = false
+var templeLocationNoticeTimer = null
 
 function wrap360(degrees) {
     return ((degrees % 360) + 360) % 360
@@ -102,22 +104,93 @@ function templeEarthZoneLabel() {
 
 function initializeTempleEarthZone() {
     setTempleEarthZone(templeZoneFromCivilTimezone(), "TIMEZONE")
+    templeRequestLocationForCalendarAndCompass()
+}
 
-    if (typeof navigator != "undefined" && navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                setTempleEarthZone(templeZoneFromLongitude(position.coords.longitude), "LOCATION")
-            },
-            function() {
-                setTempleEarthZone(templeZoneFromCivilTimezone(), "TIMEZONE")
-            },
-            {
-                enableHighAccuracy: false,
-                timeout: 5000,
-                maximumAge: 86400000
-            }
-        )
+function templeLocationNotice(message, autoDismiss = false) {
+    if (typeof document == "undefined" || !document.body) {
+        return
     }
+
+    let notice = document.getElementById("temple-location-notice")
+
+    if (!notice) {
+        notice = document.createElement("div")
+        notice.id = "temple-location-notice"
+        notice.setAttribute("role", "status")
+        notice.setAttribute("aria-live", "polite")
+
+        let text = document.createElement("p")
+        text.id = "temple-location-notice-text"
+
+        let close = document.createElement("button")
+        close.type = "button"
+        close.setAttribute("aria-label", "Dismiss location notice")
+        close.textContent = "×"
+        close.addEventListener("click", templeDismissLocationNotice)
+
+        notice.appendChild(text)
+        notice.appendChild(close)
+        document.body.appendChild(notice)
+    }
+
+    let noticeText = document.getElementById("temple-location-notice-text")
+    if (noticeText) {
+        noticeText.textContent = message
+    }
+
+    notice.hidden = false
+
+    if (templeLocationNoticeTimer) {
+        clearTimeout(templeLocationNoticeTimer)
+        templeLocationNoticeTimer = null
+    }
+
+    if (autoDismiss) {
+        templeLocationNoticeTimer = setTimeout(templeDismissLocationNotice, 7000)
+    }
+}
+
+function templeDismissLocationNotice() {
+    if (templeLocationNoticeTimer) {
+        clearTimeout(templeLocationNoticeTimer)
+        templeLocationNoticeTimer = null
+    }
+
+    let notice = typeof document != "undefined" ? document.getElementById("temple-location-notice") : null
+    if (notice) {
+        notice.hidden = true
+    }
+}
+
+function templeRequestLocationForCalendarAndCompass() {
+    if (templeLocationPermissionRequested) {
+        return
+    }
+
+    templeLocationPermissionRequested = true
+    templeLocationNotice("Requesting location access for the Temple calendar and compass.")
+
+    if (typeof navigator == "undefined" || !navigator.geolocation) {
+        templeLocationNotice("Location access is unavailable. Using the civil time-zone estimate for the Temple calendar and compass.", true)
+        return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            setTempleEarthZone(templeZoneFromLongitude(position.coords.longitude), "LOCATION")
+            templeLocationNotice("Location access set the Temple calendar zone for the calendar and compass.", true)
+        },
+        function() {
+            setTempleEarthZone(templeZoneFromCivilTimezone(), "TIMEZONE")
+            templeLocationNotice("Location access was not granted. Using the civil time-zone estimate for the Temple calendar and compass.", true)
+        },
+        {
+            enableHighAccuracy: false,
+            timeout: 7000,
+            maximumAge: 86400000
+        }
+    )
 }
 
 function templeCurrentSecondTick() {
