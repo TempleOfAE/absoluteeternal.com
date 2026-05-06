@@ -359,10 +359,14 @@ function templeOracleDirectionCompasses(index) {
     }
 }
 
+function templeOracleHalfCompassDirection(index) {
+    return Math.floor(templeNormalizeOracleIndex(index) / 2)
+}
+
 function templeOracleCompassDirections(xIndex, yIndex) {
     return {
         x: templeNormalizeOracleIndex(xIndex),
-        y: templeNormalizeOracleIndex(yIndex)
+        y: templeOracleHalfCompassDirection(yIndex)
     }
 }
 
@@ -2118,11 +2122,87 @@ function displays(c) {
             )
         }
 
+        if (label) {
+            fill(255)
+            stroke(0)
+            strokeWeight(radius * .08)
+            textSize(radius * .42)
+            text(label, 0, 0)
+        }
+        pop()
+    }
+
+    function timeOracleHalfCompass(x, y, radius, directionIndex, label, showPointer = true) {
+        let compassSteps = 32
+        let normalizedDirection = templeOracleHalfCompassDirection(directionIndex)
+        let startAngle = -HALF_PI
+        let endAngle = HALF_PI
+        let angle = startAngle + ((endAngle - startAngle) / compassSteps) * (normalizedDirection + .5)
+        let pointerBase = radius * .12
+        let pointerTip = radius * .82
+        let pointerHeadLength = radius * .24
+        let pointerHeadWidth = radius * .16
+        let directionX = cos(angle)
+        let directionY = sin(angle)
+        let tangentX = -directionY
+        let tangentY = directionX
+
+        push()
+        translate(x, y)
+        noFill()
+        stroke(255)
+        strokeWeight(radius * .045)
+        arc(0, 0, radius * 2, radius * 2, startAngle, endAngle)
+        line(0, -radius, 0, radius)
+
+        for (let i = 0; i <= compassSteps; i++) {
+            let tickAngle = startAngle + ((endAngle - startAngle) / compassSteps) * i
+            let majorTick = i % 8 == 0 || i == compassSteps
+            let innerRadius = majorTick ? radius * .72 : radius * .86
+            let outerRadius = radius * .98
+            strokeWeight(majorTick ? radius * .05 : radius * .018)
+            line(
+                cos(tickAngle) * innerRadius,
+                sin(tickAngle) * innerRadius,
+                cos(tickAngle) * outerRadius,
+                sin(tickAngle) * outerRadius
+            )
+        }
+
         fill(255)
         stroke(0)
         strokeWeight(radius * .08)
-        textSize(radius * .42)
-        text(label, 0, 0)
+        textSize(radius * .32)
+        text("U", 0, -radius * 1.34)
+        text("F", radius * 1.34, 0)
+        text("D", 0, radius * 1.34)
+
+        if (showPointer) {
+            stroke(0)
+            strokeWeight(radius * .2)
+            line(directionX * pointerBase, directionY * pointerBase, directionX * pointerTip, directionY * pointerTip)
+            stroke(255)
+            strokeWeight(radius * .09)
+            line(directionX * pointerBase, directionY * pointerBase, directionX * pointerTip, directionY * pointerTip)
+            noStroke()
+            fill(255)
+            triangle(
+                directionX * pointerTip,
+                directionY * pointerTip,
+                directionX * (pointerTip - pointerHeadLength) + tangentX * pointerHeadWidth,
+                directionY * (pointerTip - pointerHeadLength) + tangentY * pointerHeadWidth,
+                directionX * (pointerTip - pointerHeadLength) - tangentX * pointerHeadWidth,
+                directionY * (pointerTip - pointerHeadLength) - tangentY * pointerHeadWidth
+            )
+        }
+
+        if (label) {
+            fill(255)
+            stroke(0)
+            strokeWeight(radius * .08)
+            textSize(radius * .42)
+            text(label, radius * .36, 0)
+        }
         pop()
     }
 
@@ -2231,7 +2311,7 @@ function displays(c) {
         let hexagramEdgeX = mother.width * .5 - textWidth(oracles[timeStamp[0]]) * .5
         let compassX = (squareEdgeX + hexagramEdgeX) * .5
 
-        timeOracleCompass(compassX, mother.height * .315, compassRadius, directions.x, "X", {
+        timeOracleCompass(compassX, mother.height * .315, compassRadius, directions.x, "", {
             top: "N",
             right: "E",
             bottom: "S",
@@ -2240,14 +2320,7 @@ function displays(c) {
             steps: 64,
             headingDegrees: templeFieldCompassHeading
         })
-        timeOracleCompass(mother.width - compassX, mother.height * .315, compassRadius, directions.y, "Y", {
-            top: "U",
-            right: "F",
-            bottom: "D",
-            left: "B"
-        }, showDecisionOutput, {
-            steps: 64
-        })
+        timeOracleHalfCompass(mother.width - compassX, mother.height * .315, compassRadius, timeStamp[9], "", showDecisionOutput)
 
         for (let i = 0; i < 2; i++){
 
@@ -3042,7 +3115,7 @@ function interpretation() {
         + "Engagement: " + iching.quaternary[timeOracle[0][1]].judgement + " ["+ iching.quaternary[timeOracle[0][1]].sign + "]<br>"
         + "Mind: " + iching.octal[timeOracle[0][2]].judgement + " ["+ iching.octal[timeOracle[0][2]].sign + "]<br>"
         + "X compass: " + String(directions.x).padStart(2, "0") + " of 64 in N/E/S/W frame<br>"
-        + "Y compass: " + String(directions.y).padStart(2, "0") + " of 64 in U/F/D/B frame<br>"
+        + "Y compass: " + String(directions.y).padStart(2, "0") + " of 32 in U/F/D half-circle<br>"
 
     // let tantra = Math.floor(Math.random() * VBT112.length)
 
@@ -3167,9 +3240,9 @@ function debugAltarOracle(index, subIndex = 0) {
             },
             y: {
                 value: coordinates.y,
-                increments: 64,
-                anchor: "U",
-                frame: "U/F/D/B"
+                increments: 32,
+                anchor: "F",
+                frame: "U/F/D half-circle"
             }
         },
         deeds: {
@@ -3707,6 +3780,7 @@ if (typeof module != "undefined" && module.exports) {
         templeRainbowColor,
         templeOracleCompassDirections,
         templeOracleDirectionCompasses,
+        templeOracleHalfCompassDirection,
         templeOracleClockAngle,
         templeTrigramClockDirection
     }

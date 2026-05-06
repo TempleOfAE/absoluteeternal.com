@@ -24,6 +24,7 @@ const {
   templeRainbowColor,
   templeOracleCompassDirections,
   templeOracleDirectionCompasses,
+  templeOracleHalfCompassDirection,
   templeOracleClockAngle,
   templeTrigramClockDirection
 } = require("./shrine.js")
@@ -101,14 +102,17 @@ assert.deepEqual(
 )
 assert.deepEqual(
   templeOracleCompassDirections(12, 34),
-  { x: 12, y: 34 },
-  "independent compasses preserve separate sixty-four-step inputs"
+  { x: 12, y: 17 },
+  "Y compass compresses the submoment to a thirty-two-step half-circle"
 )
 assert.deepEqual(
   templeOracleCompassDirections(64, -1),
-  { x: 0, y: 63 },
-  "independent compass inputs wrap to the sixty-four-step range"
+  { x: 0, y: 31 },
+  "independent compass inputs wrap before the Y half-circle compression"
 )
+assert.equal(templeOracleHalfCompassDirection(0), 0, "first submoment maps to first half-circle bin")
+assert.equal(templeOracleHalfCompassDirection(1), 0, "two submoments share each half-circle bin")
+assert.equal(templeOracleHalfCompassDirection(63), 31, "last submoment maps to last half-circle bin")
 assert.equal(templeTrigramClockDirection(7), 0, "heaven points up on the temple clock compass")
 assert.equal(templeTrigramClockDirection(0), 4, "earth points down on the temple clock compass")
 for (let trigram = 0; trigram < 8; trigram++) {
