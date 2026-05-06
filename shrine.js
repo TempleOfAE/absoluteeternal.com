@@ -223,7 +223,7 @@ function templeRequestFieldCompass() {
                 templeSetFieldCompassActive(templeFieldCompassPermission == "granted" && timeOracleHover)
             })
             .catch(function() {
-                templeFieldCompassPermission = "denied"
+                templeFieldCompassPermission = "unrequested"
                 templeSetFieldCompassActive(false)
             })
     } else {
@@ -915,6 +915,7 @@ function templePressInteraction() {
         on(2)
     } else if (timeOracleHover) {
         timeStamp = Array.from(currentTime)
+        templeRequestFieldCompass()
     } else if (circleHover) {
         timeStamp = Array.from(currentTime)
         oracleGenerator()
