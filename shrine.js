@@ -72,6 +72,7 @@ var templeFieldCompassPermission = "unrequested"
 var templeFieldCompassHeading = null
 var templeFieldCompassLastAcceptedTick = null
 var templeFieldCompassListening = false
+var templeFieldCompassInteractionListening = false
 var templeLocationPermissionRequested = false
 
 function wrap360(degrees) {
@@ -198,6 +199,27 @@ function templeSetFieldCompassActive(active) {
     }
 }
 
+function initializeTempleFieldCompassInteractionRequest() {
+    if (typeof window == "undefined" || templeFieldCompassInteractionListening) {
+        return
+    }
+
+    templeFieldCompassInteractionListening = true
+    window.addEventListener("pointerdown", templeRequestFieldCompass, { passive: true })
+    window.addEventListener("touchstart", templeRequestFieldCompass, { passive: true })
+    window.addEventListener("mousedown", templeRequestFieldCompass, { passive: true })
+}
+
+function templeQueueSensorPermissionRequest(sensorEvent, requests) {
+    if (sensorEvent && typeof sensorEvent.requestPermission == "function") {
+        try {
+            requests.push(sensorEvent.requestPermission())
+        } catch (error) {
+            requests.push(Promise.resolve("error"))
+        }
+    }
+}
+
 function templeRequestFieldCompass() {
     if (typeof window == "undefined") {
         return
@@ -214,16 +236,33 @@ function templeRequestFieldCompass() {
         return
     }
 
-    if (typeof DeviceOrientationEvent == "undefined") {
+    let orientationEvent = window.DeviceOrientationEvent
+    let motionEvent = window.DeviceMotionEvent
+
+    if (typeof orientationEvent == "undefined" && typeof motionEvent == "undefined") {
         templeFieldCompassPermission = "unsupported"
         return
     }
 
-    if (typeof DeviceOrientationEvent.requestPermission == "function") {
+    let permissionRequests = []
+    templeQueueSensorPermissionRequest(motionEvent, permissionRequests)
+    templeQueueSensorPermissionRequest(orientationEvent, permissionRequests)
+
+    if (permissionRequests.length > 0) {
         templeFieldCompassPermission = "requesting"
-        DeviceOrientationEvent.requestPermission()
-            .then(function(permissionState) {
-                templeFieldCompassPermission = permissionState == "granted" ? "granted" : "denied"
+        Promise.all(permissionRequests.map(function(request) {
+            return request.catch(function() {
+                return "error"
+            })
+        }))
+            .then(function(permissionStates) {
+                if (permissionStates.includes("granted")) {
+                    templeFieldCompassPermission = "granted"
+                } else if (permissionStates.includes("denied")) {
+                    templeFieldCompassPermission = "denied"
+                } else {
+                    templeFieldCompassPermission = "unrequested"
+                }
                 templeSetFieldCompassActive(templeFieldCompassPermission == "granted" && timeOracleHover)
             })
             .catch(function() {
@@ -755,6 +794,7 @@ function setup() {
     //TIMING SETTINGS
     frameRate(fR) // set frame rate
     initializeTempleEarthZone()
+    initializeTempleFieldCompassInteractionRequest()
     kali(); // sets initial time and date
 
     //INITIAL ORACLE
