@@ -482,6 +482,15 @@ body {
   text-align: center;
 }
 
+.calendar-note {
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  margin: 0.25rem auto 0;
+  max-width: 42rem;
+  text-align: center;
+}
+
 .calendar-page {
   align-items: center;
   display: flex;

@@ -770,6 +770,23 @@ function setTempleAnimationPaused(paused) {
     }
 }
 
+function templeApplyHoverGlow(active, blur = mother.width * .012) {
+    if (active) {
+        fill(255)
+        drawingContext.shadowColor = 'rgba(255, 255, 255, 0.45)'
+        drawingContext.shadowBlur = blur
+    } else {
+        fill(230)
+        drawingContext.shadowColor = 'transparent'
+        drawingContext.shadowBlur = 0
+    }
+}
+
+function templeClearHoverGlow() {
+    drawingContext.shadowColor = 'transparent'
+    drawingContext.shadowBlur = 0
+}
+
 if (typeof window != "undefined") {
     window.setTempleAnimationPaused = setTempleAnimationPaused
 }
@@ -1940,8 +1957,8 @@ function UI(UIShow = false) {
 
     changeHover = boolHover([
         [true,
-            width / 2, height * .71,
-            mother.width * .5, mother.width * .1],
+            width / 2, height * .705,
+            mother.width * .5, mother.width * .09],
         [true, width / 2, height / 2, mother.width * .72, 0]
         ],
         UIShow)    
@@ -2554,7 +2571,7 @@ function displays(c) {
         }
 
 
-            let changingLineYPos = mother.height * .777
+            let changingLineYPos = mother.height * .804
             let changingLineTextSize = osss * .3
             if (c == 6) {
                 // let changesText = 'CHANGING LINES'
@@ -2566,12 +2583,25 @@ function displays(c) {
                 // } else {
                 //     changesText = "NO CHANGE"
                 // }
+                push()
                 textSize(changingLineTextSize)
+                if (changeHover) {
+                    fill(255)
+                    drawingContext.shadowColor = 'rgba(255, 255, 255, 0.45)'
+                    drawingContext.shadowBlur = mother.width * .012
+                } else {
+                    fill(230)
+                    drawingContext.shadowColor = 'transparent'
+                    drawingContext.shadowBlur = 0
+                }
                 // text(changesText, mother.width / 2, changingLineYPos)
                 // textSize(changingLineTextSize)
                 // text(changingLinesText, mother.width / 2, changingLineYPos + changingLineTextSize * 1.3)
 
                 text("INTERPRETATION", mother.width / 2, changingLineYPos)
+                drawingContext.shadowColor = 'transparent'
+                drawingContext.shadowBlur = 0
+                pop()
 
                 // name and number
                 let nameNumberYPos = mother.height * .57
@@ -2801,11 +2831,13 @@ function clock() {
 
     textSize(ts * 1.3)
 
+    templeApplyHoverGlow(dateHover, mother.width * .012)
     text(
         str(timeO[4]) //day section
         , mother.width * .5, mother.height * .185 //location
     )
 
+    templeClearHoverGlow()
     pop()
 
     //analogue clock
