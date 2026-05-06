@@ -36,60 +36,6 @@ body {
   z-index: 20;
 }
 
-#temple-location-notice {
-  align-items: center;
-  background: rgba(0, 0, 0, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  color: white;
-  display: flex;
-  gap: 0.75rem;
-  justify-content: space-between;
-  left: 50%;
-  max-width: min(34rem, calc(100vw - 2rem));
-  padding: 0.7rem 0.85rem;
-  position: fixed;
-  top: 1rem;
-  transform: translateX(-50%);
-  width: max-content;
-  z-index: 10;
-}
-
-#temple-location-notice[hidden] {
-  display: none;
-}
-
-#temple-location-notice p {
-  font-size: 0.95rem;
-  line-height: 1.25;
-  margin: 0;
-  text-align: left;
-}
-
-.temple-location-actions {
-  align-items: center;
-  display: flex;
-  flex: 0 0 auto;
-  gap: 0.45rem;
-}
-
-#temple-location-notice button {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  color: white;
-  cursor: pointer;
-  flex: 0 0 auto;
-  font: inherit;
-  line-height: 1;
-  min-height: 1.7rem;
-  padding: 0.25rem 0.45rem;
-}
-
-#temple-location-notice button[aria-label] {
-  height: 1.7rem;
-  padding: 0;
-  width: 1.7rem;
-}
-
 #AE {
   /* text-align: center; */
   color: white;
