@@ -22,6 +22,7 @@ const {
   templeOracleSaturation,
   templeOracleValue,
   templeRainbowColor,
+  templeOracleBandedHalfCompassDirection,
   templeOracleCompassDirections,
   templeOracleDirectionCompasses,
   templeOracleHalfCompassDirection,
@@ -102,17 +103,23 @@ assert.deepEqual(
 )
 assert.deepEqual(
   templeOracleCompassDirections(12, 34),
-  { x: 12, y: 17 },
-  "Y compass compresses the submoment to a thirty-two-step half-circle"
+  { x: 12, y: 27 },
+  "Y compass uses four evenly distributed octal bands"
 )
 assert.deepEqual(
   templeOracleCompassDirections(64, -1),
-  { x: 0, y: 31 },
-  "independent compass inputs wrap before the Y half-circle compression"
+  { x: 0, y: 16 },
+  "independent compass inputs wrap before the Y four-band mapping"
 )
 assert.equal(templeOracleHalfCompassDirection(0), 0, "first submoment maps to first half-circle bin")
 assert.equal(templeOracleHalfCompassDirection(1), 0, "two submoments share each half-circle bin")
 assert.equal(templeOracleHalfCompassDirection(63), 31, "last submoment maps to last half-circle bin")
+assert.equal(templeOracleBandedHalfCompassDirection(0), 0, "first band starts at the upper outer edge")
+assert.equal(templeOracleBandedHalfCompassDirection(2), 31, "second band starts at the lower outer edge")
+assert.equal(templeOracleBandedHalfCompassDirection(4), 8, "third band starts at the upper inner edge")
+assert.equal(templeOracleBandedHalfCompassDirection(6), 23, "fourth band starts at the lower inner edge")
+assert.equal(templeOracleBandedHalfCompassDirection(56), 7, "upper outer band advances inward across eight stops")
+assert.equal(templeOracleBandedHalfCompassDirection(62), 16, "lower inner band advances inward across eight stops")
 assert.equal(templeTrigramClockDirection(7), 0, "heaven points up on the temple clock compass")
 assert.equal(templeTrigramClockDirection(0), 4, "earth points down on the temple clock compass")
 for (let trigram = 0; trigram < 8; trigram++) {

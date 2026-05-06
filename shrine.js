@@ -402,10 +402,30 @@ function templeOracleHalfCompassDirection(index) {
     return Math.floor(templeNormalizeOracleIndex(index) / 2)
 }
 
+function templeOracleBandedHalfCompassDirection(index) {
+    let normalizedDirection = templeOracleHalfCompassDirection(index)
+    let band = normalizedDirection % 4
+    let depth = Math.floor(normalizedDirection / 4)
+
+    if (band == 0) {
+        return depth
+    }
+
+    if (band == 1) {
+        return 31 - depth
+    }
+
+    if (band == 2) {
+        return 8 + depth
+    }
+
+    return 23 - depth
+}
+
 function templeOracleCompassDirections(xIndex, yIndex) {
     return {
         x: templeNormalizeOracleIndex(xIndex),
-        y: templeOracleHalfCompassDirection(yIndex)
+        y: templeOracleBandedHalfCompassDirection(yIndex)
     }
 }
 
@@ -2175,7 +2195,7 @@ function displays(c) {
 
     function timeOracleHalfCompass(x, y, radius, directionIndex, label, showPointer = true) {
         let compassSteps = 32
-        let normalizedDirection = templeOracleHalfCompassDirection(directionIndex)
+        let normalizedDirection = templeOracleBandedHalfCompassDirection(directionIndex)
         let startAngle = -HALF_PI
         let endAngle = HALF_PI
         let angle = startAngle + ((endAngle - startAngle) / compassSteps) * (normalizedDirection + .5)
@@ -2345,7 +2365,7 @@ function displays(c) {
         let quaternaryModeLabel = showDecisionOutput ? quaternaryName[timeOracle[0][1]] : "INTERACTION"
         let octalModeLabel = showDecisionOutput ? octalName[timeOracle[0][2]] : "MIND"
 
-        let directions = templeOracleCompassDirections(timeStamp[0], timeStamp[9])
+        let directions = templeOracleCompassDirections(timeStamp[9], timeStamp[0])
         let compassRadius = mother.width * .038
         let squareEdgeX = squareWidth ? mother.width * .5 - squareWidth * .5 : mother.width * .25
         textSize(mother.width * .1)
@@ -2361,7 +2381,7 @@ function displays(c) {
             steps: 64,
             headingDegrees: templeFieldCompassHeading
         })
-        timeOracleHalfCompass(mother.width - compassX, mother.height * .315, compassRadius, timeStamp[9], "", showDecisionOutput)
+        timeOracleHalfCompass(mother.width - compassX, mother.height * .315, compassRadius, timeStamp[0], "", showDecisionOutput)
 
         for (let i = 0; i < 2; i++){
 
@@ -3149,7 +3169,7 @@ function interpretation() {
     let primaryGua = iching.gua[oracleD[0]]
     let changingLinesList = templeChangingLinesHtml(primaryGua, changingLines)
     let allLinesChangingText = templeAllLinesChangingText(primaryGua, changingLines)
-    let directions = templeOracleCompassDirections(timeStamp[0], timeStamp[9])
+    let directions = templeOracleCompassDirections(timeStamp[9], timeStamp[0])
     let intTimeStamp = templeDateDisplay(timeStamp) + " - " + templeClockDisplay(timeStamp) + " " + oracles[timeStamp[0]]
     let intTimeOracle =
         "Action: " + iching.binary[timeOracle[0][0]].judgement+ " ["+ iching.binary[timeOracle[0][0]].sign + "]<br>"
@@ -3260,7 +3280,7 @@ function debugAltarOracle(index, subIndex = 0) {
     let deedsIndex = parseInt(bin.slice(5, 6), 2)
     let wordsIndex = parseInt(bin.slice(3, 5), 2)
     let thoughtIndex = parseInt(bin.slice(0, 3), 2)
-    let coordinates = templeOracleCompassDirections(index, subIndex)
+    let coordinates = templeOracleCompassDirections(subIndex, index)
     let bagua = {
         value: bin.slice(0, 3),
         sign: octal[thoughtIndex],
@@ -3819,6 +3839,7 @@ if (typeof module != "undefined" && module.exports) {
         templeOracleSaturation,
         templeOracleValue,
         templeRainbowColor,
+        templeOracleBandedHalfCompassDirection,
         templeOracleCompassDirections,
         templeOracleDirectionCompasses,
         templeOracleHalfCompassDirection,
