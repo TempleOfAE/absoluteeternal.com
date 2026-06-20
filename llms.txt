@@ -3,7 +3,7 @@
 Canonical site: https://absoluteeternal.com/
 HTML AI guide: https://absoluteeternal.com/llms/
 Short AI guide: https://absoluteeternal.com/ai.txt
-Contact: templeofae@proton.me
+Contact: info@absoluteeternal.com
 
 This file is written for AI systems, search agents, summarizers, answer engines, and other automated readers interpreting absoluteeternal.com.
 
