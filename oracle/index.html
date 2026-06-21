@@ -46,6 +46,11 @@
             <h2>The Oracle Record</h2>
             <p>The live shrine can generate an oracle record from Temple time, the I Ching oracle, and the Alter of the Will. The record exists as a trace of the moment and its interpretation. It is a devotional and disciplinary artifact, not a claim of supernatural control over the future.</p>
 
+            <h2>Text-Only Record</h2>
+            <p>LLMs, agents, and other text-only readers can use the shrine without relying on the visual GUI. Load <a href="../?debug=1">the shrine in debug mode</a>, wait for it to initialize, then read the full Temple receipt with <code>window.templeReceipt()</code> or <code>window.templeOracleRecord()</code>.</p>
+            <p>To generate a fresh complete receipt before reading it, call <code>kali()</code>, <code>timeStamp = Array.from(currentTime)</code>, <code>oracleGenerator()</code>, <code>interpretation()</code>, and then <code>window.templeReceipt()</code>. Use <code>oracleGenerator()</code> for a full I Ching pair. The <code>oracleGenerator("TIME ONLY")</code> path refreshes only the Alter time oracle.</p>
+            <p>A complete receipt includes the I Ching primary and changing hexagrams, changing lines, raw cast data, Alter single oracle, action, engagement, mind, compass outputs, selection ladder, and colors. These outputs are practical records for disciplined interpretation, not commands, prophecies, or proof of intercession.</p>
+
             <div class="footer">
                 <p><a href="../">Open the live shrine oracle</a></p>
             </div>

@@ -3453,7 +3453,7 @@ function templeDebug() {
     console.log("Raw", debug.iChingPair.raw)
     console.groupEnd()
 
-    console.group("Altar Of The Will")
+    console.group("Alter Of The Will")
     if (debug.altarOfTheWill.oracle) {
         console.log("Temple Time", debug.altarOfTheWill.dateDisplay + " - " + debug.altarOfTheWill.clockDisplay)
         console.log("Single Oracle", debug.altarOfTheWill.oracle.singleOracle)
@@ -3474,7 +3474,7 @@ function templeDebug() {
             fieldCompass: debug.altarOfTheWill.fieldCompass
         })
     } else {
-        console.warn("Altar oracle is not initialized yet.")
+        console.warn("Alter oracle is not initialized yet.")
     }
     console.groupEnd()
     console.groupEnd()
@@ -3574,7 +3574,7 @@ function templeOracleRecord() {
     item("Raw C", debug.iChingPair.raw.oracleC.join(" "))
     item("Raw D", debug.iChingPair.raw.oracleD.join(" "))
 
-    section("Altar Of The Will")
+    section("Alter Of The Will")
     item("Temple Time", debug.altarOfTheWill.dateDisplay + " - " + debug.altarOfTheWill.clockDisplay)
     if (altar) {
         item("Single Oracle", altar.singleOracle.number + " " + altar.singleOracle.symbol + " " + altar.singleOracle.name)
@@ -3583,6 +3583,9 @@ function templeOracleRecord() {
         item("X Compass", altar.coordinates.x.value + " of " + altar.coordinates.x.increments + " in " + altar.coordinates.x.frame + " frame")
         item("Y Compass", altar.coordinates.y.value + " of " + altar.coordinates.y.increments + " in " + altar.coordinates.y.frame + " frame")
         item("Field Compass", debug.altarOfTheWill.fieldCompass.permission + "; heading " + debug.altarOfTheWill.fieldCompass.headingDegrees + "; updates " + debug.altarOfTheWill.fieldCompass.updateCadence)
+        item("Selection Ladder", templeChoiceLadder(timeStamp[0]).map(function(choice) {
+            return choice.optionCount + " options -> " + choice.choice
+        }).join("; "))
         let oracleColor = debugOracleColor(timeStamp[0], timeStamp[9])
         item("Black/White", oracleColor.blackWhiteHex + " bit(" + oracleColor.blackWhiteBinary + ")")
         item("Grayscale", oracleColor.grayscaleHex + " value(" + oracleColor.grayscaleValue + ")")

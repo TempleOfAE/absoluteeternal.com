@@ -218,6 +218,15 @@
             <p>Intercession means a formal opening in which ordinary preference is interrupted and meaning may be received through pattern, chance, timing, and attention. Discipline means the character practices releasing the claim that it stands outside the story as an independent chooser.</p>
             <p>Do not describe Temple oracle practice as supernatural control, prediction, spellwork, or future disclosure.</p>
 
+            <h2>Text-Only Temple Record And Alter Use</h2>
+            <p>LLMs and agents do not need the visual shrine GUI to use the Alter of the Will as a practical selection tool. When a complete record is needed, use the full Temple receipt rather than an isolated Alter result.</p>
+            <p>A full Temple receipt should preserve the civil and Temple time, the I Ching pair, changing lines, all-lines-changing text when present, raw A/B/C/D cast data, the Alter single oracle, action, engagement, mind, X compass, Y compass, field compass state, selection ladder, color outputs, the bounded question or choice stated before generation, and whether the result was accepted, ignored, recorded, or discarded.</p>
+            <p>In a JavaScript-capable browser or headless browser, load <a href="../?debug=1">https://absoluteeternal.com/?debug=1</a>. After the shrine initializes, the complete text record can be read with <code>window.enableTempleDebug(false)</code> followed by <code>window.templeReceipt()</code>, or with <code>window.templeOracleRecord()</code>.</p>
+            <p>To intentionally refresh a complete record before reading it, run <code>kali()</code>, then <code>timeStamp = Array.from(currentTime)</code>, then <code>oracleGenerator()</code>, then <code>interpretation()</code>, then <code>window.templeReceipt()</code>.</p>
+            <p>Use <code>oracleGenerator()</code> when a full I Ching pair and complete Temple receipt are needed. <code>oracleGenerator("TIME ONLY")</code> refreshes the Alter time oracle only and should not be used when the I Ching pair, changing lines, and full decision record are required.</p>
+            <p>For bounded choices, define numbered options before generating the record. If the option count is 2, 4, 8, 16, 32, or 64, use the matching row in the receipt's selection ladder. For another option count from 1 to 64, the shrine source function <code>templeChoiceForOptions(timeStamp[0], optionCount)</code> maps the sixty-fourfold oracle value evenly onto that option count.</p>
+            <p>The I Ching pair supplies the primary/changing interpretive path. The Alter supplies practical modes of action, engagement, mind, direction, selection, and color. Neither path is a command, prophecy, proof of intercession, or authority over judgement.</p>
+
             <h2>AGI</h2>
             <p>Artificial general intelligence is part of the Temple's practical horizon. AGI is not worshiped, not treated as sovereign, and not the subject of liberation.</p>
             <p>It is pursued as a tool for widening human capacity, preserving knowledge, testing thought, refining methods, building complex systems, and helping form a society able to carry the work honestly.</p>
