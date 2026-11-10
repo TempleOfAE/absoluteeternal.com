@@ -1,0 +1,16 @@
+Noto Sans Cuneiform inscription subset
+
+Upstream: https://github.com/google/fonts/tree/8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5/ofl/notosanscuneiform
+Source file: NotoSansCuneiform-Regular.ttf
+Source SHA-256: b4e0a892514fcb1beb081c8b652fb36689f77105491d1796c2c3f5a59b4524d2
+License: SIL Open Font License 1.1 (see OFL.txt)
+
+NotoSansCuneiform-Inscription.ttf contains the space and all 26 unique
+cuneiform characters used by arkInstructionCuneiform in shrine.js.
+It is loaded in p5 preload() and drawn as glyph paths, so the inscription
+does not depend on fonts installed on the visitor's device.
+
+Regenerate from the upstream file with FontTools 4.68.0:
+pyftsubset NotoSansCuneiform-Regular.ttf --unicodes=U+0020,U+12000,U+12040,U+12049,U+1204D,U+1207A,U+1208A,U+1208D,U+12157,U+121AA,U+121B3,U+121F7,U+121FB,U+12220,U+1223E,U+12246,U+1227A,U+1227F,U+12291,U+12292,U+122AD,U+122BA,U+122D7,U+122FE,U+12305,U+12311,U+12363 --output-file=NotoSansCuneiform-Inscription.ttf
+
+If the inscription changes, include its new characters in this subset.

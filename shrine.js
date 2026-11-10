@@ -1,5 +1,6 @@
 var mother //stores shrine image\
 var jackal
+var arkInstructionFont
 
 const motherNames = [
     "THE ABSOLUTE ETERNAL",
@@ -804,6 +805,8 @@ if (typeof document != "undefined") {
 function preload() {
     mother = loadImage('mother.png');
     jackal = loadImage('jackal.png')
+    // Supply the inscription's glyphs instead of relying on installed system fonts.
+    arkInstructionFont = loadFont('fonts/NotoSansCuneiform-Inscription.ttf')
 }
 function setup() {
     //set image sizes
@@ -3840,7 +3843,7 @@ function drawArkInstructionCuneiform(x, y, horizontalAlign) {
     push()
     noStroke()
     fill(255)
-    textFont('"Noto Sans Cuneiform", "Segoe UI Historic", "Akkadian", "Times New Roman", serif')
+    textFont(arkInstructionFont)
     textAlign(horizontalAlign, CENTER)
     textStyle(NORMAL)
     let scriptSize = mother.width * .016
