@@ -4076,9 +4076,9 @@ function drawEmanationBeam(sourceX, sourceY) {
 }
 
 function drawEmanationLens(ctx, pose, reach) {
-    const radius = Math.max(9, reach * .038) * pose.scale
+    const radius = Math.max(4.5, reach * .019) * pose.scale
     const minorRadius = radius * pose.axisRatio
-    if (radius < .5 || pose.y - radius >= reach) return
+    if (radius < .25 || pose.y - radius >= reach) return
     ctx.save()
     ctx.translate(pose.x, pose.y)
     // Keep the undisturbed beam for both the magnified detail and the color at the contact point.
@@ -4116,7 +4116,7 @@ function drawEmanationLens(ctx, pose, reach) {
     ctx.restore()
 
     // Narrow the neutral rim near the source so it leaves room for the colored glass.
-    const rimScale = Math.min(1, minorRadius / 5)
+    const rimScale = Math.min(.5, minorRadius / 5)
     ctx.strokeStyle = "#313438"
     ctx.lineWidth = 2.2 * rimScale
     ctx.stroke()
