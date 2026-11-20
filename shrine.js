@@ -3922,9 +3922,9 @@ const emanationHalfArc = Math.PI / 3
 const emanationEdgeSine = Math.sin(emanationHalfArc)
 const emanationEdgeCosine = Math.cos(emanationHalfArc)
 const emanationLensStation = .70
-// The crown points almost along the observer's 45-degree downward sightline.
+// Tip the crown just above the sightline so the lens rises on screen at yellow.
 const emanationViewElevation = Math.PI / 4
-const emanationCrownElevation = 40 * Math.PI / 180
+const emanationCrownElevation = 50 * Math.PI / 180
 const emanationViewOffset = emanationViewElevation - emanationCrownElevation
 let emanationTexture
 
