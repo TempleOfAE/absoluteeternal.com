@@ -3921,11 +3921,11 @@ const emanationTextureMargin = 1.10
 const emanationHalfArc = Math.PI / 3
 const emanationEdgeSine = Math.sin(emanationHalfArc)
 const emanationEdgeCosine = Math.cos(emanationHalfArc)
-// Tip the crown just above the sightline so the lens rises on screen at yellow.
 const emanationViewElevation = Math.PI / 4
-const emanationCrownElevation = 50 * Math.PI / 180
-const emanationViewOffset = emanationViewElevation - emanationCrownElevation
-const emanationBowY = Math.sin(emanationViewOffset)
+// Match the rise of a 105-degree screen arc while keeping the ribbon's 120-degree cross section.
+const emanationApparentArc = 105 * Math.PI / 180
+const emanationBowProjection = Math.tan(emanationApparentArc / 4) / Math.tan(emanationHalfArc / 2)
+const emanationBowDepth = Math.sqrt(1 - emanationBowProjection ** 2)
 let emanationTexture
 let emanationLensSample
 
@@ -3934,7 +3934,7 @@ function emanationSpread(y) {
     return y * (.72 + .28 * y)
 }
 
-// Height toward the observer on a circular cross section, in units of circle radius.
+// Rise above the red-to-blue chord, in units of the ribbon's cross-sectional radius.
 function emanationArcHeight(lane) {
     const sine = Math.min(1, Math.abs(lane)) * emanationEdgeSine
     return Math.sqrt(1 - sine * sine) - emanationEdgeCosine
@@ -3953,22 +3953,21 @@ function emanationLensPose(momentInMinute, reach, spread) {
     const halfChord = spread * emanationSpread(station)
     const arcRadius = halfChord / emanationEdgeSine
     const x = halfChord * lane
-    const bowZ = Math.cos(emanationViewOffset)
-    const y = reach * station + arcRadius * arcHeight * emanationBowY
+    const y = reach * station - arcRadius * arcHeight * emanationBowProjection
     const endLane = spread > 0 ? x / spread : 0
-    const endY = reach + spread / emanationEdgeSine * emanationArcHeight(endLane) * emanationBowY
+    const endY = reach - spread / emanationEdgeSine * emanationArcHeight(endLane) * emanationBowProjection
 
     // Two tangents define the surface under the glass. X/Y are screen coordinates,
     // and positive Z points toward the viewer. The first tangent follows the ray.
     const radiusSlope = spread / reach * (.72 + .56 * station) / emanationEdgeSine
     const rayX = radiusSlope * Math.sin(angle)
-    const rayY = 1 + radiusSlope * arcHeight * emanationBowY
-    const rayZ = 1 / Math.tan(emanationViewElevation) + radiusSlope * arcHeight * bowZ
+    const rayY = 1 - radiusSlope * arcHeight * emanationBowProjection
+    const rayZ = 1 / Math.tan(emanationViewElevation) + radiusSlope * arcHeight * emanationBowDepth
     const visibility = Math.min(1, spread / 6)
     const bank = angle * visibility
     const crossX = Math.cos(bank)
-    const crossY = -Math.sin(bank) * emanationBowY
-    const crossZ = -Math.sin(bank) * bowZ
+    const crossY = Math.sin(bank) * emanationBowProjection
+    const crossZ = -Math.sin(bank) * emanationBowDepth
 
     // A projected circle's minor/major axis ratio is the facing component of its unit normal.
     const nx = crossY * rayZ - crossZ * rayY
@@ -3976,7 +3975,7 @@ function emanationLensPose(momentInMinute, reach, spread) {
     const nz = crossX * rayY - crossY * rayX
     const axisRatio = Math.abs(nz) / Math.hypot(nx, ny, nz)
     const tilt = Math.atan2(nx, -ny)
-    const scale = (station / .70) / (1 - .6 * arcHeight * bowZ * visibility)
+    const scale = (station / .70) / (1 - .6 * arcHeight * emanationBowDepth * visibility)
     return { x, y, scale, axisRatio, tilt, lane, endY }
 }
 
@@ -4054,9 +4053,9 @@ function drawEmanationBeam(sourceX, sourceY) {
     ctx.translate(sourceX, sourceY)
     ctx.save()
     if (spread > 0) {
-        // The open rim is the same projected 120-degree arc the lens rides.
+        // The open rim and the lens use the same foreshortened arc.
         const arcRadius = spread / emanationEdgeSine
-        const verticalRadius = -arcRadius * emanationBowY
+        const verticalRadius = arcRadius * emanationBowProjection
         ctx.beginPath()
         ctx.moveTo(-width, 0)
         ctx.lineTo(-width, reach)
