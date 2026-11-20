@@ -3939,17 +3939,16 @@ function emanationArcHeight(lane) {
     return Math.sqrt(1 - sine * sine) - emanationEdgeCosine
 }
 
-function emanationLensPose(momentInMinute, reach, spread) {
+function emanationLensPose(momentInMinute, reach, spread, entryPadding) {
     const sweepMoments = 8 * timeUnitsMoment[1]
     const angle = -emanationHalfArc * Math.sin(2 * Math.PI * (momentInMinute % sweepMoments) / sweepMoments)
-    // Reach the Mother on the last moment of the Temple minute, then re-enter from below.
-    const runProgress = momentInMinute / timeUnitsMax[1]
-    const pathLength = height / 2
-    const distance = pathLength * (1 - runProgress)
-    // Give the larger glass room to enter. The allowance disappears at the bottom edge.
-    const entryFraction = Math.max(0, distance - reach) / Math.max(1, pathLength - reach)
-    const entryPadding = Math.max(24, reach * .10) * entryFraction ** 2
-    const station = (distance + entryPadding) / reach
+    // Halfway down the rays at second 32, at the Mother on the last moment.
+    const halfMinute = timeUnitsMoment[2] / 2
+    const momentsLeft = timeUnitsMax[1] - momentInMinute
+    const distance = reach * .5 * momentsLeft / (timeUnitsMax[1] - halfMinute)
+    // Ease in from below the screen. The extra distance is gone by the crossing.
+    const entryFraction = Math.max(0, 1 - momentInMinute / halfMinute)
+    const station = (distance + entryPadding * entryFraction ** 2) / reach
     const lane = Math.sin(angle) / emanationEdgeSine
     const arcHeight = emanationArcHeight(lane)
     const halfChord = spread * emanationSpread(station)
@@ -4041,7 +4040,11 @@ function makeEmanationTexture() {
 
 function drawEmanationBeam(sourceX, sourceY) {
     if (!emanationTexture) emanationTexture = makeEmanationTexture()
-    const reach = height / 2 + mother.height / 2 - sourceY + 1
+    // The square and the circle meet at the bottom of the circle.
+    const squaredCircleBottom = mother.height / 2 + circleWidth / 2
+    const reach = 2 * (squaredCircleBottom - sourceY)
+    const screenBottom = (height + mother.height) / 2
+    const entryPadding = Math.max(0, screenBottom - (sourceY + reach)) + Math.max(24, reach * .10)
     const halfWidth = Math.min(reach * .23, width * .38)
     // Leave a short white phase at the turn of the Temple clock.
     const opening = Math.max(0, (1 - timeScaleCycle[1] - .025) / .975)
@@ -4072,7 +4075,7 @@ function drawEmanationBeam(sourceX, sourceY) {
     }
     ctx.globalAlpha = 1
 
-    const pose = emanationLensPose(timeMoment[1], reach, spread)
+    const pose = emanationLensPose(timeMoment[1], reach, spread, entryPadding)
     const sample = drawEmanationLens(ctx, pose, reach, colorMix)
     ctx.restore()
     return sample
@@ -4106,12 +4109,18 @@ function drawEmanationLens(ctx, pose, reach, colorMix) {
         return sample
     }
     ctx.save()
+    if (pose.y + radius > reach) {
+        ctx.beginPath()
+        ctx.rect(pose.x - radius, 0, 2 * radius, reach)
+        ctx.clip()
+    }
     ctx.translate(pose.x, pose.y)
     const zoom = 2.75
     const transform = ctx.getTransform()
     const sampleRadius = radius * transform.a / zoom
     // While the glass enters, sample from the nearest visible part of the beam.
-    const sampleTop = Math.min(transform.f - sampleRadius, ctx.canvas.height - 2 * sampleRadius)
+    const beamEnd = transform.f + (reach - pose.y) * transform.d
+    const sampleTop = Math.min(transform.f - sampleRadius, beamEnd - 2 * sampleRadius)
     emanationLensSample.drawImage(ctx.canvas, transform.e - sampleRadius, sampleTop,
         2 * sampleRadius, 2 * sampleRadius, 0, 0, sample.width, sample.height)
 
