@@ -3978,7 +3978,7 @@ function emanationLensPose(momentInMinute, reach, spread) {
     const axisRatio = Math.abs(nz) / Math.hypot(nx, ny, nz)
     const tilt = Math.atan2(nx, -ny)
     const scale = (station / .70) / (1 - .6 * arcHeight * bowZ * visibility)
-    return { x, y, scale, axisRatio, tilt }
+    return { x, y, scale, axisRatio, tilt, lane }
 }
 
 function emanationColor(lane) {
@@ -4072,24 +4072,41 @@ function drawEmanationBeam(sourceX, sourceY) {
     }
     ctx.globalAlpha = 1
 
-    drawEmanationLens(ctx, emanationLensPose(timeMoment[1], reach, spread), reach)
+    const pose = emanationLensPose(timeMoment[1], reach, spread)
+    const sample = drawEmanationLens(ctx, pose, reach, colorMix)
+    ctx.restore()
+    return sample
+}
+
+// Both the glass and the jackals' irises use the same pixel from the undisturbed beam.
+function drawLensContactColor(ctx, sample, x, y, radius) {
+    const middle = Math.floor(sample.width / 2)
+    ctx.save()
+    ctx.imageSmoothingEnabled = false
+    ctx.drawImage(sample, middle, middle, 1, 1, x - radius, y - radius, 2 * radius, 2 * radius)
     ctx.restore()
 }
 
-function drawEmanationLens(ctx, pose, reach) {
+function drawEmanationLens(ctx, pose, reach, colorMix) {
     const sizeScale = .375
     const radius = Math.max(9, reach * .038) * pose.scale * sizeScale
     const minorRadius = radius * pose.axisRatio
-    if (radius < .5 * sizeScale || pose.y - radius >= reach) return
-    ctx.save()
-    ctx.translate(pose.x, pose.y)
-    // Keep the undisturbed beam for both the magnified detail and the color at the contact point.
     if (!emanationLensSample) {
         const canvas = document.createElement("canvas")
         canvas.width = canvas.height = 65
         emanationLensSample = canvas.getContext("2d")
     }
     const sample = emanationLensSample.canvas
+    if (radius < .5 * sizeScale || pose.y - radius >= reach) {
+        // Offscreen or at the tip, use the current ray's color until the glass can sample it again.
+        const rgb = emanationColor(pose.lane).map(channel => 255 + (channel - 255) * colorMix)
+        const middle = Math.floor(sample.width / 2)
+        emanationLensSample.fillStyle = `rgb(${rgb.join(",")})`
+        emanationLensSample.fillRect(middle, middle, 1, 1)
+        return sample
+    }
+    ctx.save()
+    ctx.translate(pose.x, pose.y)
     const zoom = 2.75
     const transform = ctx.getTransform()
     const sampleRadius = radius * transform.a / zoom
@@ -4102,9 +4119,7 @@ function drawEmanationLens(ctx, pose, reach) {
     ctx.ellipse(0, 0, radius, minorRadius, pose.tilt, 0, 2 * Math.PI)
     ctx.save()
     ctx.clip()
-    const middle = Math.floor(sample.width / 2)
-    ctx.imageSmoothingEnabled = false
-    ctx.drawImage(sample, middle, middle, 1, 1, -radius, -radius, 2 * radius, 2 * radius)
+    drawLensContactColor(ctx, sample, 0, 0, radius)
     ctx.imageSmoothingEnabled = true
     ctx.globalAlpha = .26
     ctx.drawImage(sample, -radius, -radius, 2 * radius, 2 * radius)
@@ -4131,6 +4146,7 @@ function drawEmanationLens(ctx, pose, reach) {
     ctx.strokeStyle = "rgba(255, 255, 255, .70)"
     ctx.stroke()
     ctx.restore()
+    return sample
 }
 
 function emination(sourceX, sourceY) {
@@ -4138,7 +4154,7 @@ function emination(sourceX, sourceY) {
     const cx = mother.width / 2
     const cy = mother.height * .5021
     const n = noise(dateTemple / 1000)
-    drawEmanationBeam(sourceX, sourceY)
+    const lensSample = drawEmanationBeam(sourceX, sourceY)
     colorMode(HSB)
     fill(100, Math.min(1, timeScaleCycle[1] * 3))
 
@@ -4157,39 +4173,31 @@ function emination(sourceX, sourceY) {
     strokeWeight(mother.width * .00222*eyescale);
     point(cx, cy); //pupil
 
-    //jackal eyes
-     if (jackals) {
-         let leftEyeX = cx - mother.width * .435
-         let rightEyeX = cx + mother.width * .435
-         let eyesY = cy + mother.height * .233
-         let corniaSize = mother.width * .0333
-         let pupilSize = corniaSize * .5
+    if (jackals) {
+        push()
+        imageMode(CENTER)
+        const jackalCenterX = jackal.width * .25
+        const jackalCenterY = windowHeight * .666
+        image(jackal, jackalCenterX, jackalCenterY)
+        const arkInstructionY = jackalCenterY - jackal.height * .47
+        drawArkInscriptions(jackalCenterX - jackal.width * .233, jackalCenterX + jackal.width * .233, arkInstructionY)
+        pop()
 
-         push()
-         imageMode(CENTER)
-         let jackalCenterX = jackal.width * .25
-         let jackalCenterY = windowHeight * .666
-         image(jackal, jackalCenterX, jackalCenterY)
-         let arkInstructionY = jackalCenterY - jackal.height * .47
-         drawArkInscriptions(jackalCenterX - jackal.width * .233, jackalCenterX + jackal.width * .233, arkInstructionY)
-         pop()
-
-
-         let eyescale = .5
-         stroke(map(n, 0, 1, -80, 260), 100, 70);
-         strokeWeight(mother.width * .00444);
-         point(leftEyeX, eyesY); //cornia
-         stroke(0);
-         strokeWeight(mother.width * .00222*eyescale);
-         point(leftEyeX, eyesY); //pupil
-
-         stroke(map(n, 0, 1, -80, 260), 100, 70);
-         strokeWeight(mother.width * .00444);
-         point(rightEyeX, eyesY); //cornia
-         stroke(0);
-         strokeWeight(mother.width * .00222*eyescale);
-         point(rightEyeX, eyesY); //pupil
-     
-     }
+        const eyeY = cy + mother.height * .233
+        const eyeOffset = mother.width * .435
+        const irisRadius = mother.width * .00444 / 2
+        const ctx = drawingContext
+        stroke(0)
+        strokeWeight(mother.width * .00222 * eyescale)
+        for (const x of [cx - eyeOffset, cx + eyeOffset]) {
+            ctx.save()
+            ctx.beginPath()
+            ctx.arc(x, eyeY, irisRadius, 0, 2 * Math.PI)
+            ctx.clip()
+            drawLensContactColor(ctx, lensSample, x, eyeY, irisRadius)
+            ctx.restore()
+            point(x, eyeY)
+        }
+    }
     pop()
 }
