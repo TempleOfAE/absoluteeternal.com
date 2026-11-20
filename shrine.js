@@ -3918,6 +3918,14 @@ const emanationColors = [
 ]
 const stringsPerSide = (emanationColors.length - 1) / 2
 const emanationTextureMargin = 1.10
+const emanationHalfArc = Math.PI / 3
+const emanationEdgeSine = Math.sin(emanationHalfArc)
+const emanationEdgeCosine = Math.cos(emanationHalfArc)
+const emanationLensStation = .70
+// The crown points almost along the observer's 45-degree downward sightline.
+const emanationViewElevation = Math.PI / 4
+const emanationCrownElevation = 40 * Math.PI / 180
+const emanationViewOffset = emanationViewElevation - emanationCrownElevation
 let emanationTexture
 
 // Screen coordinates relative to the point on the Mother, in units of fan width and length.
@@ -3925,13 +3933,33 @@ function emanationSpread(y) {
     return y * (.72 + .28 * y)
 }
 
-function emanationDepth(lane) {
-    return .12 + .32 * (1 - lane * lane)
+// Height toward the observer on a circular cross section, in units of circle radius.
+function emanationArcHeight(lane) {
+    const sine = Math.min(1, Math.abs(lane)) * emanationEdgeSine
+    return Math.sqrt(1 - sine * sine) - emanationEdgeCosine
 }
 
-function projectEmanation(lane, travel) {
-    const y = travel / (1 - emanationDepth(lane) * travel)
-    return { x: lane * emanationSpread(y), y }
+function emanationLensPose(elapsed, reach, spread) {
+    const period = 8 * second
+    const phase = (elapsed % period) / period
+    const angle = -emanationHalfArc * Math.cos(2 * Math.PI * phase)
+    const lane = Math.sin(angle) / emanationEdgeSine
+    const arcHeight = emanationArcHeight(lane)
+    const halfChord = spread * emanationSpread(emanationLensStation)
+    const arcRadius = halfChord / emanationEdgeSine
+    const x = halfChord * lane
+    const y = reach * emanationLensStation + arcRadius * arcHeight * Math.sin(emanationViewOffset)
+
+    // At the center we see the glass face-on and closer. At the edges it turns away.
+    const visibility = Math.min(1, spread / 6)
+    const depth = arcHeight * Math.cos(emanationViewOffset)
+    const apparentScale = Math.sqrt(Math.cos(angle)) / (1 - .6 * depth)
+    const scale = 1 + visibility * (apparentScale - 1)
+    const tilt = -Math.atan2(Math.sin(angle) * Math.sin(emanationViewOffset), Math.cos(angle))
+
+    // The strings flare with distance. Sample the string directly underneath the glass.
+    const trackWidth = spread * emanationSpread(y / reach)
+    return { x, y, scale, tilt: tilt * visibility, lane: trackWidth > 0 ? x / trackWidth : 0 }
 }
 
 function emanationColor(lane) {
@@ -3953,7 +3981,7 @@ function makeEmanationTexture() {
     const profile = []
     for (let i = 0; i <= 1024; i++) {
         const lane = (2 * i / 1024 - 1) * emanationTextureMargin
-        const crown = Math.max(0, 1 - lane * lane)
+        const crown = emanationArcHeight(lane) / (1 - emanationEdgeCosine)
         const position = lane * stringsPerSide
         const nearestString = Math.max(-stringsPerSide, Math.min(stringsPerSide, Math.round(position)))
         const distance = Math.abs(position - nearestString)
@@ -3963,7 +3991,7 @@ function makeEmanationTexture() {
         const rgb = emanationColor(lane).map(value => value * light + (255 - value) * .16 * core)
         const outside = Math.max(0, Math.abs(lane) - 1)
         const alpha = Math.exp(-((outside / .036) ** 2))
-        profile.push({ rgb, alpha, depth: emanationDepth(lane) })
+        profile.push({ rgb, alpha, depth: .12 + .32 * crown })
     }
 
     // Equal distances along the strings project farther down the image on the raised center.
@@ -3991,7 +4019,7 @@ function makeEmanationTexture() {
     return canvas
 }
 
-function drawEmanationBeam(sourceX, sourceY, scan) {
+function drawEmanationBeam(sourceX, sourceY) {
     if (!emanationTexture) emanationTexture = makeEmanationTexture()
     const reach = height / 2 + mother.height / 2 - sourceY + 1
     const halfWidth = Math.min(reach * .23, width * .38)
@@ -4024,22 +4052,15 @@ function drawEmanationBeam(sourceX, sourceY, scan) {
     }
     ctx.globalAlpha = 1
 
-    drawEmanationLens(ctx, scan * 2 - 1, 1 - timeScale[1], reach, spread, colorMix)
+    drawEmanationLens(ctx, emanationLensPose(dateTemple, reach, spread), reach, colorMix)
     ctx.restore()
 }
 
-function drawEmanationLens(ctx, lane, travel, reach, spread, colorMix) {
-    const point = projectEmanation(lane, travel)
-    const radius = reach * .024 * point.y
-    if (radius < .35 || point.y > 1.05) return
-
-    // Two nearby points at the same travel give the lens its tilt across the curved surface.
-    const left = projectEmanation(lane - .001, travel)
-    const right = projectEmanation(lane + .001, travel)
-    const tilt = Math.atan2(reach * (right.y - left.y), spread * (right.x - left.x))
+function drawEmanationLens(ctx, pose, reach, colorMix) {
+    const radius = reach * .024 * pose.scale
     ctx.save()
-    ctx.translate(spread * point.x, reach * point.y)
-    ctx.rotate(tilt * colorMix)
+    ctx.translate(pose.x, pose.y)
+    ctx.rotate(pose.tilt)
     ctx.beginPath()
     ctx.moveTo(-radius, 0)
     ctx.quadraticCurveTo(0, -radius * .76, radius, 0)
@@ -4051,7 +4072,7 @@ function drawEmanationLens(ctx, lane, travel, reach, spread, colorMix) {
     glass.addColorStop(1, "rgba(12, 15, 24, .78)")
     ctx.fillStyle = glass
     ctx.fill()
-    const rim = emanationColor(lane).map(channel => Math.round(255 + (channel - 255) * colorMix))
+    const rim = emanationColor(pose.lane).map(channel => Math.round(255 + (channel - 255) * colorMix))
     ctx.strokeStyle = "rgb(" + rim.join(",") + ")"
     ctx.lineWidth = Math.max(.6, radius * .18)
     ctx.stroke()
@@ -4068,7 +4089,7 @@ function emination(sourceX, sourceY) {
     const cx = mother.width / 2
     const cy = mother.height * .5021
     const n = noise(dateTemple / 1000)
-    drawEmanationBeam(sourceX, sourceY, n)
+    drawEmanationBeam(sourceX, sourceY)
     colorMode(HSB)
     fill(100, Math.min(1, timeScaleCycle[1] * 3))
 
