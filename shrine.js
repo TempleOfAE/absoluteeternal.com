@@ -3939,12 +3939,16 @@ function emanationArcHeight(lane) {
     return Math.sqrt(1 - sine * sine) - emanationEdgeCosine
 }
 
-function emanationLensPose(elapsed, reach, spread) {
+function emanationLensPose(elapsed, minuteProgress, reach, spread) {
     const sweepPeriod = 8 * second
-    const travelPeriod = 32 * second
     const angle = -emanationHalfArc * Math.cos(2 * Math.PI * (elapsed % sweepPeriod) / sweepPeriod)
-    // One smooth trip out and back for every four lateral sweeps.
-    const station = .48 + .44 * Math.sin(2 * Math.PI * (elapsed % travelPeriod) / travelPeriod)
+    // The original lens covered half the viewport height per Temple minute, moving inward.
+    const pathLength = height / 2
+    const distance = pathLength * (1 - minuteProgress)
+    // Give the larger glass room to enter. The allowance disappears at the bottom edge.
+    const entryFraction = Math.max(0, distance - reach) / Math.max(1, pathLength - reach)
+    const entryPadding = Math.max(24, reach * .10) * entryFraction ** 2
+    const station = (distance + entryPadding) / reach
     const lane = Math.sin(angle) / emanationEdgeSine
     const arcHeight = emanationArcHeight(lane)
     const halfChord = spread * emanationSpread(station)
@@ -4067,13 +4071,14 @@ function drawEmanationBeam(sourceX, sourceY) {
     }
     ctx.globalAlpha = 1
 
-    drawEmanationLens(ctx, emanationLensPose(dateTemple, reach, spread), reach)
+    drawEmanationLens(ctx, emanationLensPose(dateTemple, timeScale[1], reach, spread), reach)
     ctx.restore()
 }
 
 function drawEmanationLens(ctx, pose, reach) {
     const radius = Math.max(9, reach * .038) * pose.scale
     const minorRadius = radius * pose.axisRatio
+    if (radius < .5 || pose.y - radius >= reach) return
     ctx.save()
     ctx.translate(pose.x, pose.y)
     // Keep the undisturbed beam for both the magnified detail and the color at the contact point.
@@ -4086,7 +4091,9 @@ function drawEmanationLens(ctx, pose, reach) {
     const zoom = 2.75
     const transform = ctx.getTransform()
     const sampleRadius = radius * transform.a / zoom
-    emanationLensSample.drawImage(ctx.canvas, transform.e - sampleRadius, transform.f - sampleRadius,
+    // While the glass enters, sample from the nearest visible part of the beam.
+    const sampleTop = Math.min(transform.f - sampleRadius, ctx.canvas.height - 2 * sampleRadius)
+    emanationLensSample.drawImage(ctx.canvas, transform.e - sampleRadius, sampleTop,
         2 * sampleRadius, 2 * sampleRadius, 0, 0, sample.width, sample.height)
 
     ctx.beginPath()
