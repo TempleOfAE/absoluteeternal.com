@@ -3927,6 +3927,7 @@ const emanationApparentArc = 105 * Math.PI / 180
 const emanationBowProjection = Math.tan(emanationApparentArc / 4) / Math.tan(emanationHalfArc / 2)
 const emanationBowDepth = Math.sqrt(1 - emanationBowProjection ** 2)
 let emanationTexture
+let emanationFlowTexture
 let emanationLensSample
 
 // Screen coordinates relative to the point on the Mother, in units of fan width and length.
@@ -4009,32 +4010,75 @@ function makeEmanationTexture() {
         const rgb = emanationColor(lane).map(value => value * light + (255 - value) * .16 * core)
         const outside = Math.max(0, Math.abs(lane) - 1)
         const alpha = Math.exp(-((outside / .036) ** 2))
-        profile.push({ rgb, alpha, depth: .12 + .32 * crown })
+        profile.push({ rgb, alpha })
     }
 
-    // Equal distances along the strings project farther down the image on the raised center.
     const center = canvas.width / 2
     for (let row = 0; row < canvas.height; row++) {
         const y = (row + .5) / canvas.height
         const radius = center * emanationSpread(y)
+        const light = .85 + .15 * y
         for (let col = Math.floor(center - radius); col < center + radius; col++) {
             const u = (col + .5 - center) / radius
             if (Math.abs(u) > 1) continue
             const sample = profile[Math.round((u + 1) * 512)]
-            const travel = y / (1 + sample.depth * y)
-            const sheen = Math.max(0, 1 - Math.abs(travel - .61) / .14)
-            const reflection = sheen * sheen
-            const light = .85 + .15 * y + .20 * reflection
-            const highlight = 12 * reflection
             const offset = 4 * (row * canvas.width + col)
-            image.data[offset] = sample.rgb[0] * light + highlight
-            image.data[offset + 1] = sample.rgb[1] * light + highlight
-            image.data[offset + 2] = sample.rgb[2] * light + highlight
+            image.data[offset] = sample.rgb[0] * light
+            image.data[offset + 1] = sample.rgb[1] * light
+            image.data[offset + 2] = sample.rgb[2] * light
             image.data[offset + 3] = 255 * sample.alpha
         }
     }
     ctx.putImageData(image, 0, 0)
     return canvas
+}
+
+// Paint one reflection on the bowed strings. It has a bright leading edge and a softer trail.
+const emanationFlowBaseline = .875
+function makeEmanationFlowTexture() {
+    const canvas = document.createElement("canvas")
+    canvas.width = 384
+    const halfWidth = canvas.width / 2
+    canvas.height = halfWidth
+    const ctx = canvas.getContext("2d")
+    const image = ctx.createImageData(canvas.width, canvas.height)
+    for (let col = 0; col < canvas.width; col++) {
+        const lane = (col + .5) / halfWidth - 1
+        const crest = emanationFlowBaseline - emanationArcHeight(lane) * emanationBowProjection / emanationEdgeSine
+        const rgb = emanationColor(lane).map(channel => .70 * channel + .30 * 255)
+        const string = lane * stringsPerSide
+        const core = Math.exp(-(((string - Math.round(string)) / .19) ** 2))
+        const edgeFade = Math.min(1, (1 - Math.abs(lane)) / .055)
+        const opacity = (.28 + .42 * core) * edgeFade
+        for (let row = 0; row < canvas.height; row++) {
+            const distance = (row + .5) / halfWidth - crest
+            const glow = Math.exp(-((distance / (distance > 0 ? .046 : .15)) ** 2))
+            const offset = 4 * (row * canvas.width + col)
+            image.data[offset] = rgb[0]
+            image.data[offset + 1] = rgb[1]
+            image.data[offset + 2] = rgb[2]
+            image.data[offset + 3] = 255 * opacity * glow
+        }
+    }
+    ctx.putImageData(image, 0, 0)
+    return canvas
+}
+
+function drawEmanationFlow(ctx, reach, spread, momentInMinute) {
+    if (!emanationFlowTexture) emanationFlowTexture = makeEmanationFlowTexture()
+    const interval = 4 * timeUnitsMoment[1]
+    const phase = (momentInMinute % interval) / interval
+    ctx.save()
+    ctx.globalCompositeOperation = "screen"
+    for (let i = 0; i < 4; i++) {
+        const progress = (i + phase) / 4
+        // Equal time steps cover more screen distance near the viewer. Let the trail clear the rim.
+        const station = 1.16 * progress / (2 - progress)
+        const halfWidth = spread * emanationSpread(station)
+        ctx.drawImage(emanationFlowTexture, -halfWidth, reach * station - halfWidth * emanationFlowBaseline,
+            2 * halfWidth, halfWidth)
+    }
+    ctx.restore()
 }
 
 function drawEmanationBeam(sourceX, sourceY) {
@@ -4068,6 +4112,7 @@ function drawEmanationBeam(sourceX, sourceY) {
         const radius = spread * emanationTextureMargin
         ctx.globalAlpha = colorMix
         ctx.drawImage(emanationTexture, -radius, 0, radius * 2, reach)
+        drawEmanationFlow(ctx, reach, spread, timeMoment[1])
     }
     if (colorMix < 1) {
         // Two tapered layers give the single white string a soft edge and a sharp tip.
