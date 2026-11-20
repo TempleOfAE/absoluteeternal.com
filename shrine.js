@@ -922,11 +922,13 @@ function draw() {
 
     if (!circleHover && !menuHover) {
         let largeMyriadActive = mouseY >= windowHeight * 0.7
-        myriad()
+        const sourceX = mother.width * .5
+        const sourceY = mother.height * .53
+        myriad(sourceX, sourceY)
         if (largeMyriadActive) {
             drawMotherImageLayer()
         }
-        emination(13, 1)
+        emination(sourceX, sourceY)
     }
 
     displays(6 - oracleDisplayCounter)
@@ -3750,11 +3752,9 @@ if (typeof window != "undefined") {
 }
 
 // controlls myriad animation
-function myriad() {
+function myriad(x, y) {
     var h = mother.height;
     var wdt = mother.width;
-    y = h * 0.53;
-    x = wdt * 0.5;
 
     push();
     
@@ -3910,116 +3910,167 @@ if (typeof module != "undefined" && module.exports) {
     }
 }
 
-function emination(count) {
-    push()
-    cx = mother.width / 2
-    cy = mother.height / 2
-        + (mother.height * .0021)
-    clockCenter = createVector(cx, cy)
+// Left to right as seen by the observer. Six pairs share one yellow center string.
+const emanationColors = [
+    [32, 66, 255], [18, 118, 255], [0, 182, 255], [0, 226, 208],
+    [65, 236, 118], [171, 246, 55], [255, 255, 0], [255, 214, 26],
+    [255, 171, 24], [255, 127, 20], [255, 87, 20], [255, 47, 20], [255, 12, 12]
+]
+const stringsPerSide = (emanationColors.length - 1) / 2
+const emanationTextureMargin = 1.10
+let emanationTexture
 
-    colorMode(HSB)
+// Screen coordinates relative to the point on the Mother, in units of fan width and length.
+function emanationSpread(y) {
+    return y * (.72 + .28 * y)
+}
 
-    let length = windowHeight * .5
-    let eminationPoint = createVector(x, y)// + mother.height * .01)
-    let clockPoint = createVector(mother.width * .5, mother.height * .5)
-    let direction = p5.Vector.sub(clockCenter, clockPoint)
+function emanationDepth(lane) {
+    return .12 + .32 * (1 - lane * lane)
+}
 
-    //rainbow size
-    let backgroundDensity = 8
-    let maxspacing = ((PI * 2) / (count * backgroundDensity * 20))
-    let rays = count * backgroundDensity
+function projectEmanation(lane, travel) {
+    const y = travel / (1 - emanationDepth(lane) * travel)
+    return { x: lane * emanationSpread(y), y }
+}
 
-    // rainbow timing 
-    let spacing = maxspacing - maxspacing * timeScaleCycle[1]
-    rotation = PI * 2 - spacing * (count * backgroundDensity - 1) / 2 // aligns emination to center 
-    for (let i = 0; i < count * backgroundDensity; i++) {
-        push()
-        direction.setMag(length * 1.2)
-        direction.rotate(rotation)
-        let hand = p5.Vector.add(clockCenter, direction)
-        let c = color(map(i, 0, count * backgroundDensity, -80, 260), 100 - 100 * timeScaleCycle[1], 100)
-        strokeWeight(1)
-        c.setAlpha(.5);
-        stroke(c)
+function emanationColor(lane) {
+    const index = Math.max(0, Math.min(stringsPerSide * 2, (lane + 1) * stringsPerSide))
+    const left = Math.floor(index)
+    const right = Math.min(left + 1, emanationColors.length - 1)
+    return emanationColors[left].map((value, channel) =>
+        value + (emanationColors[right][channel] - value) * (index - left))
+}
 
-        line(eminationPoint.x, eminationPoint.y, hand.x, hand.y) // draws emination
-        pop()
+function makeEmanationTexture() {
+    const canvas = document.createElement("canvas")
+    canvas.width = 640
+    canvas.height = 1024
+    const ctx = canvas.getContext("2d")
+    const image = ctx.createImageData(canvas.width, canvas.height)
 
-        rotation = spacing
+    // Sample the continuous spectrum once. Each string adds a broad halo and a narrow core.
+    const profile = []
+    for (let i = 0; i <= 1024; i++) {
+        const lane = (2 * i / 1024 - 1) * emanationTextureMargin
+        const crown = Math.max(0, 1 - lane * lane)
+        const position = lane * stringsPerSide
+        const nearestString = Math.max(-stringsPerSide, Math.min(stringsPerSide, Math.round(position)))
+        const distance = Math.abs(position - nearestString)
+        const core = Math.exp(-((distance / (.095 + .055 * crown)) ** 2))
+        const halo = Math.exp(-((distance / .37) ** 2))
+        const light = .49 + .12 * crown + .18 * halo + .30 * core
+        const rgb = emanationColor(lane).map(value => value * light + (255 - value) * .16 * core)
+        const outside = Math.max(0, Math.abs(lane) - 1)
+        const alpha = Math.exp(-((outside / .036) ** 2))
+        profile.push({ rgb, alpha, depth: emanationDepth(lane) })
     }
 
-    direction = p5.Vector.sub(eminationPoint, clockPoint)
-    maxspacing = ((PI * 2) / (count * 20))
-    rays = count
-    spacing = maxspacing - maxspacing * timeScaleCycle[1]
-    rotation = PI * 2 - spacing * (count - 1) / 2 // aligns emination to center 
-
-    for (let i = 0; i < count; i++) {
-        push()
-        direction.setMag(length * 1.2)
-        direction.rotate(rotation)
-        let hand = p5.Vector.add(clockCenter, direction)
-        let c = color(map(i, 0, count, -80, 260), 100 - 100 * timeScaleCycle[1], 100)
-        if (i < count * .5) {
-            strokeWeight(log(nf(map(i, -1, count, 1, count * 2))))
-        } else {
-            strokeWeight(log(nf(map(i, -1, count, count * 2, 1))))
+    // Equal distances along the strings project farther down the image on the raised center.
+    const center = canvas.width / 2
+    for (let row = 0; row < canvas.height; row++) {
+        const y = (row + .5) / canvas.height
+        const radius = center * emanationSpread(y)
+        for (let col = Math.floor(center - radius); col < center + radius; col++) {
+            const u = (col + .5 - center) / radius
+            if (Math.abs(u) > 1) continue
+            const sample = profile[Math.round((u + 1) * 512)]
+            const travel = y / (1 + sample.depth * y)
+            const sheen = Math.max(0, 1 - Math.abs(travel - .61) / .14)
+            const reflection = sheen * sheen
+            const light = .85 + .15 * y + .20 * reflection
+            const highlight = 12 * reflection
+            const offset = 4 * (row * canvas.width + col)
+            image.data[offset] = sample.rgb[0] * light + highlight
+            image.data[offset + 1] = sample.rgb[1] * light + highlight
+            image.data[offset + 2] = sample.rgb[2] * light + highlight
+            image.data[offset + 3] = 255 * sample.alpha
         }
-        // c.setAlpha(timeScaleCycle[1]);
-        stroke(c);
-
-        line(eminationPoint.x, eminationPoint.y, hand.x, hand.y) // draws emination
-        pop()
-
-        rotation = spacing
     }
+    ctx.putImageData(image, 0, 0)
+    return canvas
+}
 
-    stroke(100, 100) //white emination
-    strokeWeight(mother.width * .005)
-    stroke(100, 100) //white emination
-    strokeWeight(mother.width * (.01 - .01 * timeScaleCycle[1]));
-
-
-
-    //lens
-    let n = noise(dateTemple / 1000)
-    let ncycle = noise(dateTemple / 1000)
-    if (n > .5) {
-        ncycle = map(n, 0, 1, 0, 1)
-    } else {
-        ncycle = map(n, 0, 1, 1, 0)
+function drawEmanationBeam(sourceX, sourceY, scan) {
+    if (!emanationTexture) emanationTexture = makeEmanationTexture()
+    const reach = height / 2 + mother.height / 2 - sourceY + 1
+    const halfWidth = Math.min(reach * .23, width * .38)
+    // Leave a short white phase at the turn of the Temple clock.
+    const opening = Math.max(0, (1 - timeScaleCycle[1] - .025) / .975)
+    const aperture = opening * opening * (3 - 2 * opening)
+    const spread = halfWidth * aperture
+    const colorMix = Math.min(1, spread / 6)
+    const ctx = drawingContext
+    ctx.save()
+    ctx.translate(sourceX, sourceY)
+    if (spread > 0) {
+        const radius = spread * emanationTextureMargin
+        ctx.globalAlpha = colorMix
+        ctx.drawImage(emanationTexture, -radius, 0, radius * 2, reach)
     }
-    let fade = map(timeScaleCycle[1], 0, 1, 0, 3)
-    let ccycle = color(map(n, 0, 1, -80, 260), 100, 70, fade)
+    if (colorMix < 1) {
+        // Two tapered layers give the single white string a soft edge and a sharp tip.
+        const core = Math.max(.8, reach * .0038)
+        for (const [radius, opacity] of [[core * 2.8, .20], [core, 1]]) {
+            ctx.globalAlpha = (1 - colorMix) * opacity
+            ctx.fillStyle = "white"
+            ctx.beginPath()
+            ctx.moveTo(0, 0)
+            ctx.lineTo(-radius, reach)
+            ctx.lineTo(radius, reach)
+            ctx.closePath()
+            ctx.fill()
+        }
+    }
+    ctx.globalAlpha = 1
 
-    // lense fill
-    fill(100, fade) // lense fade in and out
-    // fill(0, 0, 100, fade)
-    // nofill()
+    drawEmanationLens(ctx, scan * 2 - 1, 1 - timeScale[1], reach, spread, colorMix)
+    ctx.restore()
+}
 
-    stroke(ccycle)
+function drawEmanationLens(ctx, lane, travel, reach, spread, colorMix) {
+    const point = projectEmanation(lane, travel)
+    const radius = reach * .024 * point.y
+    if (radius < .35 || point.y > 1.05) return
 
-    let scan
-    // extents of horizontal lens scan
-    // scan = Math.floor(map(n, 0, 1, -rays*.5, rays*.5)) //line by line
-    scan = Math.round(map(n, 0, 1, -rays*.5, rays*.5)) // line by line
-    // scan = map(n, 0, 1, -rays*.5, rays*.5) // smooth
+    // Two nearby points at the same travel give the lens its tilt across the curved surface.
+    const left = projectEmanation(lane - .001, travel)
+    const right = projectEmanation(lane + .001, travel)
+    const tilt = Math.atan2(reach * (right.y - left.y), spread * (right.x - left.x))
+    ctx.save()
+    ctx.translate(spread * point.x, reach * point.y)
+    ctx.rotate(tilt * colorMix)
+    ctx.beginPath()
+    ctx.moveTo(-radius, 0)
+    ctx.quadraticCurveTo(0, -radius * .76, radius, 0)
+    ctx.quadraticCurveTo(0, radius * .76, -radius, 0)
+    ctx.closePath()
+    const glass = ctx.createLinearGradient(0, -radius * .38, 0, radius * .38)
+    glass.addColorStop(0, "rgba(255, 255, 255, .6)")
+    glass.addColorStop(.38, "rgba(200, 225, 255, .14)")
+    glass.addColorStop(1, "rgba(12, 15, 24, .78)")
+    ctx.fillStyle = glass
+    ctx.fill()
+    const rim = emanationColor(lane).map(channel => Math.round(255 + (channel - 255) * colorMix))
+    ctx.strokeStyle = "rgb(" + rim.join(",") + ")"
+    ctx.lineWidth = Math.max(.6, radius * .18)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(-radius * .65, 0)
+    ctx.quadraticCurveTo(0, -radius * .38, radius * .45, -radius * .1)
+    ctx.strokeStyle = "rgba(255, 255, 255, .9)"
+    ctx.stroke()
+    ctx.restore()
+}
 
-    direction = p5.Vector.sub(eminationPoint, clockPoint);
-    direction.setMag(length - length * timeScale[1]) // vertical scan of lens
-    direction.rotate(spacing * scan); // horizontal scan of lens
-    hand = p5.Vector.add(eminationPoint, direction)
-
-    // lens
-    strokeWeight(mother.width * .0055 * ncycle);
-    ellipse(hand.x, hand.y, log(nf(mother.width * .1 * (1 - ncycle))) * 5 * (.6 - (.6 * timeScale[1])), log(nf(mother.width * .2 * (ncycle))) * 5 * (.6 - .6 * timeScale[1]));
-    point(hand.x, hand.y);
-
-    // line from eye of eternity to lens
-    stroke(ccycle);
-    strokeWeight(mother.width * .001);
-    line(cx, cy, hand.x, hand.y);
-    stroke(100, 100)
+function emination(sourceX, sourceY) {
+    push()
+    const cx = mother.width / 2
+    const cy = mother.height * .5021
+    const n = noise(dateTemple / 1000)
+    drawEmanationBeam(sourceX, sourceY, n)
+    colorMode(HSB)
+    fill(100, Math.min(1, timeScaleCycle[1] * 3))
 
     // eye of eternity
     let eyescale = .5
