@@ -3941,10 +3941,9 @@ function emanationArcHeight(lane) {
 
 function emanationLensPose(momentInMinute, reach, spread) {
     const sweepMoments = 8 * timeUnitsMoment[1]
-    const runMoments = 32 * timeUnitsMoment[1]
     const angle = -emanationHalfArc * Math.sin(2 * Math.PI * (momentInMinute % sweepMoments) / sweepMoments)
-    // Reach the Mother on the last moment of each half-minute, then re-enter from below.
-    const runProgress = (momentInMinute % runMoments) / (runMoments - 1)
+    // Reach the Mother on the last moment of the Temple minute, then re-enter from below.
+    const runProgress = momentInMinute / timeUnitsMax[1]
     const pathLength = height / 2
     const distance = pathLength * (1 - runProgress)
     // Give the larger glass room to enter. The allowance disappears at the bottom edge.
