@@ -3927,6 +3927,7 @@ const emanationViewElevation = Math.PI / 4
 const emanationCrownElevation = 50 * Math.PI / 180
 const emanationViewOffset = emanationViewElevation - emanationCrownElevation
 let emanationTexture
+let emanationLensSample
 
 // Screen coordinates relative to the point on the Mother, in units of fan width and length.
 function emanationSpread(y) {
@@ -4056,36 +4057,53 @@ function drawEmanationBeam(sourceX, sourceY) {
 }
 
 function drawEmanationLens(ctx, pose, reach) {
-    const radius = reach * .024 * pose.scale
+    const radius = Math.max(9, reach * .038) * pose.scale
     ctx.save()
     ctx.translate(pose.x, pose.y)
-    ctx.beginPath()
-    ctx.arc(0, 0, radius, 0, 2 * Math.PI)
-    ctx.closePath()
-    ctx.save()
-    ctx.clip()
-
-    // Sample the scene before painting the glass. Source coordinates use backing pixels.
+    // Keep the undisturbed beam for both the magnified detail and the color at the contact point.
+    if (!emanationLensSample) {
+        const canvas = document.createElement("canvas")
+        canvas.width = canvas.height = 65
+        emanationLensSample = canvas.getContext("2d")
+    }
+    const sample = emanationLensSample.canvas
     const zoom = 2.75
     const transform = ctx.getTransform()
     const sampleRadius = radius * transform.a / zoom
-    ctx.drawImage(ctx.canvas, transform.e - sampleRadius, transform.f - sampleRadius,
-        2 * sampleRadius, 2 * sampleRadius, -radius, -radius, 2 * radius, 2 * radius)
+    emanationLensSample.drawImage(ctx.canvas, transform.e - sampleRadius, transform.f - sampleRadius,
+        2 * sampleRadius, 2 * sampleRadius, 0, 0, sample.width, sample.height)
 
-    const bevel = ctx.createRadialGradient(0, 0, radius * .78, 0, 0, radius)
-    bevel.addColorStop(0, "rgba(0, 0, 0, 0)")
-    bevel.addColorStop(1, "rgba(0, 0, 0, .46)")
-    ctx.fillStyle = bevel
+    ctx.beginPath()
+    ctx.arc(0, 0, radius, 0, 2 * Math.PI)
+    ctx.save()
+    ctx.clip()
+    const middle = Math.floor(sample.width / 2)
+    ctx.imageSmoothingEnabled = false
+    ctx.drawImage(sample, middle, middle, 1, 1, -radius, -radius, 2 * radius, 2 * radius)
+    ctx.imageSmoothingEnabled = true
+    ctx.globalAlpha = .26
+    ctx.drawImage(sample, -radius, -radius, 2 * radius, 2 * radius)
+    ctx.globalAlpha = 1
+    const glass = ctx.createLinearGradient(-radius, -radius, radius, radius)
+    glass.addColorStop(0, "rgba(255, 255, 255, .14)")
+    glass.addColorStop(.48, "rgba(255, 255, 255, 0)")
+    glass.addColorStop(1, "rgba(0, 0, 0, .13)")
+    ctx.fillStyle = glass
     ctx.fill()
     ctx.restore()
-    ctx.strokeStyle = "rgba(255, 255, 255, .52)"
-    ctx.lineWidth = Math.max(.65, radius * .075)
+
+    // A fixed neutral edge keeps the circular silhouette legible over every string.
+    ctx.strokeStyle = "#313438"
+    ctx.lineWidth = 2.2
+    ctx.stroke()
+    ctx.strokeStyle = "#c2c5c8"
+    ctx.lineWidth = .85
     ctx.stroke()
 
     ctx.rotate(pose.tilt)
     ctx.beginPath()
-    ctx.arc(0, 0, radius * .85, Math.PI * 1.12, Math.PI * 1.47)
-    ctx.strokeStyle = "rgba(255, 255, 255, .8)"
+    ctx.arc(0, 0, radius * .84, Math.PI * 1.20, Math.PI * 1.40)
+    ctx.strokeStyle = "rgba(255, 255, 255, .70)"
     ctx.stroke()
     ctx.restore()
 }
