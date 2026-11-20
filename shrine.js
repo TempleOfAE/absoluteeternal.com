@@ -3921,7 +3921,6 @@ const emanationTextureMargin = 1.10
 const emanationHalfArc = Math.PI / 3
 const emanationEdgeSine = Math.sin(emanationHalfArc)
 const emanationEdgeCosine = Math.cos(emanationHalfArc)
-const emanationLensStation = .70
 // Tip the crown just above the sightline so the lens rises on screen at yellow.
 const emanationViewElevation = Math.PI / 4
 const emanationCrownElevation = 50 * Math.PI / 180
@@ -3941,24 +3940,40 @@ function emanationArcHeight(lane) {
 }
 
 function emanationLensPose(elapsed, reach, spread) {
-    const period = 8 * second
-    const phase = (elapsed % period) / period
-    const angle = -emanationHalfArc * Math.cos(2 * Math.PI * phase)
+    const sweepPeriod = 8 * second
+    const travelPeriod = 32 * second
+    const angle = -emanationHalfArc * Math.cos(2 * Math.PI * (elapsed % sweepPeriod) / sweepPeriod)
+    // One smooth trip out and back for every four lateral sweeps.
+    const station = .48 + .44 * Math.sin(2 * Math.PI * (elapsed % travelPeriod) / travelPeriod)
     const lane = Math.sin(angle) / emanationEdgeSine
     const arcHeight = emanationArcHeight(lane)
-    const halfChord = spread * emanationSpread(emanationLensStation)
+    const halfChord = spread * emanationSpread(station)
     const arcRadius = halfChord / emanationEdgeSine
     const x = halfChord * lane
-    const y = reach * emanationLensStation + arcRadius * arcHeight * Math.sin(emanationViewOffset)
+    const bowY = Math.sin(emanationViewOffset)
+    const bowZ = Math.cos(emanationViewOffset)
+    const y = reach * station + arcRadius * arcHeight * bowY
 
-    // At the center we see the glass face-on and closer. At the edges it turns away.
+    // Two tangents define the surface under the glass. X/Y are screen coordinates,
+    // and positive Z points toward the viewer. The first tangent follows the ray.
+    const radiusSlope = spread / reach * (.72 + .56 * station) / emanationEdgeSine
+    const rayX = radiusSlope * Math.sin(angle)
+    const rayY = 1 + radiusSlope * arcHeight * bowY
+    const rayZ = 1 / Math.tan(emanationViewElevation) + radiusSlope * arcHeight * bowZ
     const visibility = Math.min(1, spread / 6)
-    const depth = arcHeight * Math.cos(emanationViewOffset)
-    const apparentScale = Math.sqrt(Math.cos(angle)) / (1 - .6 * depth)
-    const scale = 1 + visibility * (apparentScale - 1)
-    const tilt = -Math.atan2(Math.sin(angle) * Math.sin(emanationViewOffset), Math.cos(angle))
+    const bank = angle * visibility
+    const crossX = Math.cos(bank)
+    const crossY = -Math.sin(bank) * bowY
+    const crossZ = -Math.sin(bank) * bowZ
 
-    return { x, y, scale, tilt: tilt * visibility }
+    // A projected circle's minor/major axis ratio is the facing component of its unit normal.
+    const nx = crossY * rayZ - crossZ * rayY
+    const ny = crossZ * rayX - crossX * rayZ
+    const nz = crossX * rayY - crossY * rayX
+    const axisRatio = Math.abs(nz) / Math.hypot(nx, ny, nz)
+    const tilt = Math.atan2(nx, -ny)
+    const scale = (station / .70) / (1 - .6 * arcHeight * bowZ * visibility)
+    return { x, y, scale, axisRatio, tilt }
 }
 
 function emanationColor(lane) {
@@ -4058,6 +4073,7 @@ function drawEmanationBeam(sourceX, sourceY) {
 
 function drawEmanationLens(ctx, pose, reach) {
     const radius = Math.max(9, reach * .038) * pose.scale
+    const minorRadius = radius * pose.axisRatio
     ctx.save()
     ctx.translate(pose.x, pose.y)
     // Keep the undisturbed beam for both the magnified detail and the color at the contact point.
@@ -4074,7 +4090,7 @@ function drawEmanationLens(ctx, pose, reach) {
         2 * sampleRadius, 2 * sampleRadius, 0, 0, sample.width, sample.height)
 
     ctx.beginPath()
-    ctx.arc(0, 0, radius, 0, 2 * Math.PI)
+    ctx.ellipse(0, 0, radius, minorRadius, pose.tilt, 0, 2 * Math.PI)
     ctx.save()
     ctx.clip()
     const middle = Math.floor(sample.width / 2)
@@ -4092,17 +4108,17 @@ function drawEmanationLens(ctx, pose, reach) {
     ctx.fill()
     ctx.restore()
 
-    // A fixed neutral edge keeps the circular silhouette legible over every string.
+    // Narrow the neutral rim near the source so it leaves room for the colored glass.
+    const rimScale = Math.min(1, minorRadius / 5)
     ctx.strokeStyle = "#313438"
-    ctx.lineWidth = 2.2
+    ctx.lineWidth = 2.2 * rimScale
     ctx.stroke()
     ctx.strokeStyle = "#c2c5c8"
-    ctx.lineWidth = .85
+    ctx.lineWidth = .85 * rimScale
     ctx.stroke()
 
-    ctx.rotate(pose.tilt)
     ctx.beginPath()
-    ctx.arc(0, 0, radius * .84, Math.PI * 1.20, Math.PI * 1.40)
+    ctx.ellipse(0, 0, radius * .84, minorRadius * .84, pose.tilt, Math.PI * 1.20, Math.PI * 1.40)
     ctx.strokeStyle = "rgba(255, 255, 255, .70)"
     ctx.stroke()
     ctx.restore()
