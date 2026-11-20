@@ -3957,9 +3957,7 @@ function emanationLensPose(elapsed, reach, spread) {
     const scale = 1 + visibility * (apparentScale - 1)
     const tilt = -Math.atan2(Math.sin(angle) * Math.sin(emanationViewOffset), Math.cos(angle))
 
-    // The strings flare with distance. Sample the string directly underneath the glass.
-    const trackWidth = spread * emanationSpread(y / reach)
-    return { x, y, scale, tilt: tilt * visibility, lane: trackWidth > 0 ? x / trackWidth : 0 }
+    return { x, y, scale, tilt: tilt * visibility }
 }
 
 function emanationColor(lane) {
@@ -3985,9 +3983,10 @@ function makeEmanationTexture() {
         const position = lane * stringsPerSide
         const nearestString = Math.max(-stringsPerSide, Math.min(stringsPerSide, Math.round(position)))
         const distance = Math.abs(position - nearestString)
-        const core = Math.exp(-((distance / (.095 + .055 * crown)) ** 2))
-        const halo = Math.exp(-((distance / .37) ** 2))
-        const light = .49 + .12 * crown + .18 * halo + .30 * core
+        // A short, steep shoulder defines the laser core within the softer halo.
+        const core = Math.exp(-((distance / (.065 + .035 * crown)) ** 4))
+        const halo = Math.exp(-((distance / .31) ** 2))
+        const light = .49 + .12 * crown + .18 * halo + .42 * core
         const rgb = emanationColor(lane).map(value => value * light + (255 - value) * .16 * core)
         const outside = Math.max(0, Math.abs(lane) - 1)
         const alpha = Math.exp(-((outside / .036) ** 2))
@@ -4052,34 +4051,41 @@ function drawEmanationBeam(sourceX, sourceY) {
     }
     ctx.globalAlpha = 1
 
-    drawEmanationLens(ctx, emanationLensPose(dateTemple, reach, spread), reach, colorMix)
+    drawEmanationLens(ctx, emanationLensPose(dateTemple, reach, spread), reach)
     ctx.restore()
 }
 
-function drawEmanationLens(ctx, pose, reach, colorMix) {
+function drawEmanationLens(ctx, pose, reach) {
     const radius = reach * .024 * pose.scale
     ctx.save()
     ctx.translate(pose.x, pose.y)
+    ctx.beginPath()
+    ctx.arc(0, 0, radius, 0, 2 * Math.PI)
+    ctx.closePath()
+    ctx.save()
+    ctx.clip()
+
+    // Sample the scene before painting the glass. Source coordinates use backing pixels.
+    const zoom = 2.75
+    const transform = ctx.getTransform()
+    const sampleRadius = radius * transform.a / zoom
+    ctx.drawImage(ctx.canvas, transform.e - sampleRadius, transform.f - sampleRadius,
+        2 * sampleRadius, 2 * sampleRadius, -radius, -radius, 2 * radius, 2 * radius)
+
+    const bevel = ctx.createRadialGradient(0, 0, radius * .78, 0, 0, radius)
+    bevel.addColorStop(0, "rgba(0, 0, 0, 0)")
+    bevel.addColorStop(1, "rgba(0, 0, 0, .46)")
+    ctx.fillStyle = bevel
+    ctx.fill()
+    ctx.restore()
+    ctx.strokeStyle = "rgba(255, 255, 255, .52)"
+    ctx.lineWidth = Math.max(.65, radius * .075)
+    ctx.stroke()
+
     ctx.rotate(pose.tilt)
     ctx.beginPath()
-    ctx.moveTo(-radius, 0)
-    ctx.quadraticCurveTo(0, -radius * .76, radius, 0)
-    ctx.quadraticCurveTo(0, radius * .76, -radius, 0)
-    ctx.closePath()
-    const glass = ctx.createLinearGradient(0, -radius * .38, 0, radius * .38)
-    glass.addColorStop(0, "rgba(255, 255, 255, .6)")
-    glass.addColorStop(.38, "rgba(200, 225, 255, .14)")
-    glass.addColorStop(1, "rgba(12, 15, 24, .78)")
-    ctx.fillStyle = glass
-    ctx.fill()
-    const rim = emanationColor(pose.lane).map(channel => Math.round(255 + (channel - 255) * colorMix))
-    ctx.strokeStyle = "rgb(" + rim.join(",") + ")"
-    ctx.lineWidth = Math.max(.6, radius * .18)
-    ctx.stroke()
-    ctx.beginPath()
-    ctx.moveTo(-radius * .65, 0)
-    ctx.quadraticCurveTo(0, -radius * .38, radius * .45, -radius * .1)
-    ctx.strokeStyle = "rgba(255, 255, 255, .9)"
+    ctx.arc(0, 0, radius * .85, Math.PI * 1.12, Math.PI * 1.47)
+    ctx.strokeStyle = "rgba(255, 255, 255, .8)"
     ctx.stroke()
     ctx.restore()
 }
