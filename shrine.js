@@ -1,6 +1,11 @@
 var mother //stores shrine image\
 var jackal
 var arkInstructionFont
+let motherFadeContext
+let motherFadeShade = -1
+let arkInscriptionLayer
+let oracleSpectrumLayer
+let oracleSpectra
 
 const motherNames = [
     "THE ABSOLUTE ETERNAL",
@@ -736,15 +741,37 @@ var menuSelectDescription = ""
 var mobile = false
 var shrineViewportWidth = 0
 var shrineViewportHeight = 0
+var shrinePixelDensity = 0
 var templeAnimationPaused = false
 
+// Snap the offscreen origin to a backing pixel so fine strokes stay sharp after compositing.
+function createShrineLayer(left, top, right, bottom) {
+    const transform = drawingContext.getTransform()
+    const x = (Math.floor(left * transform.a + transform.e) - transform.e) / transform.a
+    const y = (Math.floor(top * transform.d + transform.f) - transform.f) / transform.d
+    const graphics = createGraphics(Math.ceil(right - x), Math.ceil(bottom - y))
+    graphics.translate(-x, -y)
+    return { graphics, x, y }
+}
+
+function drawShrineLayer(layer) {
+    const { graphics, x, y } = layer
+    drawingContext.drawImage(graphics.canvas, x, y, graphics.width, graphics.height)
+}
+
 function updateShrineImageSizes(force = false) {
-    if (!force && shrineViewportWidth == windowWidth && shrineViewportHeight == windowHeight) {
+    const density = pixelDensity()
+    if (!force && shrineViewportWidth == windowWidth && shrineViewportHeight == windowHeight && shrinePixelDensity == density) {
         return
     }
 
+    if (arkInscriptionLayer) arkInscriptionLayer.graphics.remove()
+    if (oracleSpectrumLayer) oracleSpectrumLayer.graphics.remove()
+    arkInscriptionLayer = null
+    oracleSpectrumLayer = null
     shrineViewportWidth = windowWidth
     shrineViewportHeight = windowHeight
+    shrinePixelDensity = density
 
     if (windowHeight < windowWidth) {
         mother.width = windowHeight * motherSizeMod
@@ -1967,6 +1994,90 @@ function UI(UIShow = false) {
         UIShow)    
 
 }
+const oracleBarPositions = [.773, .786, .799, .812, .825]
+
+function getOracleSpectra() {
+    if (!oracleSpectra) {
+        oracleSpectra = [
+            [templeOraclePolarity(0), templeOraclePolarity(32)],
+            Array.from({ length: 64 }, (_, i) => templeOracleValue(i)),
+            Array.from({ length: 8 }, (_, i) => templeOracleColorFamilyFromValue(i)),
+            Array.from({ length: 64 }, (_, i) => templeOracleHue(i)),
+            Array.from({ length: 64 }, (_, i) => templeOracleIntegratedColorColumn(i))
+        ]
+    }
+    return oracleSpectra
+}
+
+function paintOracleSpectrum(graphics, columns, x, y, width, height) {
+    const columnWidth = width / columns.length
+    for (let i = 0; i < columns.length; i++) {
+        const column = columns[i]
+        const centerX = x - width / 2 + columnWidth * (i + .5)
+        if (Array.isArray(column)) {
+            const rowHeight = height / column.length
+            for (let row = 0; row < column.length; row++) {
+                const color = column[row]
+                graphics.fill(color.red, color.green, color.blue)
+                graphics.rect(centerX, y - height / 2 + rowHeight * (row + .5), columnWidth + 1, rowHeight + 1)
+            }
+        } else {
+            graphics.fill(column.red, column.green, column.blue)
+            graphics.rect(centerX, y, columnWidth + 1, height)
+        }
+    }
+}
+
+function drawOracleSelectionBars(showDecisionOutput) {
+    if (!showDecisionOutput && oracleSpectrumLayer) {
+        drawShrineLayer(oracleSpectrumLayer)
+        return
+    }
+    const x = mother.width / 2
+    const width = mother.width * .2 * 1.08
+    const height = mother.height * .0075
+    let graphics = window
+    let selectedColors
+    let spectra
+    if (showDecisionOutput) {
+        const index = timeStamp[0]
+        selectedColors = [
+            templeOraclePolarity(index), templeOracleValue(index), templeOracleColorFamily(index),
+            templeOracleHue(index), templeOracleAdjustedColor(index, timeStamp[9])
+        ]
+    } else {
+        spectra = getOracleSpectra()
+        const margin = height / 2 + 2
+        const top = mother.height * oracleBarPositions[0] - margin
+        const bottom = mother.height * oracleBarPositions[oracleBarPositions.length - 1] + margin
+        oracleSpectrumLayer = createShrineLayer(x - width / 2 - margin, top, x + width / 2 + margin, bottom)
+        graphics = oracleSpectrumLayer.graphics
+    }
+
+    graphics.push()
+    graphics.rectMode(CENTER)
+    for (let i = 0; i < oracleBarPositions.length; i++) {
+        const y = mother.height * oracleBarPositions[i]
+        graphics.noStroke()
+        graphics.fill(0)
+        graphics.rect(x, y, width, height)
+        if (showDecisionOutput) {
+            const color = selectedColors[i]
+            graphics.fill(color.red, color.green, color.blue)
+            graphics.rect(x, y, width, height)
+        } else {
+            paintOracleSpectrum(graphics, spectra[i], x, y, width, height)
+        }
+        graphics.noFill()
+        graphics.stroke(112)
+        graphics.strokeWeight(height * .08)
+        graphics.rect(x, y, width, height)
+    }
+    graphics.pop()
+
+    if (!showDecisionOutput) drawShrineLayer(oracleSpectrumLayer)
+}
+
 //displays oracle
 function displays(c) {
     push()
@@ -2304,53 +2415,6 @@ function displays(c) {
         text(label, mother.width / 2, y)
     }
 
-    function timeOracleSelectionColorBar(x, y, barWidth, barHeight, selectedColor, heldColors, showDecisionOutput) {
-        push()
-        rectMode(CENTER)
-        noStroke()
-        fill(0)
-        rect(x, y, barWidth, barHeight)
-
-        if (showDecisionOutput) {
-            fill(selectedColor.red, selectedColor.green, selectedColor.blue)
-            rect(x, y, barWidth, barHeight)
-        } else {
-            let segments = heldColors.length
-            let segmentWidth = barWidth / segments
-            for (let i = 0; i < segments; i++) {
-                let segmentColor = heldColors[i]
-                if (Array.isArray(segmentColor)) {
-                    let rows = segmentColor.length
-                    let rowHeight = barHeight / rows
-                    for (let row = 0; row < rows; row++) {
-                        let rowColor = segmentColor[row]
-                        fill(rowColor.red, rowColor.green, rowColor.blue)
-                        rect(
-                            x - (barWidth * .5) + (segmentWidth * (i + .5)),
-                            y - (barHeight * .5) + (rowHeight * (row + .5)),
-                            segmentWidth + 1,
-                            rowHeight + 1
-                        )
-                    }
-                } else {
-                    fill(segmentColor.red, segmentColor.green, segmentColor.blue)
-                    rect(
-                        x - (barWidth * .5) + (segmentWidth * (i + .5)),
-                        y,
-                        segmentWidth + 1,
-                        barHeight
-                    )
-                }
-            }
-        }
-
-        noFill()
-        stroke(112)
-        strokeWeight(barHeight * .08)
-        rect(x, y, barWidth, barHeight)
-        pop()
-    }
-
     function timeOracleBreakdownDisplay() {
         push()
 
@@ -2442,75 +2506,7 @@ function displays(c) {
         }
         text(firstChoiceRow, mother.width / 2, mother.height * .726)
         text(secondChoiceRow, mother.width / 2, mother.height * .749)
-        let polaritySpectrum = [
-            templeOraclePolarity(0),
-            templeOraclePolarity(32)
-        ]
-        let valueSpectrum = Array.from({ length: 64 }, function(item, index) {
-            return templeOracleValue(index)
-        })
-        let colorFamilySpectrum = Array.from({ length: 8 }, function(item, index) {
-            return templeOracleColorFamilyFromValue(index)
-        })
-        let hueSpectrum = Array.from({ length: 64 }, function(item, index) {
-            return templeOracleHue(index)
-        })
-        let saturationIndex = timeStamp[9]
-        let adjustedColorSpectrum = Array.from({ length: 64 }, function(item, index) {
-            return templeOracleIntegratedColorColumn(index)
-        })
-        let polarityColor = templeOraclePolarity(timeStamp[0])
-        let valueColor = templeOracleValue(timeStamp[0])
-        let colorFamily = templeOracleColorFamily(timeStamp[0])
-        let hueColor = templeOracleHue(timeStamp[0])
-        let adjustedColor = templeOracleAdjustedColor(timeStamp[0], saturationIndex)
-        let selectionBarWidth = timeOracleBreakdownSize * 1.08
-        let selectionBarHeight = mother.height * .0075
-        timeOracleSelectionColorBar(
-            mother.width / 2,
-            mother.height * .773,
-            selectionBarWidth,
-            selectionBarHeight,
-            polarityColor,
-            polaritySpectrum,
-            showDecisionOutput
-        )
-        timeOracleSelectionColorBar(
-            mother.width / 2,
-            mother.height * .786,
-            selectionBarWidth,
-            selectionBarHeight,
-            valueColor,
-            valueSpectrum,
-            showDecisionOutput
-        )
-        timeOracleSelectionColorBar(
-            mother.width / 2,
-            mother.height * .799,
-            selectionBarWidth,
-            selectionBarHeight,
-            colorFamily,
-            colorFamilySpectrum,
-            showDecisionOutput
-        )
-        timeOracleSelectionColorBar(
-            mother.width / 2,
-            mother.height * .812,
-            selectionBarWidth,
-            selectionBarHeight,
-            hueColor,
-            hueSpectrum,
-            showDecisionOutput
-        )
-        timeOracleSelectionColorBar(
-            mother.width / 2,
-            mother.height * .825,
-            selectionBarWidth,
-            selectionBarHeight,
-            adjustedColor,
-            adjustedColorSpectrum,
-            showDecisionOutput
-        )
+        drawOracleSelectionBars(showDecisionOutput)
         pop()
 
     pop()
@@ -2900,13 +2896,29 @@ function clock() {
 }
 
 function drawMotherImageLayer() {
-    push()
-    tint(
-        255 - 255 * timeScaleCycle[1],
-        255 - (255 * timeScaleCycle[1])
-    )
-    image(mother, 0, 0)
-    pop()
+    if (!motherFadeContext) {
+        const canvas = document.createElement("canvas")
+        canvas.width = mother.canvas.width
+        canvas.height = mother.canvas.height
+        motherFadeContext = canvas.getContext("2d")
+    }
+
+    const ctx = motherFadeContext
+    const shade = Math.round(255 - 255 * timeScaleCycle[1])
+    if (shade !== motherFadeShade) {
+        // Darken the source while preserving its mask, then apply the matching opacity.
+        const { width, height } = ctx.canvas
+        ctx.globalCompositeOperation = "copy"
+        ctx.drawImage(mother.canvas, 0, 0)
+        ctx.globalCompositeOperation = "source-atop"
+        ctx.fillStyle = "rgba(0, 0, 0, " + (1 - shade / 255) + ")"
+        ctx.fillRect(0, 0, width, height)
+        ctx.globalCompositeOperation = "destination-in"
+        ctx.fillStyle = "rgba(0, 0, 0, " + (shade / 255) + ")"
+        ctx.fillRect(0, 0, width, height)
+        motherFadeShade = shade
+    }
+    drawingContext.drawImage(ctx.canvas, 0, 0, mother.width, mother.height)
 }
 
 function idol(x,y, circleWidth,flowerVertical,flowerHorizontal,lineWeight, color) {
@@ -3838,23 +3850,35 @@ function myriad() {
     }
 }
 
-// controlls emianation animation
-function drawArkInstructionCuneiform(x, y, horizontalAlign) {
-    push()
-    noStroke()
-    fill(255)
-    textFont(arkInstructionFont)
-    textAlign(horizontalAlign, CENTER)
-    textStyle(NORMAL)
-    let scriptSize = mother.width * .016
-    let scriptLeading = scriptSize * 1.35
-    textSize(scriptSize)
-    stroke(0)
-    strokeWeight(scriptSize * .14)
-    for (let i = 0; i < arkInstructionCuneiform.length; i++) {
-        text(arkInstructionCuneiform[i], x, y + (i - 1) * scriptLeading)
+function drawArkInscriptions(leftX, rightX, y) {
+    if (!arkInscriptionLayer) {
+        const size = mother.width * .016
+        const leading = size * 1.35
+        push()
+        textFont(arkInstructionFont)
+        textSize(size)
+        const lineWidth = Math.max(...arkInstructionCuneiform.map(line => textWidth(line)))
+        pop()
+
+        const margin = lineWidth + size
+        arkInscriptionLayer = createShrineLayer(leftX - margin, y - 3 * size, rightX + margin, y + 3 * size)
+        const graphics = arkInscriptionLayer.graphics
+        graphics.textFont(arkInstructionFont)
+        graphics.textStyle(NORMAL)
+        graphics.textSize(size)
+        graphics.fill(255)
+        graphics.stroke(0)
+        graphics.strokeCap(SQUARE)
+        graphics.strokeWeight(size * .14)
+        for (let i = 0; i < arkInstructionCuneiform.length; i++) {
+            const lineY = y + (i - 1) * leading
+            graphics.textAlign(RIGHT, CENTER)
+            graphics.text(arkInstructionCuneiform[i], leftX, lineY)
+            graphics.textAlign(LEFT, CENTER)
+            graphics.text(arkInstructionCuneiform[i], rightX, lineY)
+        }
     }
-    pop()
+    drawShrineLayer(arkInscriptionLayer)
 }
 
 if (typeof module != "undefined" && module.exports) {
@@ -4026,8 +4050,7 @@ function emination(count) {
          let jackalCenterY = windowHeight * .666
          image(jackal, jackalCenterX, jackalCenterY)
          let arkInstructionY = jackalCenterY - jackal.height * .47
-         drawArkInstructionCuneiform(jackalCenterX - jackal.width * .233, arkInstructionY, RIGHT)
-         drawArkInstructionCuneiform(jackalCenterX + jackal.width * .233, arkInstructionY, LEFT)
+         drawArkInscriptions(jackalCenterX - jackal.width * .233, jackalCenterX + jackal.width * .233, arkInstructionY)
          pop()
 
 
