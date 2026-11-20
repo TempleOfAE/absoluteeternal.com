@@ -3939,12 +3939,14 @@ function emanationArcHeight(lane) {
     return Math.sqrt(1 - sine * sine) - emanationEdgeCosine
 }
 
-function emanationLensPose(elapsed, minuteProgress, reach, spread) {
-    const sweepPeriod = 8 * second
-    const angle = -emanationHalfArc * Math.cos(2 * Math.PI * (elapsed % sweepPeriod) / sweepPeriod)
-    // The original lens covered half the viewport height per Temple minute, moving inward.
+function emanationLensPose(momentInMinute, reach, spread) {
+    const sweepMoments = 8 * timeUnitsMoment[1]
+    const runMoments = 32 * timeUnitsMoment[1]
+    const angle = -emanationHalfArc * Math.cos(2 * Math.PI * (momentInMinute % sweepMoments) / sweepMoments)
+    // Reach the Mother on the last moment of each half-minute, then re-enter from below.
+    const runProgress = (momentInMinute % runMoments) / (runMoments - 1)
     const pathLength = height / 2
-    const distance = pathLength * (1 - minuteProgress)
+    const distance = pathLength * (1 - runProgress)
     // Give the larger glass room to enter. The allowance disappears at the bottom edge.
     const entryFraction = Math.max(0, distance - reach) / Math.max(1, pathLength - reach)
     const entryPadding = Math.max(24, reach * .10) * entryFraction ** 2
@@ -4071,7 +4073,7 @@ function drawEmanationBeam(sourceX, sourceY) {
     }
     ctx.globalAlpha = 1
 
-    drawEmanationLens(ctx, emanationLensPose(dateTemple, timeScale[1], reach, spread), reach)
+    drawEmanationLens(ctx, emanationLensPose(timeMoment[1], reach, spread), reach)
     ctx.restore()
 }
 
