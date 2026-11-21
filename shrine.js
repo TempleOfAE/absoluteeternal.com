@@ -768,8 +768,10 @@ function updateShrineImageSizes(force = false) {
 
     if (arkInscriptionLayer) arkInscriptionLayer.graphics.remove()
     if (oracleSpectrumLayer) oracleSpectrumLayer.graphics.remove()
+    if (clockRibbonLayer) clockRibbonLayer.graphics.remove()
     arkInscriptionLayer = null
     oracleSpectrumLayer = null
+    clockRibbonLayer = null
     shrineViewportWidth = windowWidth
     shrineViewportHeight = windowHeight
     shrinePixelDensity = density
@@ -942,11 +944,21 @@ function drawShrine() {
     idol(mother.width * .5, mother.height * .5, circleWidth, true, false, mother.width*.003, 255)
     const clockBottom = clock()
 
-    if (!circleHover && !menuHover) {
+    if (!menuHover) {
         const sourceX = mother.width * .5
         const sourceY = mother.height * .53
-        drawCompactMyriad(sourceX, sourceY)
-        emination(sourceX, sourceY, clockBottom)
+        // The square is drawn upside down, with its lower edge tangent to the circle.
+        const squareBottom = (mother.height + circleWidth) / 2
+        const squareTop = squareBottom - squareWidth
+        const clockTop = mother.height - clockBottom
+        const pointerY = mouseY - (middle.y - mother.height / 2)
+        const opacity = shrineHasPointer ? Math.max(0, Math.min(1, (pointerY - clockTop) / (squareTop - clockTop))) : 1
+        if (!circleHover) drawCompactMyriad(sourceX, sourceY)
+        let lensSample
+        if (opacity > 0 || (jackals && !circleHover)) {
+            lensSample = drawEmanationBeam(sourceX, sourceY, clockBottom, opacity, squareBottom)
+        }
+        if (!circleHover) emination(lensSample)
     }
 
     displays(6 - oracleDisplayCounter)
@@ -968,18 +980,24 @@ function templeTitleCenterY() {
     return height / 2 - mother.height * (.5 + .1333)
 }
 
+const templeTitleText = 'ToÆ'
+
+function setTempleTitleType() {
+    textStyle(NORMAL)
+    textSize(mother.width * .1)
+}
+
 function drawTempleTitle(y, ribbonReveal) {
     push()
-    textStyle(NORMAL)
+    setTempleTitleType()
     textAlign(CENTER, CENTER)
-    textSize(mother.width * .1)
     noStroke()
     if (ribbonReveal > 0) {
         stroke(0, 190 * ribbonReveal)
         strokeWeight(Math.max(1, mother.width * .004))
     }
     templeApplyHoverGlow(titleHover, mother.width * .018)
-    text('ToÆ', middle.x, y)
+    text(templeTitleText, middle.x, y)
     pop()
 }
 function windowResized() {
@@ -3836,6 +3854,7 @@ const templeFlowBeatsPerMinute = 8
 let emanationTexture
 let emanationFlowTexture
 let emanationLensSample
+let clockRibbonLayer
 
 // Four wheel steps per strand. Blue and red sit five strands either side of yellow.
 const myriadWheelSteps = 64
@@ -4295,25 +4314,57 @@ function drawEmanationRays(ctx, reach, halfWidth, phase) {
 }
 
 function drawExpandedRibbon(ctx) {
-    // Frame a section of the fan with its tip above the screen and its bowed end below it.
-    const reach = height * 2.25
-    ctx.translate(0, -height * 1.5)
-    drawEmanationRays(ctx, reach, Math.min(width * .85, reach * .65), emanationFlowPhase())
+    const sourceY = -height
+    const edgeReach = height * 2.25
+    const titleStation = (templeTitleCenterY() - sourceY) / edgeReach
+    push()
+    setTempleTitleType()
+    // At the title, each half of the open fan spans one full wordmark.
+    const halfWidth = textWidth(templeTitleText) / emanationSpread(titleStation)
+    pop()
+    const reach = edgeReach - halfWidth * emanationBowRise
+    ctx.translate(0, sourceY - height / 2)
+    drawEmanationRays(ctx, reach, halfWidth, emanationFlowPhase())
 }
 
-function drawEmanationBeam(sourceX, sourceY, clockBottom) {
+function drawEmanationBeam(sourceX, sourceY, clockBottom, opacity, squareBottom) {
     const screenBottom = (height + mother.height) / 2
     const reach = screenBottom - sourceY + 1
     const lensStation = ((clockBottom + screenBottom) / 2 - sourceY) / reach
     const halfWidth = Math.min(reach * .23, width * .38)
     const phase = emanationFlowPhase()
-    const ctx = drawingContext
+    const main = drawingContext
+    let ctx = main
+    if (opacity < 1 || circleHover) {
+        // Composite the whole ribbon and lens together. The irises still sample the fully lit beam.
+        if (!clockRibbonLayer) {
+            const margin = halfWidth * emanationTextureMargin + 2
+            clockRibbonLayer = createShrineLayer(sourceX - margin, sourceY - 1, sourceX + margin, screenBottom + 1)
+        }
+        const { graphics, x, y } = clockRibbonLayer
+        const transform = main.getTransform()
+        ctx = graphics.drawingContext
+        ctx.drawImage(main.canvas, Math.round(x * transform.a + transform.e), Math.round(y * transform.d + transform.f),
+            graphics.canvas.width, graphics.canvas.height, x, y, graphics.width, graphics.height)
+    }
     ctx.save()
     ctx.translate(sourceX, sourceY)
     const spread = drawEmanationRays(ctx, reach, halfWidth, phase)
     const pose = emanationLensPose(phase, reach, spread, lensStation)
     const sample = drawEmanationLens(ctx, pose, reach)
     ctx.restore()
+    if (ctx !== main && opacity > 0) {
+        main.save()
+        if (circleHover) {
+            // Leave the oracle readout inside the square clear while the ribbon passes behind it.
+            main.beginPath()
+            main.rect(clockRibbonLayer.x, squareBottom, clockRibbonLayer.graphics.width, screenBottom - squareBottom)
+            main.clip()
+        }
+        main.globalAlpha = opacity
+        drawShrineLayer(clockRibbonLayer)
+        main.restore()
+    }
     return sample
 }
 
@@ -4378,12 +4429,11 @@ function drawEmanationLens(ctx, pose, reach) {
     return sample
 }
 
-function emination(sourceX, sourceY, clockBottom) {
+function emination(lensSample) {
     push()
     const cx = mother.width / 2
     const cy = mother.height * .5021
     const n = noise(dateTemple / 1000)
-    const lensSample = drawEmanationBeam(sourceX, sourceY, clockBottom)
     colorMode(HSB)
     fill(100, Math.min(1, timeScaleCycle[1] * 3))
 
