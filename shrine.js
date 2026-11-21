@@ -3836,7 +3836,9 @@ let emanationFlowTexture
 let emanationLensSample
 
 // Start in the temple wheel's blue family and follow the ribbon's blue-to-red order.
+const myriadYellowStep = 24 // Three eight-step families from blue to yellow.
 const myriadColorWheel = Array.from({ length: 64 }, (_, step) => {
+    if (step === myriadYellowStep) return emanationColors[stringsPerSide]
     const { red, green, blue } = templeOracleHue(5 * 8 + 4 - step)
     return [red, green, blue]
 })
@@ -3893,7 +3895,7 @@ function makeMyriadGrid() {
     const meridianOrbits = Array.from({ length: 161 }, (_, j) => myriadOrbit(2 * Math.PI * j / 160))
     const meridian = [meridianOrbits.map((_, orbit) => ({ lane: 0, orbit }))]
     const strands = Array.from({ length: myriadLinesPerFamily }, (_, i) => {
-        const color = myriadBeamColor((i + .5) / myriadLinesPerFamily)
+        const color = myriadBeamColor(i / myriadLinesPerFamily)
         return { color, opacity: 0, path: null }
     })
     // Each horizontal line follows one orbit angle across all the depth bands.
@@ -3972,15 +3974,15 @@ function makeMyriadGlow() {
         pixels: new Uint32Array(image.data.buffer) }
 }
 
-function updateMyriadGlow(glow, travel) {
+function updateMyriadGlow(glow, phaseAtLeft) {
     const { palette, lanes, colors, pixels } = glow
     const samples = colors.length - 1
     for (let i = 0; i < samples; i++) {
         const position = i / (samples - 1)
         const offset = 4 * (i + 1)
-        const phase = position + travel
+        const phase = position + phaseAtLeft
         writeMyriadColor(phase, palette, offset)
-        const strandPosition = phase * myriadLinesPerFamily - .5
+        const strandPosition = phase * myriadLinesPerFamily
         const distance = Math.abs(strandPosition - Math.round(strandPosition))
         const halo = .20 + .18 * Math.exp(-((distance / .30) ** 2))
         palette[offset + 3] = 255 * halo * myriadStrandOpacity((2 * position - 1) * myriadLaneLimit)
@@ -3994,10 +3996,11 @@ function drawMyriadInterior(ctx, turn) {
     // Put the circular edge just beyond the corners, including its antialiasing.
     const radius = Math.hypot(width, height) / 2 + 2
     const { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow } = myriadGrid
-    const travel = turn / (2 * Math.PI)
+    // The left opening is half a turn from the center, where yellow faces us at minute zero.
+    const phaseAtLeft = (turn / (2 * Math.PI) + myriadYellowStep / myriadColorWheel.length + .5) % 1
     // Strands keep their assigned colors from the right opening to the left.
     for (let i = 0; i < strands.length; i++) {
-        const phase = (1 + (i + .5) / strands.length - travel) % 1
+        const phase = (1 + i / strands.length - phaseAtLeft) % 1
         const lane = (2 * phase - 1) * myriadLaneLimit
         strands[i].opacity = myriadStrandOpacity(lane)
         strands[i].path = projectMyriadStrands(meridian, lane, meridianOrbits)
@@ -4010,7 +4013,7 @@ function drawMyriadInterior(ctx, turn) {
     for (const guide of guides) {
         guide.path = projectMyriadStrands(guideSections, guide.lane, guideOrbits)
     }
-    updateMyriadGlow(glow, travel)
+    updateMyriadGlow(glow, phaseAtLeft)
     ctx.scale(radius, radius)
     ctx.lineJoin = "round"
     ctx.lineCap = "round"
