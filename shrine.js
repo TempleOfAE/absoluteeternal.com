@@ -3993,6 +3993,7 @@ function updateMyriadGlow(glow, phaseAtLeft) {
 
 function drawMyriadInterior(ctx, turn) {
     if (!myriadGrid) myriadGrid = makeMyriadGrid()
+    const opacity = ctx.globalAlpha
     // Put the circular edge just beyond the corners, including its antialiasing.
     const radius = Math.hypot(width, height) / 2 + 2
     const { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow } = myriadGrid
@@ -4020,33 +4021,36 @@ function drawMyriadInterior(ctx, turn) {
     ctx.beginPath()
     ctx.arc(0, 0, 1, 0, 2 * Math.PI)
     ctx.clip()
-    ctx.globalAlpha = 1
     ctx.drawImage(glow.canvas, -1, -1, 2, 2)
     ctx.strokeStyle = "white"
     ctx.lineWidth = Math.max(.7 / radius, .002)
     for (const guide of guides) {
-        ctx.globalAlpha = .07 * guide.opacity
+        ctx.globalAlpha = opacity * .07 * guide.opacity
         ctx.stroke(guide.path)
     }
     const core = Math.max(.75 / radius, .0028)
     for (const strand of strands) {
         ctx.strokeStyle = strand.color
-        ctx.globalAlpha = .085 * strand.opacity
+        const light = opacity * strand.opacity
+        ctx.globalAlpha = .085 * light
         ctx.lineWidth = 4 * core
         ctx.stroke(strand.path)
-        ctx.globalAlpha = .21 * strand.opacity
+        ctx.globalAlpha = .21 * light
         ctx.lineWidth = 2.15 * core
         ctx.stroke(strand.path)
-        ctx.globalAlpha = .9 * strand.opacity
+        ctx.globalAlpha = .9 * light
         ctx.lineWidth = core
         ctx.stroke(strand.path)
     }
 }
 
 function myriad(x, y, expanded) {
+    const aperture = emanationAperture()
+    if (aperture === 0) return
     const ctx = drawingContext
     const turn = 2 * Math.PI * timeMoment[1] / timeUnitsMoment[2]
     ctx.save()
+    ctx.globalAlpha *= aperture
     if (expanded) {
         // The shrine's local origin is the top left of the centered Mother image.
         ctx.translate(mother.width / 2, mother.height / 2)
@@ -4214,6 +4218,12 @@ function drawEmanationFlow(ctx, reach, spread, phase) {
     ctx.restore()
 }
 
+function emanationAperture() {
+    // Leave a short white phase at the turn of the Temple clock.
+    const opening = Math.max(0, (1 - timeScaleCycle[1] - .025) / .975)
+    return opening * opening * (3 - 2 * opening)
+}
+
 function drawEmanationBeam(sourceX, sourceY, clockBottom) {
     if (!emanationTexture) emanationTexture = makeEmanationTexture()
     const screenBottom = (height + mother.height) / 2
@@ -4223,10 +4233,7 @@ function drawEmanationBeam(sourceX, sourceY, clockBottom) {
     // Launch a reflection at each of the clock's eight major divisions, as the lens returns to yellow.
     const beat = timeUnitsMoment[2] / templeFlowBeatsPerMinute
     const phase = (timeMoment[1] % beat) / beat
-    // Leave a short white phase at the turn of the Temple clock.
-    const opening = Math.max(0, (1 - timeScaleCycle[1] - .025) / .975)
-    const aperture = opening * opening * (3 - 2 * opening)
-    const spread = halfWidth * aperture
+    const spread = halfWidth * emanationAperture()
     const colorMix = Math.min(1, spread / 6)
     const ctx = drawingContext
     ctx.save()
