@@ -3836,7 +3836,7 @@ const myriadLaneLimit = stringsPerSide + 4
 const myriadDepthSlope = .9
 const myriadDepthCurve = .5
 // Distance from the center to each recessed opening, in units of the outer radius.
-const myriadFocusX = .36
+const myriadFocusX = .26
 const myriadFocus = myriadFocusX / (1 + Math.sqrt(1 - myriadFocusX ** 2))
 let myriadGrid
 let myriadTransitionContext
