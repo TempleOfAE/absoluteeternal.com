@@ -3848,9 +3848,9 @@ function myriadDepthScale(sinOrbit) {
     return .31 / (1 + .22 * sinOrbit)
 }
 
-function myriadVertex(lane, orbit) {
-    const sin = Math.sin(orbit)
-    return { lane, depthScale: myriadDepthScale(sin), sin, cos: Math.cos(orbit) }
+function myriadOrbit(angle) {
+    const sin = Math.sin(angle)
+    return { depthScale: myriadDepthScale(sin), sin, cos: Math.cos(angle) }
 }
 
 function myriadRecession(lane) {
@@ -3863,38 +3863,37 @@ function myriadStrandOpacity(lane) {
 }
 
 function makeMyriadGrid() {
-    const meridian = Array.from({ length: 161 }, (_, j) => myriadVertex(0, 2 * Math.PI * j / 160))
+    const meridianOrbits = Array.from({ length: 161 }, (_, j) => myriadOrbit(2 * Math.PI * j / 160))
+    const meridian = [meridianOrbits.map((_, orbit) => ({ lane: 0, orbit }))]
     const strands = Array.from({ length: myriadMeridianCount }, (_, i) => {
         const rgb = emanationColor(2 * i / (myriadMeridianCount - 1) - 1).map(Math.round)
         return { rgb, color: `rgb(${rgb.join(",")})`, opacity: 0, paths: null }
     })
-    // The horizontal guides stay in place. Project their near and far sections just once.
-    const guides = []
-    for (let lane = -myriadLaneLimit; lane < myriadLaneLimit; lane++) {
-        const sections = []
-        for (let i = 0; i < myriadTransverseCount; i++) {
-            const orbit = i * 2 * Math.PI / myriadTransverseCount
-            sections.push(Array.from({ length: 7 }, (_, j) => myriadVertex(lane + j / 6, orbit)))
-        }
-        guides.push({ opacity: myriadRecession(lane + .5), paths: projectMyriadStrands(sections, 0) })
-    }
-    return { strands, guides, meridian: [meridian], glow: makeMyriadGlow() }
+    // Each horizontal line follows one orbit angle across all the depth bands.
+    const guideAngles = Array.from({ length: myriadTransverseCount }, (_, i) => 2 * Math.PI * i / myriadTransverseCount)
+    const guideSections = guideAngles.map((_, orbit) => Array.from({ length: 7 }, (_, j) => ({ lane: j / 6, orbit })))
+    const guides = Array.from({ length: 2 * myriadLaneLimit }, (_, i) => {
+        const lane = i - myriadLaneLimit
+        return { lane, opacity: myriadRecession(lane + .5), paths: null }
+    })
+    return { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow: makeMyriadGlow() }
 }
 
-function projectMyriadStrands(strands, laneOffset) {
+function projectMyriadStrands(strands, laneOffset, orbits) {
     const paths = [new Path2D(), new Path2D()]
     const a = myriadFocus
     for (const strand of strands) {
         let prevX, prevY, prevZ, prevSide
         for (const point of strand) {
-            const depth = (point.lane + laneOffset) * point.depthScale
+            const orbit = orbits[point.orbit]
+            const depth = (point.lane + laneOffset) * orbit.depthScale
             const ring = Math.cosh(depth)
             // Inverse stereographic projection of a bipolar grid. A strand turns onto
             // the far face when its Z coordinate crosses zero at the spherical rim.
-            const denominator = (1 + a * a) * ring - (1 - a * a) * point.cos
+            const denominator = (1 + a * a) * ring - (1 - a * a) * orbit.cos
             const x = 2 * a * Math.sinh(depth) / denominator
-            const y = 2 * a * point.sin / denominator
-            const z = ((1 - a * a) * ring - (1 + a * a) * point.cos) / denominator
+            const y = 2 * a * orbit.sin / denominator
+            const z = ((1 - a * a) * ring - (1 + a * a) * orbit.cos) / denominator
             const side = z >= 0 ? 1 : 0
             if (prevSide === undefined) {
                 paths[side].moveTo(x, y)
@@ -3974,14 +3973,18 @@ function updateMyriadGlow(glow, strands, travel) {
 function drawMyriadInterior(ctx, turn) {
     if (!myriadGrid) myriadGrid = makeMyriadGrid()
     const radius = Math.max(width, height) / 2
-    const { strands, guides, meridian, glow } = myriadGrid
+    const { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow } = myriadGrid
     const travel = turn / (2 * Math.PI)
     // Strands keep their assigned colors from the right opening to the left.
     for (let i = 0; i < strands.length; i++) {
         const phase = (1 + (i + .5) / strands.length - travel) % 1
         const lane = (2 * phase - 1) * myriadLaneLimit
         strands[i].opacity = myriadStrandOpacity(lane)
-        strands[i].paths = projectMyriadStrands(meridian, lane)
+        strands[i].paths = projectMyriadStrands(meridian, lane, meridianOrbits)
+    }
+    const guideOrbits = guideAngles.map(angle => myriadOrbit(angle - turn))
+    for (const guide of guides) {
+        guide.paths = projectMyriadStrands(guideSections, guide.lane, guideOrbits)
     }
     updateMyriadGlow(glow, strands, travel)
     ctx.scale(radius, radius)
