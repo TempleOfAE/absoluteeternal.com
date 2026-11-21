@@ -3983,7 +3983,7 @@ function updateMyriadGlow(glow, phaseAtCenter) {
         writeMyriadColor(phase, palette, offset)
         const strandPosition = phase * myriadLinesPerFamily
         const distance = Math.abs(strandPosition - Math.round(strandPosition))
-        const halo = .20 + .46 * Math.exp(-((distance / .30) ** 2))
+        const halo = .20 + .68 * Math.exp(-((distance / .30) ** 2))
         palette[offset + 3] = 255 * halo
     }
     const rgba = glow.image.data
