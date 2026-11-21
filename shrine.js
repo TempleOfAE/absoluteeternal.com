@@ -3990,7 +3990,8 @@ function updateMyriadGlow(glow, travel) {
 
 function drawMyriadInterior(ctx, turn) {
     if (!myriadGrid) myriadGrid = makeMyriadGrid()
-    const radius = Math.max(width, height) / 2
+    // Put the circular edge just beyond the corners, including its antialiasing.
+    const radius = Math.hypot(width, height) / 2 + 2
     const { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow } = myriadGrid
     const travel = turn / (2 * Math.PI)
     // Strands keep their assigned colors from the right opening to the left.
