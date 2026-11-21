@@ -3983,7 +3983,7 @@ function updateMyriadGlow(glow, phaseAtCenter) {
         writeMyriadColor(phase, palette, offset)
         const strandPosition = phase * myriadLinesPerFamily
         const distance = Math.abs(strandPosition - Math.round(strandPosition))
-        const halo = .20 + .18 * Math.exp(-((distance / .30) ** 2))
+        const halo = .20 + .46 * Math.exp(-((distance / .30) ** 2))
         palette[offset + 3] = 255 * halo
     }
     const rgba = glow.image.data
@@ -4025,10 +4025,10 @@ function drawMyriadInterior(ctx, turn) {
     const core = Math.max(.75 / radius, .0028)
     for (const strand of strands) {
         ctx.strokeStyle = strand.ink
-        ctx.globalAlpha = .085
-        ctx.lineWidth = 4 * core
+        ctx.globalAlpha = .14
+        ctx.lineWidth = 5 * core
         ctx.stroke(strand.path)
-        ctx.globalAlpha = .21
+        ctx.globalAlpha = .30
         ctx.lineWidth = 2.15 * core
         ctx.stroke(strand.path)
         ctx.globalAlpha = .9
