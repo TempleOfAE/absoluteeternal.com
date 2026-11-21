@@ -3940,9 +3940,10 @@ function makeMyriadGlow() {
     const lanes = new Uint16Array(size * size)
     const samples = 1024
     const palette = new Uint8ClampedArray(4 * (samples + 1))
-    const shadowCanvas = canvas.cloneNode(false)
-    const shadowCtx = shadowCanvas.getContext("2d")
-    const shadowImage = shadowCtx.createImageData(size, size)
+    const highlightCanvas = canvas.cloneNode(false)
+    const highlightCtx = highlightCanvas.getContext("2d")
+    const highlightImage = highlightCtx.createImageData(size, size)
+    highlightImage.data.fill(255) // The pulse updates only the alpha of these white pixels.
     const orbitBins = new Uint8Array(lanes.length)
     const pulse = new Uint8Array(256)
     const strandWeight = new Float32Array(samples + 1)
@@ -3971,7 +3972,7 @@ function makeMyriadGlow() {
         }
     }
     return { canvas, ctx, image, lanes, palette, colors: new Uint32Array(palette.buffer),
-        pixels: new Uint32Array(image.data.buffer), shadowCanvas, shadowCtx, shadowImage, orbitBins, pulse, strandWeight }
+        pixels: new Uint32Array(image.data.buffer), highlightCanvas, highlightCtx, highlightImage, orbitBins, pulse, strandWeight }
 }
 
 function updateMyriadGlow(glow, travel) {
@@ -3994,14 +3995,14 @@ function updateMyriadGlow(glow, travel) {
         palette[offset + 3] = 255 * (.20 + .18 * halo) * myriadStrandOpacity((2 * position - 1) * myriadLaneLimit)
         strandWeight[i + 1] = Math.max(0, (halo - .20) / .80)
     }
-    const shadow = glow.shadowImage.data
+    const highlight = glow.highlightImage.data
     for (let i = 0; i < pixels.length; i++) {
         const lane = lanes[i]
         pixels[i] = colors[lane]
-        shadow[4 * i + 3] = pulse[orbitBins[i]] * strandWeight[lane]
+        highlight[4 * i + 3] = pulse[orbitBins[i]] * strandWeight[lane]
     }
     glow.ctx.putImageData(glow.image, 0, 0)
-    glow.shadowCtx.putImageData(glow.shadowImage, 0, 0)
+    glow.highlightCtx.putImageData(glow.highlightImage, 0, 0)
 }
 
 function drawMyriadInterior(ctx, turn) {
@@ -4018,7 +4019,7 @@ function drawMyriadInterior(ctx, turn) {
         strands[i].path = projectMyriadStrand(lane, meridianOrbits)
     }
     updateMyriadGlow(glow, travel)
-    // Isolate the emitted light so a passing shadow only dims the Myriad.
+    // Confine the white reflections to the Myriad's strands and glow.
     if (light.canvas.width !== ctx.canvas.width) light.canvas.width = ctx.canvas.width
     if (light.canvas.height !== ctx.canvas.height) light.canvas.height = ctx.canvas.height
     light.clearRect(0, 0, light.canvas.width, light.canvas.height)
@@ -4045,8 +4046,8 @@ function drawMyriadInterior(ctx, turn) {
         light.stroke(strand.path)
     }
     light.globalAlpha = 1
-    light.globalCompositeOperation = "destination-out"
-    light.drawImage(glow.shadowCanvas, -1, -1, 2, 2)
+    light.globalCompositeOperation = "source-atop"
+    light.drawImage(glow.highlightCanvas, -1, -1, 2, 2)
     light.restore()
 
     ctx.save()
