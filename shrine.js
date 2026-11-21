@@ -743,6 +743,7 @@ var shrineViewportWidth = 0
 var shrineViewportHeight = 0
 var shrinePixelDensity = 0
 var templeAnimationPaused = false
+let shrineHasPointer = false
 
 // Snap the offscreen origin to a backing pixel so fine strokes stay sharp after compositing.
 function createShrineLayer(left, top, right, bottom) {
@@ -909,14 +910,23 @@ function draw() {
 
     background(0);
 
-    const endY = height * .9
-    let reveal = 1
-    if (mouseY < endY) {
-        const clockBottom = drawShrine()
-        const startY = middle.y - mother.height / 2 + clockBottom
-        reveal = Math.max(0, (mouseY - startY) / (endY - startY))
+    const titleY = templeTitleCenterY()
+    const myriadY = height * .9
+    let ribbonReveal = 0
+    let myriadReveal = 0
+    if (mouseY >= myriadY) {
+        myriadReveal = 1
+    } else if (shrineHasPointer && mouseY <= titleY) {
+        ribbonReveal = 1
+    } else {
+        const clockBottom = middle.y - mother.height / 2 + drawShrine()
+        const clockTop = height - clockBottom
+        if (shrineHasPointer && mouseY < clockTop) ribbonReveal = (clockTop - mouseY) / (clockTop - titleY)
+        if (mouseY > clockBottom) myriadReveal = (mouseY - clockBottom) / (myriadY - clockBottom)
     }
-    if (reveal > 0) drawExpandedMyriad(reveal)
+    if (ribbonReveal > 0) drawExpandedView(ribbonReveal, drawExpandedRibbon)
+    if (myriadReveal < 1) drawTempleTitle(titleY, ribbonReveal)
+    if (myriadReveal > 0) drawExpandedView(myriadReveal, drawMyriadInterior)
     if (oracleDisplayCounter === 1) interpretation()
 
     jackals = windowHeight < windowWidth * .85
@@ -940,29 +950,10 @@ function drawShrine() {
     }
 
     displays(6 - oracleDisplayCounter)
-    push()
-
     textStyle(NORMAL)
     textAlign(CENTER, CENTER)
-    textSize(mother.width * .1)
-
     noStroke()
-
-    if (titleHover) {
-        fill(255)
-        drawingContext.shadowColor = 'rgba(255, 255, 255, 0.45)'
-        drawingContext.shadowBlur = mother.width * .018
-    } else {
-        fill(230)
-        drawingContext.shadowColor = 'transparent'
-        drawingContext.shadowBlur = 0
-    }
-
-    text('ToÆ',
-    mother.width * .5, -mother.height * .1333)
-
-    drawingContext.shadowColor = 'transparent'
-    drawingContext.shadowBlur = 0
+    templeClearHoverGlow()
     fill(255)
     textSize(mother.width * .022)
 
@@ -970,8 +961,26 @@ function drawShrine() {
     mother.width * .5, -mother.height * .0444)
 
     pop()
-    pop()
     return clockBottom
+}
+
+function templeTitleCenterY() {
+    return height / 2 - mother.height * (.5 + .1333)
+}
+
+function drawTempleTitle(y, ribbonReveal) {
+    push()
+    textStyle(NORMAL)
+    textAlign(CENTER, CENTER)
+    textSize(mother.width * .1)
+    noStroke()
+    if (ribbonReveal > 0) {
+        stroke(0, 190 * ribbonReveal)
+        strokeWeight(Math.max(1, mother.width * .004))
+    }
+    templeApplyHoverGlow(titleHover, mother.width * .018)
+    text('ToÆ', middle.x, y)
+    pop()
 }
 function windowResized() {
     updateShrineImageSizes(true)
@@ -986,6 +995,10 @@ function templeOverlayActive() {
 }
 
 // P5 user input functions
+function mouseMoved() {
+    shrineHasPointer = true
+}
+
 function keyTyped() {
     if (templeOverlayActive()) {
         return false
@@ -1013,6 +1026,7 @@ function templePressInteraction() {
         return true
     }
 
+    shrineHasPointer = true
     templeRequestFieldCompass()
     UI()
 
@@ -1974,7 +1988,7 @@ function UI(UIShow = false) {
         UIShow)
 
     titleHover = boolHover([
-        [true, width / 2, height * .0976,
+        [true, width / 2, templeTitleCenterY(),
             mother.width * .5, mother.width * .15]
     ],
         UIShow)
@@ -3844,7 +3858,7 @@ const myriadFocalLength = .95
 const myriadEyeTerm = myriadEyeRadius ** 2 + 1 - myriadTubeRadius ** 2
 const myriadRayConstant = 4 * myriadEyeRadius ** 2 - myriadEyeTerm ** 2
 let myriadGrid
-let myriadTransitionContext
+let shrineTransitionContext
 
 function writeMyriadColor(phase, target, offset) {
     const step = (phase % 1) * myriadColorWheel.length
@@ -3995,7 +4009,7 @@ function updateMyriadGlow(glow, phaseAtCenter) {
     glow.ctx.putImageData(glow.image, 0, 0)
 }
 
-function drawMyriadInterior(ctx, turn) {
+function drawMyriadInterior(ctx, turn = myriadTurn()) {
     if (!myriadGrid) myriadGrid = makeMyriadGrid()
     // Put the circular edge just beyond the corners, including its antialiasing.
     const radius = Math.hypot(width, height) / 2 + 2
@@ -4045,15 +4059,15 @@ function myriadTurn() {
     return 2 * Math.PI * timeMoment[1] / timeUnitsMoment[2]
 }
 
-function drawExpandedMyriad(opacity) {
+function drawExpandedView(opacity, drawView) {
     const ctx = drawingContext
     let view = ctx
     if (opacity < 1) {
         // Blend two complete scenes so the shrine fades evenly, including its opaque artwork.
-        if (!myriadTransitionContext) {
-            myriadTransitionContext = document.createElement("canvas").getContext("2d", { alpha: false })
+        if (!shrineTransitionContext) {
+            shrineTransitionContext = document.createElement("canvas").getContext("2d", { alpha: false })
         }
-        view = myriadTransitionContext
+        view = shrineTransitionContext
         if (view.canvas.width !== ctx.canvas.width) view.canvas.width = ctx.canvas.width
         if (view.canvas.height !== ctx.canvas.height) view.canvas.height = ctx.canvas.height
         view.clearRect(0, 0, view.canvas.width, view.canvas.height)
@@ -4061,7 +4075,7 @@ function drawExpandedMyriad(opacity) {
     view.save()
     view.setTransform(view.canvas.width / width, 0, 0, view.canvas.height / height,
         view.canvas.width / 2, view.canvas.height / 2)
-    drawMyriadInterior(view, myriadTurn())
+    drawView(view)
     view.restore()
 
     if (view !== ctx) {
@@ -4240,23 +4254,19 @@ function drawEmanationFlow(ctx, reach, spread, phase) {
     ctx.restore()
 }
 
-function drawEmanationBeam(sourceX, sourceY, clockBottom) {
-    if (!emanationTexture) emanationTexture = makeEmanationTexture()
-    const screenBottom = (height + mother.height) / 2
-    const reach = screenBottom - sourceY + 1
-    const lensStation = ((clockBottom + screenBottom) / 2 - sourceY) / reach
-    const halfWidth = Math.min(reach * .23, width * .38)
+function emanationFlowPhase() {
     // Launch a reflection at each of the clock's eight major divisions, as the lens returns to yellow.
     const beat = timeUnitsMoment[2] / templeFlowBeatsPerMinute
-    const phase = (timeMoment[1] % beat) / beat
+    return (timeMoment[1] % beat) / beat
+}
+
+function drawEmanationRays(ctx, reach, halfWidth, phase) {
+    if (!emanationTexture) emanationTexture = makeEmanationTexture()
     // Leave a short white phase at the turn of the Temple clock.
     const opening = Math.max(0, (1 - timeScaleCycle[1] - .025) / .975)
     const aperture = opening * opening * (3 - 2 * opening)
     const spread = halfWidth * aperture
     const colorMix = Math.min(1, spread / 6)
-    const ctx = drawingContext
-    ctx.save()
-    ctx.translate(sourceX, sourceY)
     ctx.save()
     if (spread > 0) {
         // Yellow reaches just past the viewport. Both outer tips are farther down the bow.
@@ -4281,7 +4291,26 @@ function drawEmanationBeam(sourceX, sourceY, clockBottom) {
         }
     }
     ctx.restore()
+    return spread
+}
 
+function drawExpandedRibbon(ctx) {
+    // Frame a section of the fan with its tip above the screen and its bowed end below it.
+    const reach = height * 2.25
+    ctx.translate(0, -height * 1.5)
+    drawEmanationRays(ctx, reach, Math.min(width * .85, reach * .65), emanationFlowPhase())
+}
+
+function drawEmanationBeam(sourceX, sourceY, clockBottom) {
+    const screenBottom = (height + mother.height) / 2
+    const reach = screenBottom - sourceY + 1
+    const lensStation = ((clockBottom + screenBottom) / 2 - sourceY) / reach
+    const halfWidth = Math.min(reach * .23, width * .38)
+    const phase = emanationFlowPhase()
+    const ctx = drawingContext
+    ctx.save()
+    ctx.translate(sourceX, sourceY)
+    const spread = drawEmanationRays(ctx, reach, halfWidth, phase)
     const pose = emanationLensPose(phase, reach, spread, lensStation)
     const sample = drawEmanationLens(ctx, pose, reach)
     ctx.restore()
