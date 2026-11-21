@@ -3823,12 +3823,17 @@ let emanationTexture
 let emanationFlowTexture
 let emanationLensSample
 
-// Start in the temple wheel's blue family and follow the ribbon's blue-to-red order.
-const myriadYellowStep = 24 // Three eight-step families from blue to yellow.
-const myriadColorWheel = Array.from({ length: 64 }, (_, step) => {
-    if (step === myriadYellowStep) return emanationColors[stringsPerSide]
-    const { red, green, blue } = templeOracleHue(5 * 8 + 4 - step)
-    return [red, green, blue]
+// Four wheel steps per strand. Blue and red sit five strands either side of yellow.
+const myriadWheelSteps = 64
+const myriadYellowStep = 20
+const myriadRedStep = 2 * myriadYellowStep
+const myriadReturnColors = [
+    emanationColors[emanationColors.length - 1], [255, 0, 184], [135, 0, 255], emanationColors[0]
+]
+const myriadColorWheel = Array.from({ length: myriadWheelSteps }, (_, step) => {
+    if (step <= myriadRedStep) return emanationColor((step - myriadYellowStep) / myriadYellowStep)
+    // Complete the back of the wheel through the temple's magenta and violet.
+    return sampleColorStops(myriadReturnColors, (step - myriadRedStep) / (myriadWheelSteps - myriadRedStep))
 })
 const myriadCompactColors = emanationColors.map((_, i) => myriadBeamColor(i / emanationColors.length))
 const myriadLinesPerFamily = 16
@@ -4127,12 +4132,15 @@ function emanationLensPose(phase, reach, spread, station) {
     return { x, y, scale, axisRatio, tilt }
 }
 
-function emanationColor(lane) {
-    const index = Math.max(0, Math.min(stringsPerSide * 2, (lane + 1) * stringsPerSide))
+function sampleColorStops(colors, position) {
+    const index = Math.max(0, Math.min(1, position)) * (colors.length - 1)
     const left = Math.floor(index)
-    const right = Math.min(left + 1, emanationColors.length - 1)
-    return emanationColors[left].map((value, channel) =>
-        value + (emanationColors[right][channel] - value) * (index - left))
+    const right = Math.min(left + 1, colors.length - 1)
+    return colors[left].map((value, channel) => value + (colors[right][channel] - value) * (index - left))
+}
+
+function emanationColor(lane) {
+    return sampleColorStops(emanationColors, (lane + 1) / 2)
 }
 
 function makeEmanationTexture() {
