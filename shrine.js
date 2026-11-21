@@ -921,10 +921,10 @@ function draw() {
     const clockBottom = clock()
 
     if (!circleHover && !menuHover) {
-        let largeMyriadActive = mouseY >= windowHeight * 0.7
+        const largeMyriadActive = mouseY >= windowHeight * 0.7
         const sourceX = mother.width * .5
         const sourceY = mother.height * .53
-        myriad(sourceX, sourceY)
+        myriad(sourceX, sourceY, largeMyriadActive)
         if (largeMyriadActive) {
             drawMotherImageLayer()
         }
@@ -3753,105 +3753,6 @@ if (typeof window != "undefined") {
     }
 }
 
-// controlls myriad animation
-function myriad(x, y) {
-    var h = mother.height;
-    var wdt = mother.width;
-
-    push();
-    
-    if (mouseY < windowHeight * 0.7 ) {
-        var w = wdt * 0.0063; // scale
-        var n = 13.5;         // line density
-        var sw = wdt * 0.0005; // line width
-        var ts1 = timeScale[0];
-        var tsc1 = timeScaleCycle[1];
-        var alpha1 = 1 - tsc1;
-        var baseHue = 360 * ts1;
-    
-        noFill();
-        colorMode(HSB);
-        strokeWeight(sw * 0.6);
-    
-        var baseColor = color(100, 0, 100);
-        baseColor.setAlpha(alpha1);
-        stroke(baseColor);
-    
-        for (var i = 0; i < n; i++) {
-            var t = i / n;
-            var ww = w * (1 - t);
-            var hue = (360 * t + baseHue) % 361;
-    
-            var c = color(hue, 100, 100, alpha1);
-            stroke(c);
-            strokeWeight(sw);
-    
-            var ww2 = ww / 2;
-            ellipse(x - ww2, y, ww, ww * 1.5);
-            ellipse(x + ww2, y, ww, ww * 1.5);
-    
-            c.setAlpha(0.2 - 0.2 * tsc1);
-            stroke(c);
-            ellipse(x - ww2, y, ww, w * 1.5);
-            ellipse(x + ww2, y, ww, w * 1.5);
-        }
-    
-        colorMode(RGB);
-        pop();
-    } else {
-        var w = h * 0.999;     // scale
-        var n = 13.5;          // line density
-        var sw = wdt * 0.0666;   // line width
-       // y = h * 0.5;
-        var ts1 = timeScale[0];
-        var tsc1 = timeScaleCycle[1];
-        var alpha1 = 1 - tsc1;
-        var baseHue = 360 * ts1;
-    
-        noFill();
-        colorMode(HSB);
-        strokeWeight(sw * 0.6);
-    
-        var baseColor = color(100, 0, 100);
-        baseColor.setAlpha(alpha1);
-        stroke(baseColor);
-    
-        for (var i = 0; i < n; i++) {
-            var t = i / n;
-            var ww = w * (1 - t);
-            var hue = (360 * t + baseHue) % 361;
-    
-            var c = color(hue, 100, 100, alpha1);
-            stroke(c);
-            strokeWeight(sw);
-            //inner glow
-            var ww2 = ww / 2;
-            c.setAlpha(0.15 - 0.15 * tsc1);
-            stroke(c);
-            ellipse(x - ww2, y, ww, ww * 1.5);
-            ellipse(x + ww2, y, ww, ww * 1.5);
-    
-            //owter glow
-            c.setAlpha(0.07 - 0.07 * tsc1);
-            stroke(c);
-            ellipse(x - ww2, y, ww, w * 1.5);
-            ellipse(x + ww2, y, ww, w * 1.5);
-
-            //rings
-            strokeWeight(sw * 0.05);
-            c.setAlpha(1 - 1 * tsc1);
-            stroke(c);
-            ellipse(x - ww2, y, ww, ww * 1.5);
-            ellipse(x + ww2, y, ww, ww * 1.5);
-        }
-
-    
-    
-        colorMode(RGB);
-        pop();
-    }
-}
-
 function drawArkInscriptions(leftX, rightX, y) {
     if (!arkInscriptionLayer) {
         const size = mother.width * .016
@@ -3932,6 +3833,137 @@ const emanationBowDepth = Math.sqrt(1 - emanationBowProjection ** 2)
 let emanationTexture
 let emanationFlowTexture
 let emanationLensSample
+
+const myriadColors = emanationColors.map(rgb => `rgb(${rgb.join(",")})`)
+// The two recessed openings sit just under halfway from the throat to the rim.
+const myriadFocusX = .46
+const myriadFocus = myriadFocusX / (1 + Math.sqrt(1 - myriadFocusX ** 2))
+let myriadGrid
+
+function myriadVertex(lane, orbit) {
+    const sin = Math.sin(orbit)
+    const depth = lane * .31 / (1 + .22 * sin)
+    return { radial: 2 * myriadFocus * Math.sinh(depth), ring: Math.cosh(depth),
+        sin, cos: Math.cos(orbit) }
+}
+
+function makeMyriadGrid() {
+    const groups = []
+    const limit = stringsPerSide + 4
+    function add(lane, strength, strands) {
+        const color = emanationColor(lane / stringsPerSide).map(Math.round)
+        const recession = Math.exp(-.42 * Math.max(0, Math.abs(lane) - stringsPerSide))
+        groups.push({ color: `rgb(${color.join(",")})`, opacity: strength * recession, strands })
+    }
+
+    // Each meridian is one closed strand that passes across both faces of the sphere.
+    for (let lane = -limit; lane <= limit; lane++) {
+        const strand = Array.from({ length: 161 }, (_, i) => myriadVertex(lane, 2 * Math.PI * i / 160))
+        add(lane, 1, [strand])
+    }
+    // The transverse lines follow the same palette between meridians.
+    for (let step = -3 * limit; step < 3 * limit; step++) {
+        const strands = []
+        for (let i = 0; i < 16; i++) {
+            const orbit = i * 2 * Math.PI / 16
+            strands.push([myriadVertex(step / 3, orbit), myriadVertex((step + .5) / 3, orbit),
+                myriadVertex((step + 1) / 3, orbit)])
+        }
+        add((step + .5) / 3, .65, strands)
+    }
+    return groups
+}
+
+function projectMyriadGroup(group, sinTurn, cosTurn) {
+    const paths = [new Path2D(), new Path2D()]
+    const a = myriadFocus
+    for (const strand of group.strands) {
+        let prevX, prevY, prevZ, prevSide
+        for (const point of strand) {
+            const sin = point.sin * cosTurn + point.cos * sinTurn
+            const cos = point.cos * cosTurn - point.sin * sinTurn
+            // Inverse stereographic projection of a bipolar grid. A strand turns onto
+            // the far face when its Z coordinate crosses zero at the spherical rim.
+            const denominator = (1 + a * a) * point.ring - (1 - a * a) * cos
+            const x = point.radial / denominator
+            const y = 2 * a * sin / denominator
+            const z = ((1 - a * a) * point.ring - (1 + a * a) * cos) / denominator
+            const side = z >= 0 ? 1 : 0
+            if (prevSide === undefined) {
+                paths[side].moveTo(x, y)
+            } else {
+                if (side !== prevSide) {
+                    const t = prevZ / (prevZ - z)
+                    const rimX = prevX + t * (x - prevX)
+                    const rimY = prevY + t * (y - prevY)
+                    paths[prevSide].lineTo(rimX, rimY)
+                    paths[side].moveTo(rimX, rimY)
+                }
+                paths[side].lineTo(x, y)
+            }
+            prevX = x
+            prevY = y
+            prevZ = z
+            prevSide = side
+        }
+    }
+    return paths
+}
+
+function drawMyriadInterior(ctx, turn) {
+    if (!myriadGrid) myriadGrid = makeMyriadGrid()
+    const radius = Math.min(height * .47, width * .80)
+    const sinTurn = Math.sin(turn)
+    const cosTurn = Math.cos(turn)
+    const paths = myriadGrid.map(group => projectMyriadGroup(group, sinTurn, cosTurn))
+    ctx.scale(radius, radius)
+    ctx.lineJoin = "round"
+    ctx.lineCap = "round"
+    for (let side = 0; side <= 1; side++) {
+        const depthLight = side === 1 ? 1 : .36
+        const core = Math.max(.75 / radius, side === 1 ? .004 : .0027)
+        for (let i = 0; i < myriadGrid.length; i++) {
+            const group = myriadGrid[i]
+            const path = paths[i][side]
+            const light = depthLight * group.opacity
+            ctx.strokeStyle = group.color
+            ctx.globalAlpha = .085 * light
+            ctx.lineWidth = 4 * core
+            ctx.stroke(path)
+            ctx.globalAlpha = .21 * light
+            ctx.lineWidth = 2.15 * core
+            ctx.stroke(path)
+            ctx.globalAlpha = .9 * light
+            ctx.lineWidth = core
+            ctx.stroke(path)
+        }
+    }
+}
+
+function myriad(x, y, expanded) {
+    const ctx = drawingContext
+    const turn = 2 * Math.PI * timeMoment[1] / timeUnitsMoment[2]
+    ctx.save()
+    ctx.translate(x, y)
+    if (expanded) {
+        drawMyriadInterior(ctx, turn)
+    } else {
+        // At the Mother the whole field is only a few pixels wide.
+        const size = mother.width * .0063
+        ctx.rotate(.25 * Math.sin(turn))
+        ctx.lineWidth = mother.width * .0005
+        for (let i = 0; i < myriadColors.length; i++) {
+            const radius = size * (1 - i / myriadColors.length) / 2
+            ctx.strokeStyle = myriadColors[i]
+            ctx.beginPath()
+            ctx.ellipse(-radius, 0, radius, radius * 1.5, 0, 0, 2 * Math.PI)
+            ctx.moveTo(2 * radius, 0)
+            ctx.ellipse(radius, 0, radius, radius * 1.5, 0, 0, 2 * Math.PI)
+            ctx.stroke()
+        }
+    }
+    ctx.restore()
+}
 
 // Screen coordinates relative to the point on the Mother, in units of fan width and length.
 function emanationSpread(y) {
