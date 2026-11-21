@@ -944,7 +944,7 @@ function drawShrine() {
     idol(mother.width * .5, mother.height * .5, circleWidth, true, false, mother.width*.003, 255)
     const clockBottom = clock()
 
-    if (!menuHover) {
+    if (!circleHover && !menuHover) {
         const sourceX = mother.width * .5
         const sourceY = mother.height * .53
         // The square is drawn upside down, with its lower edge tangent to the circle.
@@ -953,12 +953,9 @@ function drawShrine() {
         const clockTop = mother.height - clockBottom
         const pointerY = mouseY - (middle.y - mother.height / 2)
         const opacity = shrineHasPointer ? Math.max(0, Math.min(1, (pointerY - clockTop) / (squareTop - clockTop))) : 1
-        if (!circleHover) drawCompactMyriad(sourceX, sourceY)
-        let lensSample
-        if (opacity > 0 || (jackals && !circleHover)) {
-            lensSample = drawEmanationBeam(sourceX, sourceY, clockBottom, opacity, squareBottom)
-        }
-        if (!circleHover) emination(lensSample)
+        drawCompactMyriad(sourceX, sourceY)
+        const lensSample = opacity > 0 || jackals ? drawEmanationBeam(sourceX, sourceY, clockBottom, opacity) : null
+        emination(lensSample)
     }
 
     displays(6 - oracleDisplayCounter)
@@ -4279,12 +4276,8 @@ function emanationFlowPhase() {
     return (timeMoment[1] % beat) / beat
 }
 
-function drawEmanationRays(ctx, reach, halfWidth, phase) {
+function drawEmanationRays(ctx, reach, spread, phase) {
     if (!emanationTexture) emanationTexture = makeEmanationTexture()
-    // Leave a short white phase at the turn of the Temple clock.
-    const opening = Math.max(0, (1 - timeScaleCycle[1] - .025) / .975)
-    const aperture = opening * opening * (3 - 2 * opening)
-    const spread = halfWidth * aperture
     const colorMix = Math.min(1, spread / 6)
     ctx.save()
     if (spread > 0) {
@@ -4310,7 +4303,6 @@ function drawEmanationRays(ctx, reach, halfWidth, phase) {
         }
     }
     ctx.restore()
-    return spread
 }
 
 function drawExpandedRibbon(ctx) {
@@ -4327,15 +4319,18 @@ function drawExpandedRibbon(ctx) {
     drawEmanationRays(ctx, reach, halfWidth, emanationFlowPhase())
 }
 
-function drawEmanationBeam(sourceX, sourceY, clockBottom, opacity, squareBottom) {
+function drawEmanationBeam(sourceX, sourceY, clockBottom, opacity) {
     const screenBottom = (height + mother.height) / 2
     const reach = screenBottom - sourceY + 1
     const lensStation = ((clockBottom + screenBottom) / 2 - sourceY) / reach
     const halfWidth = Math.min(reach * .23, width * .38)
+    // Only the clock ribbon closes to a single white line.
+    const opening = Math.max(0, (1 - timeScaleCycle[1] - .025) / .975)
+    const spread = halfWidth * opening * opening * (3 - 2 * opening)
     const phase = emanationFlowPhase()
     const main = drawingContext
     let ctx = main
-    if (opacity < 1 || circleHover) {
+    if (opacity < 1) {
         // Composite the whole ribbon and lens together. The irises still sample the fully lit beam.
         if (!clockRibbonLayer) {
             const margin = halfWidth * emanationTextureMargin + 2
@@ -4349,18 +4344,12 @@ function drawEmanationBeam(sourceX, sourceY, clockBottom, opacity, squareBottom)
     }
     ctx.save()
     ctx.translate(sourceX, sourceY)
-    const spread = drawEmanationRays(ctx, reach, halfWidth, phase)
+    drawEmanationRays(ctx, reach, spread, phase)
     const pose = emanationLensPose(phase, reach, spread, lensStation)
     const sample = drawEmanationLens(ctx, pose, reach)
     ctx.restore()
     if (ctx !== main && opacity > 0) {
         main.save()
-        if (circleHover) {
-            // Leave the oracle readout inside the square clear while the ribbon passes behind it.
-            main.beginPath()
-            main.rect(clockRibbonLayer.x, squareBottom, clockRibbonLayer.graphics.width, screenBottom - squareBottom)
-            main.clip()
-        }
         main.globalAlpha = opacity
         drawShrineLayer(clockRibbonLayer)
         main.restore()
