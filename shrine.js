@@ -3834,7 +3834,12 @@ let emanationTexture
 let emanationFlowTexture
 let emanationLensSample
 
-const myriadColors = emanationColors.map(rgb => `rgb(${rgb.join(",")})`)
+// Start in the temple wheel's blue family and follow the ribbon's blue-to-red order.
+const myriadColorWheel = Array.from({ length: 64 }, (_, step) => {
+    const { red, green, blue } = templeOracleHue(5 * 8 + 4 - step)
+    return [red, green, blue]
+})
+const myriadCompactColors = emanationColors.map((_, i) => myriadBeamColor(i / emanationColors.length))
 const myriadLineCount = 64
 const myriadLaneLimit = stringsPerSide + 4
 const myriadTransverseCount = myriadLineCount / 2
@@ -3843,6 +3848,21 @@ const myriadMeridianCount = myriadLineCount - myriadTransverseCount - 1 // reser
 const myriadFocusX = .46
 const myriadFocus = myriadFocusX / (1 + Math.sqrt(1 - myriadFocusX ** 2))
 let myriadGrid
+
+function writeMyriadColor(phase, target, offset) {
+    const step = (phase % 1) * myriadColorWheel.length
+    const index = Math.floor(step)
+    const from = myriadColorWheel[index]
+    const to = myriadColorWheel[(index + 1) % myriadColorWheel.length]
+    const fraction = step - index
+    for (let c = 0; c < 3; c++) target[offset + c] = from[c] + (to[c] - from[c]) * fraction
+}
+
+function myriadBeamColor(phase) {
+    const rgb = new Uint8ClampedArray(3)
+    writeMyriadColor(phase, rgb, 0)
+    return `rgb(${rgb.join(",")})`
+}
 
 function myriadDepthScale(sinOrbit) {
     return .31 / (1 + .22 * sinOrbit)
@@ -3866,8 +3886,8 @@ function makeMyriadGrid() {
     const meridianOrbits = Array.from({ length: 161 }, (_, j) => myriadOrbit(2 * Math.PI * j / 160))
     const meridian = [meridianOrbits.map((_, orbit) => ({ lane: 0, orbit }))]
     const strands = Array.from({ length: myriadMeridianCount }, (_, i) => {
-        const rgb = emanationColor(2 * i / (myriadMeridianCount - 1) - 1).map(Math.round)
-        return { rgb, color: `rgb(${rgb.join(",")})`, opacity: 0, paths: null }
+        const color = myriadBeamColor((i + .5) / myriadMeridianCount)
+        return { color, opacity: 0, paths: null }
     })
     // Each horizontal line follows one orbit angle across all the depth bands.
     const guideAngles = Array.from({ length: myriadTransverseCount }, (_, i) => 2 * Math.PI * i / myriadTransverseCount)
@@ -3949,20 +3969,16 @@ function makeMyriadGlow() {
         pixels: new Uint32Array(image.data.buffer) }
 }
 
-function updateMyriadGlow(glow, strands, travel) {
+function updateMyriadGlow(glow, travel) {
     const { palette, lanes, colors, pixels } = glow
     const samples = colors.length - 1
     for (let i = 0; i < samples; i++) {
         const position = i / (samples - 1)
-        const index = (1 + position + travel) * strands.length - .5
-        const whole = Math.floor(index)
-        const left = whole % strands.length
-        const mix = index - whole
-        const from = strands[left].rgb
-        const to = strands[(left + 1) % strands.length].rgb
         const offset = 4 * (i + 1)
-        for (let c = 0; c < 3; c++) palette[offset + c] = from[c] + (to[c] - from[c]) * mix
-        const distance = Math.min(mix, 1 - mix)
+        const phase = position + travel
+        writeMyriadColor(phase, palette, offset)
+        const strandPosition = phase * myriadMeridianCount - .5
+        const distance = Math.abs(strandPosition - Math.round(strandPosition))
         const halo = .20 + .18 * Math.exp(-((distance / .30) ** 2))
         palette[offset + 3] = 255 * halo * myriadStrandOpacity((2 * position - 1) * myriadLaneLimit)
     }
@@ -3986,7 +4002,7 @@ function drawMyriadInterior(ctx, turn) {
     for (const guide of guides) {
         guide.paths = projectMyriadStrands(guideSections, guide.lane, guideOrbits)
     }
-    updateMyriadGlow(glow, strands, travel)
+    updateMyriadGlow(glow, travel)
     ctx.scale(radius, radius)
     ctx.strokeStyle = "white"
     ctx.lineJoin = "round"
@@ -4040,9 +4056,9 @@ function myriad(x, y, expanded) {
         ctx.translate(x, y)
         ctx.rotate(-.25 * Math.sin(turn))
         ctx.lineWidth = mother.width * .0005
-        for (let i = 0; i < myriadColors.length; i++) {
-            const radius = size * (1 - i / myriadColors.length) / 2
-            ctx.strokeStyle = myriadColors[i]
+        for (let i = 0; i < myriadCompactColors.length; i++) {
+            const radius = size * (1 - i / myriadCompactColors.length) / 2
+            ctx.strokeStyle = myriadCompactColors[i]
             ctx.beginPath()
             ctx.ellipse(-radius, 0, radius, radius * 1.5, 0, 0, 2 * Math.PI)
             ctx.moveTo(2 * radius, 0)
