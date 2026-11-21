@@ -3841,7 +3841,7 @@ const myriadColorWheel = Array.from({ length: 64 }, (_, step) => {
     return [red, green, blue]
 })
 const myriadCompactColors = emanationColors.map((_, i) => myriadBeamColor(i / emanationColors.length))
-const myriadStrandCount = 16
+const myriadLinesPerFamily = 16
 const myriadLaneLimit = stringsPerSide + 4
 const myriadDepthSlope = .9
 const myriadDepthCurve = .5
@@ -3891,47 +3891,57 @@ function myriadStrandOpacity(lane) {
 
 function makeMyriadGrid() {
     const meridianOrbits = Array.from({ length: 161 }, (_, j) => myriadOrbit(2 * Math.PI * j / 160))
-    const strands = Array.from({ length: myriadStrandCount }, (_, i) => {
-        const color = myriadBeamColor((i + .5) / myriadStrandCount)
+    const meridian = [meridianOrbits.map((_, orbit) => ({ lane: 0, orbit }))]
+    const strands = Array.from({ length: myriadLinesPerFamily }, (_, i) => {
+        const color = myriadBeamColor((i + .5) / myriadLinesPerFamily)
         return { color, opacity: 0, path: null }
     })
-    const light = document.createElement("canvas").getContext("2d")
-    return { strands, meridianOrbits, light, glow: makeMyriadGlow() }
+    // Each horizontal line follows one orbit angle across all the depth bands.
+    const guideAngles = Array.from({ length: myriadLinesPerFamily }, (_, i) => 2 * Math.PI * i / myriadLinesPerFamily)
+    const guideSections = guideAngles.map((_, orbit) => Array.from({ length: 7 }, (_, j) => ({ lane: j / 6, orbit })))
+    const guides = Array.from({ length: 2 * myriadLaneLimit }, (_, i) => {
+        const lane = i - myriadLaneLimit
+        return { lane, opacity: myriadRecession(lane + .5), path: null }
+    })
+    return { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow: makeMyriadGlow() }
 }
 
-function projectMyriadStrand(lane, orbits) {
+function projectMyriadStrands(strands, laneOffset, orbits) {
     const path = new Path2D()
     const a = myriadFocus
-    const depth = myriadDepthAtLane(lane)
-    const ring = Math.cosh(depth)
-    const radial = 2 * a * Math.sinh(depth)
-    let prevX, prevY, prevZ
-    for (const orbit of orbits) {
-        // Clip each strand at the viewer's horizon.
-        const denominator = (1 + a * a) * ring - (1 - a * a) * orbit.cos
-        const x = radial / denominator
-        const y = 2 * a * orbit.sin / denominator
-        const z = ((1 - a * a) * ring - (1 + a * a) * orbit.cos) / denominator
-        if (prevZ !== undefined && (prevZ >= 0) !== (z >= 0)) {
-            const t = prevZ / (prevZ - z)
-            const rimX = prevX + t * (x - prevX)
-            const rimY = prevY + t * (y - prevY)
-            if (z >= 0) path.moveTo(rimX, rimY)
-            else path.lineTo(rimX, rimY)
+    for (const strand of strands) {
+        let prevX, prevY, prevZ
+        for (const point of strand) {
+            const orbit = orbits[point.orbit]
+            const depth = myriadDepthAtLane(point.lane + laneOffset)
+            const ring = Math.cosh(depth)
+            // From the center, the hemisphere at positive Z fills the circular field
+            // of view. Clip at the viewer's horizon so nothing behind the eye overlays it.
+            const denominator = (1 + a * a) * ring - (1 - a * a) * orbit.cos
+            const x = 2 * a * Math.sinh(depth) / denominator
+            const y = 2 * a * orbit.sin / denominator
+            const z = ((1 - a * a) * ring - (1 + a * a) * orbit.cos) / denominator
+            if (prevZ !== undefined && (prevZ >= 0) !== (z >= 0)) {
+                const t = prevZ / (prevZ - z)
+                const rimX = prevX + t * (x - prevX)
+                const rimY = prevY + t * (y - prevY)
+                if (z >= 0) path.moveTo(rimX, rimY)
+                else path.lineTo(rimX, rimY)
+            }
+            if (z >= 0) {
+                if (prevZ === undefined) path.moveTo(x, y)
+                else path.lineTo(x, y)
+            }
+            prevX = x
+            prevY = y
+            prevZ = z
         }
-        if (z >= 0) {
-            if (prevZ === undefined) path.moveTo(x, y)
-            else path.lineTo(x, y)
-        }
-        prevX = x
-        prevY = y
-        prevZ = z
     }
     return path
 }
 
 function makeMyriadGlow() {
-    const size = 384
+    const size = 320
     const canvas = document.createElement("canvas")
     canvas.width = size
     canvas.height = size
@@ -3940,13 +3950,6 @@ function makeMyriadGlow() {
     const lanes = new Uint16Array(size * size)
     const samples = 1024
     const palette = new Uint8ClampedArray(4 * (samples + 1))
-    const highlightCanvas = canvas.cloneNode(false)
-    const highlightCtx = highlightCanvas.getContext("2d")
-    const highlightImage = highlightCtx.createImageData(size, size)
-    highlightImage.data.fill(255) // The pulse updates only the alpha of these white pixels.
-    const orbitBins = new Uint8Array(lanes.length)
-    const pulse = new Uint8Array(256)
-    const strandWeight = new Float32Array(samples + 1)
     const a = myriadFocus
     // Sample the same inward view for the glow. Index zero is empty space.
     for (let row = 0; row < canvas.height; row++) {
@@ -3961,100 +3964,80 @@ function makeMyriadGlow() {
             const depth = .5 * Math.log((sum + 2 * a * x) / (sum - 2 * a * x))
             const lane = myriadLaneAtDepth(depth)
             if (Math.abs(lane) < myriadLaneLimit) {
-                const texel = row * size + col
-                lanes[texel] = 1 + Math.round((lane / myriadLaneLimit + 1) * .5 * (samples - 1))
-                // Measure travel around the curved strand in the same angular coordinates as the fold.
-                const halfOrbit = .5 * Math.atan2(2 * a * y, nearPole - farPole)
-                const turn = Math.atan2(Math.sin(halfOrbit), a * Math.cos(halfOrbit)) / Math.PI
-                const beat = (1 + turn) * templeFlowBeatsPerMinute
-                orbitBins[texel] = Math.floor((beat % 1) * pulse.length)
+                lanes[row * size + col] = 1 + Math.round((lane / myriadLaneLimit + 1) * .5 * (samples - 1))
             }
         }
     }
     return { canvas, ctx, image, lanes, palette, colors: new Uint32Array(palette.buffer),
-        pixels: new Uint32Array(image.data.buffer), highlightCanvas, highlightCtx, highlightImage, orbitBins, pulse, strandWeight }
+        pixels: new Uint32Array(image.data.buffer) }
 }
 
 function updateMyriadGlow(glow, travel) {
-    const { palette, lanes, colors, pixels, orbitBins, pulse, strandWeight } = glow
-    const beat = (travel * templeFlowBeatsPerMinute) % 1
-    for (let i = 0; i < pulse.length; i++) {
-        const distance = ((i + .5) / pulse.length + beat + .5) % 1 - .5
-        const width = distance > 0 ? .19 : .10
-        pulse[i] = Math.round(255 * .44 * Math.exp(-((distance / width) ** 2)))
-    }
+    const { palette, lanes, colors, pixels } = glow
     const samples = colors.length - 1
     for (let i = 0; i < samples; i++) {
         const position = i / (samples - 1)
         const offset = 4 * (i + 1)
         const phase = position + travel
         writeMyriadColor(phase, palette, offset)
-        const strandPosition = phase * myriadStrandCount - .5
+        const strandPosition = phase * myriadLinesPerFamily - .5
         const distance = Math.abs(strandPosition - Math.round(strandPosition))
-        const halo = Math.exp(-((distance / .30) ** 2))
-        palette[offset + 3] = 255 * (.20 + .18 * halo) * myriadStrandOpacity((2 * position - 1) * myriadLaneLimit)
-        strandWeight[i + 1] = Math.max(0, (halo - .20) / .80)
+        const halo = .20 + .18 * Math.exp(-((distance / .30) ** 2))
+        palette[offset + 3] = 255 * halo * myriadStrandOpacity((2 * position - 1) * myriadLaneLimit)
     }
-    const highlight = glow.highlightImage.data
-    for (let i = 0; i < pixels.length; i++) {
-        const lane = lanes[i]
-        pixels[i] = colors[lane]
-        highlight[4 * i + 3] = pulse[orbitBins[i]] * strandWeight[lane]
-    }
+    for (let i = 0; i < pixels.length; i++) pixels[i] = colors[lanes[i]]
     glow.ctx.putImageData(glow.image, 0, 0)
-    glow.highlightCtx.putImageData(glow.highlightImage, 0, 0)
 }
 
 function drawMyriadInterior(ctx, turn) {
     if (!myriadGrid) myriadGrid = makeMyriadGrid()
     // Put the circular edge just beyond the corners, including its antialiasing.
     const radius = Math.hypot(width, height) / 2 + 2
-    const { strands, meridianOrbits, light, glow } = myriadGrid
+    const { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow } = myriadGrid
     const travel = turn / (2 * Math.PI)
     // Strands keep their assigned colors from the right opening to the left.
     for (let i = 0; i < strands.length; i++) {
         const phase = (1 + (i + .5) / strands.length - travel) % 1
         const lane = (2 * phase - 1) * myriadLaneLimit
         strands[i].opacity = myriadStrandOpacity(lane)
-        strands[i].path = projectMyriadStrand(lane, meridianOrbits)
+        strands[i].path = projectMyriadStrands(meridian, lane, meridianOrbits)
+    }
+    // Space the guides by angle on the central great circle, including its far half.
+    const guideOrbits = guideAngles.map(angle => {
+        const half = (angle - turn) / 2
+        return myriadOrbit(2 * Math.atan2(myriadFocus * Math.sin(half), Math.cos(half)))
+    })
+    for (const guide of guides) {
+        guide.path = projectMyriadStrands(guideSections, guide.lane, guideOrbits)
     }
     updateMyriadGlow(glow, travel)
-    // Confine the white reflections to the Myriad's strands and glow.
-    if (light.canvas.width !== ctx.canvas.width) light.canvas.width = ctx.canvas.width
-    if (light.canvas.height !== ctx.canvas.height) light.canvas.height = ctx.canvas.height
-    light.clearRect(0, 0, light.canvas.width, light.canvas.height)
-    light.save()
-    light.setTransform(ctx.getTransform())
-    light.scale(radius, radius)
-    light.beginPath()
-    light.arc(0, 0, 1, 0, 2 * Math.PI)
-    light.clip()
-    light.drawImage(glow.canvas, -1, -1, 2, 2)
-    light.lineJoin = "round"
-    light.lineCap = "round"
+    ctx.scale(radius, radius)
+    ctx.lineJoin = "round"
+    ctx.lineCap = "round"
+    ctx.beginPath()
+    ctx.arc(0, 0, 1, 0, 2 * Math.PI)
+    ctx.clip()
+    ctx.globalAlpha = 1
+    ctx.drawImage(glow.canvas, -1, -1, 2, 2)
+    ctx.strokeStyle = "white"
+    ctx.lineWidth = Math.max(.7 / radius, .002)
+    for (const guide of guides) {
+        ctx.globalAlpha = .07 * guide.opacity
+        ctx.stroke(guide.path)
+    }
     const core = Math.max(.75 / radius, .0028)
     for (const strand of strands) {
-        light.strokeStyle = strand.color
-        light.globalAlpha = .085 * strand.opacity
-        light.lineWidth = 4 * core
-        light.stroke(strand.path)
-        light.globalAlpha = .21 * strand.opacity
-        light.lineWidth = 2.15 * core
-        light.stroke(strand.path)
-        light.globalAlpha = .9 * strand.opacity
-        light.lineWidth = core
-        light.stroke(strand.path)
+        ctx.strokeStyle = strand.color
+        ctx.globalAlpha = .085 * strand.opacity
+        ctx.lineWidth = 4 * core
+        ctx.stroke(strand.path)
+        ctx.globalAlpha = .21 * strand.opacity
+        ctx.lineWidth = 2.15 * core
+        ctx.stroke(strand.path)
+        ctx.globalAlpha = .9 * strand.opacity
+        ctx.lineWidth = core
+        ctx.stroke(strand.path)
     }
-    light.globalAlpha = 1
-    light.globalCompositeOperation = "source-atop"
-    light.drawImage(glow.highlightCanvas, -1, -1, 2, 2)
-    light.restore()
-
-    ctx.save()
-    ctx.resetTransform()
-    ctx.globalAlpha = 1
-    ctx.drawImage(light.canvas, 0, 0)
-    ctx.restore()
 }
 
 function myriad(x, y, expanded) {
