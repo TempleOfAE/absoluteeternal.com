@@ -3840,7 +3840,7 @@ const myriadColorWheel = Array.from({ length: 64 }, (_, step) => {
     return [red, green, blue]
 })
 const myriadCompactColors = emanationColors.map((_, i) => myriadBeamColor(i / emanationColors.length))
-const myriadLineCount = 64
+const myriadLineCount = 8
 const myriadLaneLimit = stringsPerSide + 4
 const myriadTransverseCount = myriadLineCount / 2
 const myriadMeridianCount = myriadLineCount - myriadTransverseCount - 1 // reserve one line for the rim
