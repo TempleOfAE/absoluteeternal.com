@@ -3835,6 +3835,7 @@ let emanationFlowTexture
 let emanationLensSample
 
 const myriadColors = emanationColors.map(rgb => `rgb(${rgb.join(",")})`)
+const myriadLineCount = 64
 // The two recessed openings sit just under halfway from the throat to the rim.
 const myriadFocusX = .46
 const myriadFocus = myriadFocusX / (1 + Math.sqrt(1 - myriadFocusX ** 2))
@@ -3850,26 +3851,28 @@ function myriadVertex(lane, orbit) {
 function makeMyriadGrid() {
     const groups = []
     const limit = stringsPerSide + 4
+    // Reserve one line for the circular rim and keep a meridian on the central axis.
+    const transverse = myriadLineCount / 2
+    const meridians = myriadLineCount - transverse - 1
     function add(lane, strength, strands) {
-        const color = emanationColor(lane / stringsPerSide).map(Math.round)
         const recession = Math.exp(-.42 * Math.max(0, Math.abs(lane) - stringsPerSide))
-        groups.push({ color: `rgb(${color.join(",")})`, opacity: strength * recession, strands })
+        groups.push({ opacity: strength * recession, strands })
     }
 
     // Each meridian is one closed strand that passes across both faces of the sphere.
-    for (let lane = -limit; lane <= limit; lane++) {
-        const strand = Array.from({ length: 161 }, (_, i) => myriadVertex(lane, 2 * Math.PI * i / 160))
+    for (let i = 0; i < meridians; i++) {
+        const lane = limit * (2 * i / (meridians - 1) - 1)
+        const strand = Array.from({ length: 161 }, (_, j) => myriadVertex(lane, 2 * Math.PI * j / 160))
         add(lane, 1, [strand])
     }
-    // The transverse lines follow the same palette between meridians.
-    for (let step = -3 * limit; step < 3 * limit; step++) {
+    // Split each transverse line into sections so it dims as it recedes into either opening.
+    for (let lane = -limit; lane < limit; lane++) {
         const strands = []
-        for (let i = 0; i < 16; i++) {
-            const orbit = i * 2 * Math.PI / 16
-            strands.push([myriadVertex(step / 3, orbit), myriadVertex((step + .5) / 3, orbit),
-                myriadVertex((step + 1) / 3, orbit)])
+        for (let i = 0; i < transverse; i++) {
+            const orbit = i * 2 * Math.PI / transverse
+            strands.push(Array.from({ length: 7 }, (_, j) => myriadVertex(lane + j / 6, orbit)))
         }
-        add((step + .5) / 3, .65, strands)
+        add(lane + .5, .65, strands)
     }
     return groups
 }
@@ -3910,15 +3913,32 @@ function projectMyriadGroup(group, sinTurn, cosTurn) {
     return paths
 }
 
-function drawMyriadInterior(ctx, turn) {
+function myriadSpectrum(ctx, halfWidth, phase) {
+    const count = myriadColors.length
+    const period = 2 * halfWidth * count / (count - 1)
+    const left = -halfWidth + (phase - 1) * period
+    const gradient = ctx.createLinearGradient(left, 0, left + 2 * period, 0)
+    for (let i = 0; i <= 2 * count; i++) {
+        gradient.addColorStop(i / (2 * count), myriadColors[i % count])
+    }
+    return gradient
+}
+
+function drawMyriadInterior(ctx, turn, colorPhase) {
     if (!myriadGrid) myriadGrid = makeMyriadGrid()
-    const radius = Math.min(height * .47, width * .80)
+    const radius = Math.max(width, height) / 2
     const sinTurn = Math.sin(turn)
     const cosTurn = Math.cos(turn)
     const paths = myriadGrid.map(group => projectMyriadGroup(group, sinTurn, cosTurn))
     ctx.scale(radius, radius)
+    ctx.strokeStyle = myriadSpectrum(ctx, width / (2 * radius), colorPhase)
     ctx.lineJoin = "round"
     ctx.lineCap = "round"
+    ctx.beginPath()
+    ctx.arc(0, 0, 1, 0, 2 * Math.PI)
+    ctx.globalAlpha = .32
+    ctx.lineWidth = Math.max(1 / radius, .0027)
+    ctx.stroke()
     for (let side = 0; side <= 1; side++) {
         const depthLight = side === 1 ? 1 : .36
         const core = Math.max(.75 / radius, side === 1 ? .004 : .0027)
@@ -3926,7 +3946,6 @@ function drawMyriadInterior(ctx, turn) {
             const group = myriadGrid[i]
             const path = paths[i][side]
             const light = depthLight * group.opacity
-            ctx.strokeStyle = group.color
             ctx.globalAlpha = .085 * light
             ctx.lineWidth = 4 * core
             ctx.stroke(path)
@@ -3943,18 +3962,22 @@ function drawMyriadInterior(ctx, turn) {
 function myriad(x, y, expanded) {
     const ctx = drawingContext
     const turn = 2 * Math.PI * timeMoment[1] / timeUnitsMoment[2]
+    const colorPeriod = 16 * timeUnitsMoment[1]
+    const colorPhase = (timeMoment[1] % colorPeriod) / colorPeriod
     ctx.save()
-    ctx.translate(x, y)
     if (expanded) {
-        drawMyriadInterior(ctx, turn)
+        // The shrine's local origin is the top left of the centered Mother image.
+        ctx.translate(mother.width / 2, mother.height / 2)
+        drawMyriadInterior(ctx, turn, colorPhase)
     } else {
         // At the Mother the whole field is only a few pixels wide.
         const size = mother.width * .0063
+        ctx.translate(x, y)
+        ctx.strokeStyle = myriadSpectrum(ctx, size, colorPhase)
         ctx.rotate(.25 * Math.sin(turn))
         ctx.lineWidth = mother.width * .0005
         for (let i = 0; i < myriadColors.length; i++) {
             const radius = size * (1 - i / myriadColors.length) / 2
-            ctx.strokeStyle = myriadColors[i]
             ctx.beginPath()
             ctx.ellipse(-radius, 0, radius, radius * 1.5, 0, 0, 2 * Math.PI)
             ctx.moveTo(2 * radius, 0)
