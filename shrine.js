@@ -918,7 +918,7 @@ function draw() {
 
     circleWidth = mother.width * .725
     idol(mother.width * .5, mother.height * .5, circleWidth, true, false, mother.width*.003, 255)
-    clock(0)
+    const clockBottom = clock()
 
     if (!circleHover && !menuHover) {
         let largeMyriadActive = mouseY >= windowHeight * 0.7
@@ -928,7 +928,7 @@ function draw() {
         if (largeMyriadActive) {
             drawMotherImageLayer()
         }
-        emination(sourceX, sourceY)
+        emination(sourceX, sourceY, clockBottom)
     }
 
     displays(6 - oracleDisplayCounter)
@@ -2852,16 +2852,17 @@ function clock() {
     //background
     push()
     let rim = mother.height * -.365
+    const outerRim = rim - smhTs * 3
 
     for (let i = 0; i < 8; i++) {
         push()
         rotate((TWO_PI / 8) * i)
         stroke(255)
         strokeWeight(ts * .75)
-        line(0, rim, 0, rim - (smhTs * 3))
+        line(0, rim, 0, outerRim)
         stroke(0)
         strokeWeight(ts * .5)
-        line(0, rim, 0, rim - (smhTs * 3))
+        line(0, rim, 0, outerRim)
         pop()
     }
 
@@ -2895,6 +2896,7 @@ function clock() {
 
     pop()
     pop()
+    return mother.height * .5 - outerRim
 }
 
 function drawMotherImageLayer() {
@@ -3924,7 +3926,8 @@ const emanationEdgeCosine = Math.cos(emanationHalfArc)
 const emanationViewElevation = Math.PI / 4
 // Match the rise of a 105-degree screen arc while keeping the ribbon's 120-degree cross section.
 const emanationApparentArc = 105 * Math.PI / 180
-const emanationBowProjection = Math.tan(emanationApparentArc / 4) / Math.tan(emanationHalfArc / 2)
+const emanationBowRise = Math.tan(emanationApparentArc / 4)
+const emanationBowProjection = emanationBowRise / Math.tan(emanationHalfArc / 2)
 const emanationBowDepth = Math.sqrt(1 - emanationBowProjection ** 2)
 let emanationTexture
 let emanationFlowTexture
@@ -3941,28 +3944,22 @@ function emanationArcHeight(lane) {
     return Math.sqrt(1 - sine * sine) - emanationEdgeCosine
 }
 
-function emanationLensPose(momentInMinute, reach, spread) {
-    const sweepMoments = 8 * timeUnitsMoment[1]
-    const angle = -emanationHalfArc * Math.sin(2 * Math.PI * (momentInMinute % sweepMoments) / sweepMoments)
-    // Start on the open rim, cross the squared circle at second 32, and finish at the Mother.
-    const halfMinute = timeUnitsMoment[2] / 2
-    const station = momentInMinute <= halfMinute
-        ? 1 - .5 * momentInMinute / halfMinute
-        : .5 * (timeUnitsMax[1] - momentInMinute) / (timeUnitsMax[1] - halfMinute)
+function emanationLensPose(phase, reach, spread, station) {
+    const angle = -emanationHalfArc * Math.sin(2 * Math.PI * phase)
     const lane = Math.sin(angle) / emanationEdgeSine
     const arcHeight = emanationArcHeight(lane)
     const halfChord = spread * emanationSpread(station)
     const arcRadius = halfChord / emanationEdgeSine
     const x = halfChord * lane
-    const y = reach * station - arcRadius * arcHeight * emanationBowProjection
-    const endLane = spread > 0 ? x / spread : 0
-    const endY = reach - spread / emanationEdgeSine * emanationArcHeight(endLane) * emanationBowProjection
+    // Measure distance along yellow. The other rays bow down from that fixed center.
+    const drop = (1 - emanationEdgeCosine - arcHeight) * emanationBowProjection
+    const y = reach * station + arcRadius * drop
 
     // Two tangents define the surface under the glass. X/Y are screen coordinates,
     // and positive Z points toward the viewer. The first tangent follows the ray.
     const radiusSlope = spread / reach * (.72 + .56 * station) / emanationEdgeSine
     const rayX = radiusSlope * Math.sin(angle)
-    const rayY = 1 - radiusSlope * arcHeight * emanationBowProjection
+    const rayY = 1 + radiusSlope * drop
     const rayZ = 1 / Math.tan(emanationViewElevation) + radiusSlope * arcHeight * emanationBowDepth
     const visibility = Math.min(1, spread / 6)
     const bank = angle * visibility
@@ -3977,7 +3974,7 @@ function emanationLensPose(momentInMinute, reach, spread) {
     const axisRatio = Math.abs(nz) / Math.hypot(nx, ny, nz)
     const tilt = Math.atan2(nx, -ny)
     const scale = (station / .70) / (1 - .6 * arcHeight * emanationBowDepth * visibility)
-    return { x, y, scale, axisRatio, tilt, lane, endY }
+    return { x, y, scale, axisRatio, tilt }
 }
 
 function emanationColor(lane) {
@@ -4033,7 +4030,7 @@ function makeEmanationTexture() {
     return canvas
 }
 
-// Paint one reflection on the bowed strings. It has a bright leading edge and a softer trail.
+// Paint one diffuse reflection across the bowed strings.
 const emanationFlowBaseline = .875
 function makeEmanationFlowTexture() {
     const canvas = document.createElement("canvas")
@@ -4047,12 +4044,12 @@ function makeEmanationFlowTexture() {
         const crest = emanationFlowBaseline - emanationArcHeight(lane) * emanationBowProjection / emanationEdgeSine
         const rgb = emanationColor(lane).map(channel => .70 * channel + .30 * 255)
         const string = lane * stringsPerSide
-        const core = Math.exp(-(((string - Math.round(string)) / .19) ** 2))
-        const edgeFade = Math.min(1, (1 - Math.abs(lane)) / .055)
-        const opacity = (.28 + .42 * core) * edgeFade
+        const core = Math.exp(-(((string - Math.round(string)) / .24) ** 2))
+        const edgeFade = Math.min(1, (1 - Math.abs(lane)) / .10)
+        const opacity = (.14 + .20 * core) * edgeFade
         for (let row = 0; row < canvas.height; row++) {
             const distance = (row + .5) / halfWidth - crest
-            const glow = Math.exp(-((distance / (distance > 0 ? .046 : .15)) ** 2))
+            const glow = Math.exp(-((distance / (distance > 0 ? .095 : .18)) ** 2))
             const offset = 4 * (row * canvas.width + col)
             image.data[offset] = rgb[0]
             image.data[offset + 1] = rgb[1]
@@ -4064,10 +4061,8 @@ function makeEmanationFlowTexture() {
     return canvas
 }
 
-function drawEmanationFlow(ctx, reach, spread, momentInMinute) {
+function drawEmanationFlow(ctx, reach, spread, phase) {
     if (!emanationFlowTexture) emanationFlowTexture = makeEmanationFlowTexture()
-    const interval = 4 * timeUnitsMoment[1]
-    const phase = (momentInMinute % interval) / interval
     ctx.save()
     ctx.globalCompositeOperation = "screen"
     for (let i = 0; i < 4; i++) {
@@ -4075,18 +4070,22 @@ function drawEmanationFlow(ctx, reach, spread, momentInMinute) {
         // Equal time steps cover more screen distance near the viewer. Let the trail clear the rim.
         const station = 1.16 * progress / (2 - progress)
         const halfWidth = spread * emanationSpread(station)
-        ctx.drawImage(emanationFlowTexture, -halfWidth, reach * station - halfWidth * emanationFlowBaseline,
+        const chordY = reach * station + halfWidth * emanationBowRise
+        ctx.drawImage(emanationFlowTexture, -halfWidth, chordY - halfWidth * emanationFlowBaseline,
             2 * halfWidth, halfWidth)
     }
     ctx.restore()
 }
 
-function drawEmanationBeam(sourceX, sourceY) {
+function drawEmanationBeam(sourceX, sourceY, clockBottom) {
     if (!emanationTexture) emanationTexture = makeEmanationTexture()
-    // The square and the circle meet at the bottom of the circle.
-    const squaredCircleBottom = mother.height / 2 + circleWidth / 2
-    const reach = 2 * (squaredCircleBottom - sourceY)
+    const screenBottom = (height + mother.height) / 2
+    const reach = screenBottom - sourceY + 1
+    const lensStation = ((clockBottom + screenBottom) / 2 - sourceY) / reach
     const halfWidth = Math.min(reach * .23, width * .38)
+    // Launch a reflection at each of the clock's eight major divisions, as the lens returns to yellow.
+    const beat = timeUnitsMoment[2] / 8
+    const phase = (timeMoment[1] % beat) / beat
     // Leave a short white phase at the turn of the Temple clock.
     const opening = Math.max(0, (1 - timeScaleCycle[1] - .025) / .975)
     const aperture = opening * opening * (3 - 2 * opening)
@@ -4097,22 +4096,12 @@ function drawEmanationBeam(sourceX, sourceY) {
     ctx.translate(sourceX, sourceY)
     ctx.save()
     if (spread > 0) {
-        // The open rim and the lens use the same foreshortened arc.
-        const arcRadius = spread / emanationEdgeSine
-        const verticalRadius = arcRadius * emanationBowProjection
-        ctx.beginPath()
-        ctx.moveTo(-width, 0)
-        ctx.lineTo(-width, reach)
-        ctx.ellipse(0, reach + verticalRadius * emanationEdgeCosine, arcRadius, verticalRadius,
-            0, -Math.PI / 2 - emanationHalfArc, -Math.PI / 2 + emanationHalfArc)
-        ctx.lineTo(width, reach)
-        ctx.lineTo(width, 0)
-        ctx.closePath()
-        ctx.clip()
+        // Yellow reaches just past the viewport. Both outer tips are farther down the bow.
+        const edgeReach = reach + spread * emanationBowRise
         const radius = spread * emanationTextureMargin
         ctx.globalAlpha = colorMix
-        ctx.drawImage(emanationTexture, -radius, 0, radius * 2, reach)
-        drawEmanationFlow(ctx, reach, spread, timeMoment[1])
+        ctx.drawImage(emanationTexture, -radius, 0, radius * 2, edgeReach)
+        drawEmanationFlow(ctx, reach, spread, phase)
     }
     if (colorMix < 1) {
         // Two tapered layers give the single white string a soft edge and a sharp tip.
@@ -4130,8 +4119,8 @@ function drawEmanationBeam(sourceX, sourceY) {
     }
     ctx.restore()
 
-    const pose = emanationLensPose(timeMoment[1], reach, spread)
-    const sample = drawEmanationLens(ctx, pose, reach, colorMix)
+    const pose = emanationLensPose(phase, reach, spread, lensStation)
+    const sample = drawEmanationLens(ctx, pose, reach)
     ctx.restore()
     return sample
 }
@@ -4145,7 +4134,7 @@ function drawLensContactColor(ctx, sample, x, y, radius) {
     ctx.restore()
 }
 
-function drawEmanationLens(ctx, pose, reach, colorMix) {
+function drawEmanationLens(ctx, pose, reach) {
     const sizeScale = .375
     const radius = Math.max(9, reach * .038) * pose.scale * sizeScale
     const minorRadius = radius * pose.axisRatio
@@ -4155,23 +4144,12 @@ function drawEmanationLens(ctx, pose, reach, colorMix) {
         emanationLensSample = canvas.getContext("2d")
     }
     const sample = emanationLensSample.canvas
-    if (radius < .5 * sizeScale) {
-        // At the tip the glass is too small to sample.
-        const rgb = emanationColor(pose.lane).map(channel => 255 + (channel - 255) * colorMix)
-        const middle = Math.floor(sample.width / 2)
-        emanationLensSample.fillStyle = `rgb(${rgb.join(",")})`
-        emanationLensSample.fillRect(middle, middle, 1, 1)
-        return sample
-    }
     ctx.save()
     ctx.translate(pose.x, pose.y)
     const zoom = 2.75
     const transform = ctx.getTransform()
     const sampleRadius = radius * transform.a / zoom
-    // At the open rim, sample just inside the ribbon so the glass picks up the ray.
-    const beamEnd = transform.f + (pose.endY - pose.y) * transform.d
-    const sampleTop = Math.min(transform.f - sampleRadius, beamEnd - 2 * sampleRadius)
-    emanationLensSample.drawImage(ctx.canvas, transform.e - sampleRadius, sampleTop,
+    emanationLensSample.drawImage(ctx.canvas, transform.e - sampleRadius, transform.f - sampleRadius,
         2 * sampleRadius, 2 * sampleRadius, 0, 0, sample.width, sample.height)
 
     ctx.beginPath()
@@ -4208,12 +4186,12 @@ function drawEmanationLens(ctx, pose, reach, colorMix) {
     return sample
 }
 
-function emination(sourceX, sourceY) {
+function emination(sourceX, sourceY, clockBottom) {
     push()
     const cx = mother.width / 2
     const cy = mother.height * .5021
     const n = noise(dateTemple / 1000)
-    const lensSample = drawEmanationBeam(sourceX, sourceY)
+    const lensSample = drawEmanationBeam(sourceX, sourceY, clockBottom)
     colorMode(HSB)
     fill(100, Math.min(1, timeScaleCycle[1] * 3))
 
