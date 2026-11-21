@@ -3803,9 +3803,9 @@ if (typeof module != "undefined" && module.exports) {
 
 // Left to right as seen by the observer. Six pairs share one yellow center string.
 const emanationColors = [
-    [32, 66, 255], [18, 118, 255], [0, 182, 255], [0, 226, 208],
-    [65, 236, 118], [171, 246, 55], [255, 255, 0], [255, 214, 26],
-    [255, 171, 24], [255, 127, 20], [255, 87, 20], [255, 47, 20], [255, 12, 12]
+    [255, 12, 12], [255, 47, 20], [255, 87, 20], [255, 127, 20],
+    [255, 171, 24], [255, 214, 26], [255, 255, 0], [171, 246, 55],
+    [65, 236, 118], [0, 226, 208], [0, 182, 255], [18, 118, 255], [32, 66, 255]
 ]
 const stringsPerSide = (emanationColors.length - 1) / 2
 const emanationTextureMargin = 1.10
@@ -3826,14 +3826,14 @@ let emanationLensSample
 // Four wheel steps per strand. Blue and red sit five strands either side of yellow.
 const myriadWheelSteps = 64
 const myriadYellowStep = 20
-const myriadRedStep = 2 * myriadYellowStep
+const myriadBlueStep = 2 * myriadYellowStep
 const myriadReturnColors = [
-    emanationColors[emanationColors.length - 1], [255, 0, 184], [135, 0, 255], emanationColors[0]
+    emanationColors[emanationColors.length - 1], [135, 0, 255], [255, 0, 184], emanationColors[0]
 ]
 const myriadColorWheel = Array.from({ length: myriadWheelSteps }, (_, step) => {
-    if (step <= myriadRedStep) return emanationColor((step - myriadYellowStep) / myriadYellowStep)
-    // Complete the back of the wheel through the temple's magenta and violet.
-    return sampleColorStops(myriadReturnColors, (step - myriadRedStep) / (myriadWheelSteps - myriadRedStep))
+    if (step <= myriadBlueStep) return emanationColor((step - myriadYellowStep) / myriadYellowStep)
+    // Return from blue to red through violet and magenta on the back of the wheel.
+    return sampleColorStops(myriadReturnColors, (step - myriadBlueStep) / (myriadWheelSteps - myriadBlueStep))
 })
 const myriadCompactColors = emanationColors.map((_, i) => myriadBeamColor(i / emanationColors.length))
 const myriadLinesPerFamily = 16
