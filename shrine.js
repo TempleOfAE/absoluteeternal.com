@@ -3842,9 +3842,10 @@ const myriadColorWheel = Array.from({ length: 64 }, (_, step) => {
 const myriadCompactColors = emanationColors.map((_, i) => myriadBeamColor(i / emanationColors.length))
 const myriadLinesPerFamily = 64
 const myriadLaneLimit = stringsPerSide + 4
-// Distance from the center to each recessed opening, in units of the outer radius.
+// Position of each opening on the sphere before it wraps around the pillar.
 const myriadFocusX = .32
 const myriadFocus = myriadFocusX / (1 + Math.sqrt(1 - myriadFocusX ** 2))
+const myriadPillarHeight = .8
 let myriadGrid
 
 function writeMyriadColor(phase, target, offset) {
@@ -3881,6 +3882,45 @@ function myriadStrandOpacity(lane) {
     return Math.min(1, distanceToOpening / .5) * Math.sqrt(myriadRecession(lane))
 }
 
+// A horizontal slice of the near face curls around the pillar like a cylinder.
+// The strip between the front tangent and the point where the outer sheet
+// reappears is behind the pillar. The fold flares and opens out toward the poles.
+function myriadPillarSection(y, section) {
+    const heightSquared = y * y
+    const extent = Math.sqrt(Math.max(0, 1 - heightSquared))
+    const bend = Math.max(0, 1 - heightSquared / (myriadPillarHeight ** 2)) ** 2
+    const radius = extent * (.14 + .32 * heightSquared)
+    section.extent = extent
+    section.radius = radius
+    section.bend = bend
+    section.front = radius * (1 + bend)
+    section.back = section.front + extent * .14 * bend
+    section.outerBend = .65 * bend
+}
+
+function myriadPillarX(x, section) {
+    const u = Math.abs(x)
+    if (u <= section.front) {
+        return x / (1 + section.bend * (u / section.front) ** 2)
+    }
+    const outside = Math.max(0, u - section.back) / (section.extent - section.back)
+    const curved = outside * (1 - section.outerBend * (1 - outside))
+    return Math.sign(x) * (section.radius + curved * (section.extent - section.radius))
+}
+
+function unprojectMyriadPillarX(x, section) {
+    const u = Math.abs(x)
+    if (u <= section.radius) {
+        // Invert the visible branch of the cylindrical arc for the glow texture.
+        const root = Math.sqrt(Math.max(0, 1 - 4 * section.bend * (u / section.front) ** 2))
+        return 2 * x / (1 + root)
+    }
+    const curved = (u - section.radius) / (section.extent - section.radius)
+    const slope = 1 - section.outerBend
+    const outside = 2 * curved / (slope + Math.sqrt(slope * slope + 4 * section.outerBend * curved))
+    return Math.sign(x) * (section.back + outside * (section.extent - section.back))
+}
+
 function makeMyriadGrid() {
     const meridianOrbits = Array.from({ length: 161 }, (_, j) => myriadOrbit(2 * Math.PI * j / 160))
     const meridian = [meridianOrbits.map((_, orbit) => ({ lane: 0, orbit }))]
@@ -3901,8 +3941,9 @@ function makeMyriadGrid() {
 function projectMyriadStrands(strands, laneOffset, orbits) {
     const paths = [new Path2D(), new Path2D()]
     const a = myriadFocus
+    const section = {}
     for (const strand of strands) {
-        let prevX, prevY, prevZ, prevSide
+        let prevX, prevY, prevZ, prevSide, prevVisibility
         for (const point of strand) {
             const orbit = orbits[point.orbit]
             const depth = (point.lane + laneOffset) * orbit.depthScale
@@ -3910,13 +3951,31 @@ function projectMyriadStrands(strands, laneOffset, orbits) {
             // Inverse stereographic projection of a bipolar grid. A strand turns onto
             // the far face when its Z coordinate crosses zero at the spherical rim.
             const denominator = (1 + a * a) * ring - (1 - a * a) * orbit.cos
-            const x = 2 * a * Math.sinh(depth) / denominator
+            let x = 2 * a * Math.sinh(depth) / denominator
             const y = 2 * a * orbit.sin / denominator
             const z = ((1 - a * a) * ring - (1 + a * a) * orbit.cos) / denominator
-            const side = z >= 0 ? 1 : 0
+            let side = z >= 0 ? 1 : 0
+            let visibility = 1
+            if (side === 1 && Math.abs(y) < myriadPillarHeight) {
+                myriadPillarSection(y, section)
+                visibility = Math.max(section.front - Math.abs(x), Math.abs(x) - section.back)
+                if (visibility < 0) side = -1
+                x = myriadPillarX(x, section)
+            }
             if (prevSide === undefined) {
-                paths[side].moveTo(x, y)
-            } else {
+                if (side >= 0) paths[side].moveTo(x, y)
+            } else if ((prevSide < 0) !== (side < 0)) {
+                const t = prevVisibility / (prevVisibility - visibility)
+                const edgeY = prevY + t * (y - prevY)
+                myriadPillarSection(edgeY, section)
+                const edgeX = Math.sign(prevX + t * (x - prevX)) * section.radius
+                if (side < 0) {
+                    paths[prevSide].lineTo(edgeX, edgeY)
+                } else {
+                    paths[side].moveTo(edgeX, edgeY)
+                    paths[side].lineTo(x, y)
+                }
+            } else if (side >= 0) {
                 if (side !== prevSide) {
                     const t = prevZ / (prevZ - z)
                     const rimX = prevX + t * (x - prevX)
@@ -3930,6 +3989,7 @@ function projectMyriadStrands(strands, laneOffset, orbits) {
             prevY = y
             prevZ = z
             prevSide = side
+            prevVisibility = visibility
         }
     }
     return paths
@@ -3946,11 +4006,14 @@ function makeMyriadGlow() {
     const samples = 1024
     const palette = new Uint8ClampedArray(4 * (samples + 1))
     const a = myriadFocus
+    const section = {}
     // Invert the strand projection once on each face. Index zero is empty space.
     for (let row = 0; row < canvas.height; row++) {
         const y = 2 * ((row % size) + .5) / size - 1
+        myriadPillarSection(y, section)
         for (let col = 0; col < size; col++) {
-            const x = 2 * (col + .5) / size - 1
+            const screenX = 2 * (col + .5) / size - 1
+            const x = row >= size && section.bend > 0 ? unprojectMyriadPillarX(screenX, section) : screenX
             // Extend the edge texels so interpolation stays smooth at the circular clip.
             const z = (row < size ? -1 : 1) * Math.sqrt(Math.max(0, 1 - x * x - y * y))
             const nearPole = 1 - z
