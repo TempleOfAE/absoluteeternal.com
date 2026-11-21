@@ -876,9 +876,6 @@ function setup() {
 function draw() {
     mobile = (windowWidth < windowHeight)
 
-    push()
-    push()
-
     if (mouseheld()) {
         if (timeOracleHover) {
             timeStamp = Array.from(currentTime)
@@ -894,8 +891,6 @@ function draw() {
     } else if (currentTime[1] > 0) {
         oracleAutoDraw = false
     }
-
-    push()
 
     if (oracleDisplayCounter > 0 && !mouseIsPressed) { // controlls step by step loading of the oracle and prevents it if mouse is held
         oracleDisplayCounter -= 1
@@ -914,6 +909,23 @@ function draw() {
 
     background(0);
 
+    const endY = height * .9
+    let reveal = 1
+    if (mouseY < endY) {
+        const clockBottom = drawShrine()
+        const startY = middle.y - mother.height / 2 + clockBottom
+        reveal = Math.max(0, (mouseY - startY) / (endY - startY))
+    }
+    if (reveal > 0) drawExpandedMyriad(reveal)
+    if (oracleDisplayCounter === 1) interpretation()
+
+    jackals = windowHeight < windowWidth * .85
+    if (!templeOverlayActive()) UI()
+    templeSetFieldCompassActive(!templeOverlayActive() && timeOracleHover && templeFieldCompassPermission == "granted")
+}
+
+function drawShrine() {
+    push()
     translate(middle.x - mother.width / 2, (middle.y - mother.height / 2));
 
     circleWidth = mother.width * .725
@@ -921,13 +933,9 @@ function draw() {
     const clockBottom = clock()
 
     if (!circleHover && !menuHover) {
-        const largeMyriadActive = mouseY >= windowHeight * 0.7
         const sourceX = mother.width * .5
         const sourceY = mother.height * .53
-        myriad(sourceX, sourceY, largeMyriadActive)
-        if (largeMyriadActive) {
-            drawMotherImageLayer()
-        }
+        drawCompactMyriad(sourceX, sourceY)
         emination(sourceX, sourceY, clockBottom)
     }
 
@@ -963,23 +971,7 @@ function draw() {
 
     pop()
     pop()
-    pop()
-    pop()
-
-    //JACKAL DISPLAY LOGIC
-    if (windowHeight < windowWidth * .85) 
-    {
-        jackals = true
-    }else {
-        jackals = false
-    }
-
-    //disables UI while overlays are active
-    if (!templeOverlayActive()) {
-        UI() // checks location of mouse and updates variables to controll zoom and select functions  
-    }
-
-    templeSetFieldCompassActive(!templeOverlayActive() && timeOracleHover && templeFieldCompassPermission == "granted")
+    return clockBottom
 }
 function windowResized() {
     updateShrineImageSizes(true)
@@ -2774,10 +2766,6 @@ function displays(c) {
     pop()
 
     pop()
-
-    if (c == 5) {
-        interpretation()
-    }
 }
 
 // base 64 temple time clock display
@@ -3851,6 +3839,7 @@ const myriadDepthCurve = .5
 const myriadFocusX = .36
 const myriadFocus = myriadFocusX / (1 + Math.sqrt(1 - myriadFocusX ** 2))
 let myriadGrid
+let myriadTransitionContext
 
 function writeMyriadColor(phase, target, offset) {
     const step = (phase % 1) * myriadColorWheel.length
@@ -3993,7 +3982,6 @@ function updateMyriadGlow(glow, phaseAtLeft) {
 
 function drawMyriadInterior(ctx, turn) {
     if (!myriadGrid) myriadGrid = makeMyriadGrid()
-    const opacity = ctx.globalAlpha
     // Put the circular edge just beyond the corners, including its antialiasing.
     const radius = Math.hypot(width, height) / 2 + 2
     const { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow } = myriadGrid
@@ -4021,55 +4009,77 @@ function drawMyriadInterior(ctx, turn) {
     ctx.beginPath()
     ctx.arc(0, 0, 1, 0, 2 * Math.PI)
     ctx.clip()
+    ctx.globalAlpha = 1
     ctx.drawImage(glow.canvas, -1, -1, 2, 2)
     ctx.strokeStyle = "white"
     ctx.lineWidth = Math.max(.7 / radius, .002)
     for (const guide of guides) {
-        ctx.globalAlpha = opacity * .07 * guide.opacity
+        ctx.globalAlpha = .07 * guide.opacity
         ctx.stroke(guide.path)
     }
     const core = Math.max(.75 / radius, .0028)
     for (const strand of strands) {
         ctx.strokeStyle = strand.color
-        const light = opacity * strand.opacity
-        ctx.globalAlpha = .085 * light
+        ctx.globalAlpha = .085 * strand.opacity
         ctx.lineWidth = 4 * core
         ctx.stroke(strand.path)
-        ctx.globalAlpha = .21 * light
+        ctx.globalAlpha = .21 * strand.opacity
         ctx.lineWidth = 2.15 * core
         ctx.stroke(strand.path)
-        ctx.globalAlpha = .9 * light
+        ctx.globalAlpha = .9 * strand.opacity
         ctx.lineWidth = core
         ctx.stroke(strand.path)
     }
 }
 
-function myriad(x, y, expanded) {
-    const aperture = emanationAperture()
-    if (aperture === 0) return
+function myriadTurn() {
+    return 2 * Math.PI * timeMoment[1] / timeUnitsMoment[2]
+}
+
+function drawExpandedMyriad(opacity) {
     const ctx = drawingContext
-    const turn = 2 * Math.PI * timeMoment[1] / timeUnitsMoment[2]
-    ctx.save()
-    ctx.globalAlpha *= aperture
-    if (expanded) {
-        // The shrine's local origin is the top left of the centered Mother image.
-        ctx.translate(mother.width / 2, mother.height / 2)
-        drawMyriadInterior(ctx, turn)
-    } else {
-        // At the Mother the whole field is only a few pixels wide.
-        const size = mother.width * .0063
-        ctx.translate(x, y)
-        ctx.rotate(-.25 * Math.sin(turn))
-        ctx.lineWidth = mother.width * .0005
-        for (let i = 0; i < myriadCompactColors.length; i++) {
-            const radius = size * (1 - i / myriadCompactColors.length) / 2
-            ctx.strokeStyle = myriadCompactColors[i]
-            ctx.beginPath()
-            ctx.ellipse(-radius, 0, radius, radius * 1.5, 0, 0, 2 * Math.PI)
-            ctx.moveTo(2 * radius, 0)
-            ctx.ellipse(radius, 0, radius, radius * 1.5, 0, 0, 2 * Math.PI)
-            ctx.stroke()
+    let view = ctx
+    if (opacity < 1) {
+        // Blend two complete scenes so the shrine fades evenly, including its opaque artwork.
+        if (!myriadTransitionContext) {
+            myriadTransitionContext = document.createElement("canvas").getContext("2d", { alpha: false })
         }
+        view = myriadTransitionContext
+        if (view.canvas.width !== ctx.canvas.width) view.canvas.width = ctx.canvas.width
+        if (view.canvas.height !== ctx.canvas.height) view.canvas.height = ctx.canvas.height
+        view.clearRect(0, 0, view.canvas.width, view.canvas.height)
+    }
+    view.save()
+    view.setTransform(view.canvas.width / width, 0, 0, view.canvas.height / height,
+        view.canvas.width / 2, view.canvas.height / 2)
+    drawMyriadInterior(view, myriadTurn())
+    view.restore()
+
+    if (view !== ctx) {
+        ctx.save()
+        ctx.resetTransform()
+        ctx.globalAlpha = opacity
+        ctx.drawImage(view.canvas, 0, 0)
+        ctx.restore()
+    }
+}
+
+function drawCompactMyriad(x, y) {
+    const ctx = drawingContext
+    ctx.save()
+    // At the Mother the whole field is only a few pixels wide.
+    const size = mother.width * .0063
+    ctx.translate(x, y)
+    ctx.rotate(-.25 * Math.sin(myriadTurn()))
+    ctx.lineWidth = mother.width * .0005
+    for (let i = 0; i < myriadCompactColors.length; i++) {
+        const radius = size * (1 - i / myriadCompactColors.length) / 2
+        ctx.strokeStyle = myriadCompactColors[i]
+        ctx.beginPath()
+        ctx.ellipse(-radius, 0, radius, radius * 1.5, 0, 0, 2 * Math.PI)
+        ctx.moveTo(2 * radius, 0)
+        ctx.ellipse(radius, 0, radius, radius * 1.5, 0, 0, 2 * Math.PI)
+        ctx.stroke()
     }
     ctx.restore()
 }
@@ -4218,12 +4228,6 @@ function drawEmanationFlow(ctx, reach, spread, phase) {
     ctx.restore()
 }
 
-function emanationAperture() {
-    // Leave a short white phase at the turn of the Temple clock.
-    const opening = Math.max(0, (1 - timeScaleCycle[1] - .025) / .975)
-    return opening * opening * (3 - 2 * opening)
-}
-
 function drawEmanationBeam(sourceX, sourceY, clockBottom) {
     if (!emanationTexture) emanationTexture = makeEmanationTexture()
     const screenBottom = (height + mother.height) / 2
@@ -4233,7 +4237,10 @@ function drawEmanationBeam(sourceX, sourceY, clockBottom) {
     // Launch a reflection at each of the clock's eight major divisions, as the lens returns to yellow.
     const beat = timeUnitsMoment[2] / templeFlowBeatsPerMinute
     const phase = (timeMoment[1] % beat) / beat
-    const spread = halfWidth * emanationAperture()
+    // Leave a short white phase at the turn of the Temple clock.
+    const opening = Math.max(0, (1 - timeScaleCycle[1] - .025) / .975)
+    const aperture = opening * opening * (3 - 2 * opening)
+    const spread = halfWidth * aperture
     const colorMix = Math.min(1, spread / 6)
     const ctx = drawingContext
     ctx.save()
