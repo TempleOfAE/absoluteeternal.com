@@ -4323,16 +4323,16 @@ function drawExpandedRibbon(ctx) {
     const phase = emanationFlowPhase()
     drawEmanationRays(ctx, reach, halfWidth, phase)
 
-    // Track the displayed rays at this screen row while the lens climbs one viewport per minute.
-    // The first and last pixel centers keep the contact sample on the ribbon at the turn.
-    const y = .5 + (height - 1) * (1 - timeScale[1]) - sourceY
+    const y = height / 2 - sourceY
     const station = y / edgeReach
+    const lensScale = .70
     const centerPose = emanationLensPose(0, reach, halfWidth, station)
-    const available = Math.max(0, width / 2 - emanationLensRadius(centerPose, reach) - 1)
+    const available = Math.max(0, width / 2 - lensScale * emanationLensRadius(centerPose, reach) - 1)
     const visibleLane = Math.min(1, available / (halfWidth * emanationSpread(station)))
     const halfArc = Math.asin(visibleLane * emanationEdgeSine)
     const pose = emanationLensPose(phase, reach, halfWidth, station, halfArc)
     pose.y = y
+    pose.scale *= lensScale
     drawEmanationLens(ctx, pose, reach)
 }
 
