@@ -4003,10 +4003,11 @@ function drawMyriadInterior(ctx, turn) {
     const phaseAtCenter = turn / (2 * Math.PI) + myriadYellowStep / myriadColorWheel.length
     const guides = new Path2D()
     for (let i = 0; i < strands.length; i++) {
-        const angle = 2 * Math.PI * i / strands.length - turn
-        const longitude = angle - 2 * Math.PI * myriadYellowStep / myriadColorWheel.length
+        const angle = 2 * Math.PI * i / strands.length
+        const longitude = angle - turn - 2 * Math.PI * myriadYellowStep / myriadColorWheel.length
+        const ringAngle = angle + turn
         strands[i].path = myriadRingPath(circle, { sin: Math.sin(longitude), cos: Math.cos(longitude) }, true)
-        guides.addPath(myriadRingPath(circle, { sin: Math.sin(angle), cos: Math.cos(angle) }, false))
+        guides.addPath(myriadRingPath(circle, { sin: Math.sin(ringAngle), cos: Math.cos(ringAngle) }, false))
     }
     updateMyriadGlow(glow, phaseAtCenter)
     ctx.scale(radius, radius)
