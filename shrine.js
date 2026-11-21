@@ -3882,9 +3882,9 @@ function makeMyriadGrid() {
         ink.setTransform(new DOMMatrix([2 / canvas.width, 0, 0, 2 / canvas.height, -1, -1]))
         return ink
     })
-    const guideInk = inks.pop()
+    const whiteInk = inks.pop()
     const strands = inks.map(ink => ({ ink, path: null }))
-    return { strands, guideInk, circle: myriadCircle(256), glow }
+    return { strands, whiteInk, circle: myriadCircle(256), glow }
 }
 
 // Along a ray from the eye to a point on the torus, the surface equation is a
@@ -3999,7 +3999,7 @@ function drawMyriadInterior(ctx, turn) {
     if (!myriadGrid) myriadGrid = makeMyriadGrid()
     // Put the circular edge just beyond the corners, including its antialiasing.
     const radius = Math.hypot(width, height) / 2 + 2
-    const { strands, guideInk, circle, glow } = myriadGrid
+    const { strands, whiteInk, circle, glow } = myriadGrid
     const phaseAtCenter = turn / (2 * Math.PI) + myriadYellowStep / myriadColorWheel.length
     const guides = new Path2D()
     for (let i = 0; i < strands.length; i++) {
@@ -4018,7 +4018,7 @@ function drawMyriadInterior(ctx, turn) {
     ctx.clip()
     ctx.globalAlpha = 1
     ctx.drawImage(glow.canvas, -1, -1, 2, 2)
-    ctx.strokeStyle = guideInk
+    ctx.strokeStyle = whiteInk
     ctx.lineWidth = Math.max(.7 / radius, .002)
     ctx.globalAlpha = .07
     ctx.stroke(guides)
@@ -4031,8 +4031,12 @@ function drawMyriadInterior(ctx, turn) {
         ctx.globalAlpha = .30
         ctx.lineWidth = 2.15 * core
         ctx.stroke(strand.path)
-        ctx.globalAlpha = .9
+        ctx.globalAlpha = 1
         ctx.lineWidth = core
+        ctx.stroke(strand.path)
+        // Lift the lightness of the colored centerline, with the same depth fade as the ring.
+        ctx.strokeStyle = whiteInk
+        ctx.globalAlpha = .26
         ctx.stroke(strand.path)
     }
 }
