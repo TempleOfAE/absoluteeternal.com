@@ -3836,6 +3836,9 @@ let emanationLensSample
 
 const myriadColors = emanationColors.map(rgb => `rgb(${rgb.join(",")})`)
 const myriadLineCount = 64
+const myriadLaneLimit = stringsPerSide + 4
+const myriadTransverseCount = myriadLineCount / 2
+const myriadMeridianCount = myriadLineCount - myriadTransverseCount - 1 // reserve one line for the rim
 // The two recessed openings sit just under halfway from the throat to the rim.
 const myriadFocusX = .46
 const myriadFocus = myriadFocusX / (1 + Math.sqrt(1 - myriadFocusX ** 2))
@@ -3843,54 +3846,42 @@ let myriadGrid
 
 function myriadVertex(lane, orbit) {
     const sin = Math.sin(orbit)
-    const depth = lane * .31 / (1 + .22 * sin)
-    return { radial: 2 * myriadFocus * Math.sinh(depth), ring: Math.cosh(depth),
-        sin, cos: Math.cos(orbit) }
+    return { lane, depthScale: .31 / (1 + .22 * sin), sin, cos: Math.cos(orbit) }
+}
+
+function myriadRecession(lane) {
+    return Math.exp(-.42 * Math.max(0, Math.abs(lane) - stringsPerSide))
 }
 
 function makeMyriadGrid() {
-    const groups = []
-    const limit = stringsPerSide + 4
-    // Reserve one line for the circular rim and keep a meridian on the central axis.
-    const transverse = myriadLineCount / 2
-    const meridians = myriadLineCount - transverse - 1
-    function add(lane, strength, strands) {
-        const recession = Math.exp(-.42 * Math.max(0, Math.abs(lane) - stringsPerSide))
-        groups.push({ opacity: strength * recession, strands })
-    }
-
-    // Each meridian is one closed strand that passes across both faces of the sphere.
-    for (let i = 0; i < meridians; i++) {
-        const lane = limit * (2 * i / (meridians - 1) - 1)
-        const strand = Array.from({ length: 161 }, (_, j) => myriadVertex(lane, 2 * Math.PI * j / 160))
-        add(lane, 1, [strand])
-    }
-    // Split each transverse line into sections so it dims as it recedes into either opening.
-    for (let lane = -limit; lane < limit; lane++) {
+    const meridian = Array.from({ length: 161 }, (_, j) => myriadVertex(0, 2 * Math.PI * j / 160))
+    const groups = Array.from({ length: myriadMeridianCount }, () => ({ opacity: 0, paths: null }))
+    // The horizontal guides stay in place. Project their near and far sections just once.
+    for (let lane = -myriadLaneLimit; lane < myriadLaneLimit; lane++) {
         const strands = []
-        for (let i = 0; i < transverse; i++) {
-            const orbit = i * 2 * Math.PI / transverse
+        for (let i = 0; i < myriadTransverseCount; i++) {
+            const orbit = i * 2 * Math.PI / myriadTransverseCount
             strands.push(Array.from({ length: 7 }, (_, j) => myriadVertex(lane + j / 6, orbit)))
         }
-        add(lane + .5, .65, strands)
+        groups.push({ opacity: .65 * myriadRecession(lane + .5), paths: projectMyriadStrands(strands, 0) })
     }
-    return groups
+    return { groups, meridian: [meridian] }
 }
 
-function projectMyriadGroup(group, sinTurn, cosTurn) {
+function projectMyriadStrands(strands, laneOffset) {
     const paths = [new Path2D(), new Path2D()]
     const a = myriadFocus
-    for (const strand of group.strands) {
+    for (const strand of strands) {
         let prevX, prevY, prevZ, prevSide
         for (const point of strand) {
-            const sin = point.sin * cosTurn + point.cos * sinTurn
-            const cos = point.cos * cosTurn - point.sin * sinTurn
+            const depth = (point.lane + laneOffset) * point.depthScale
+            const ring = Math.cosh(depth)
             // Inverse stereographic projection of a bipolar grid. A strand turns onto
             // the far face when its Z coordinate crosses zero at the spherical rim.
-            const denominator = (1 + a * a) * point.ring - (1 - a * a) * cos
-            const x = point.radial / denominator
-            const y = 2 * a * sin / denominator
-            const z = ((1 - a * a) * point.ring - (1 + a * a) * cos) / denominator
+            const denominator = (1 + a * a) * ring - (1 - a * a) * point.cos
+            const x = 2 * a * Math.sinh(depth) / denominator
+            const y = 2 * a * point.sin / denominator
+            const z = ((1 - a * a) * ring - (1 + a * a) * point.cos) / denominator
             const side = z >= 0 ? 1 : 0
             if (prevSide === undefined) {
                 paths[side].moveTo(x, y)
@@ -3927,9 +3918,16 @@ function myriadSpectrum(ctx, halfWidth, phase) {
 function drawMyriadInterior(ctx, turn, colorPhase) {
     if (!myriadGrid) myriadGrid = makeMyriadGrid()
     const radius = Math.max(width, height) / 2
-    const sinTurn = Math.sin(turn)
-    const cosTurn = Math.cos(turn)
-    const paths = myriadGrid.map(group => projectMyriadGroup(group, sinTurn, cosTurn))
+    const { groups, meridian } = myriadGrid
+    const spacing = 2 * myriadLaneLimit / myriadMeridianCount
+    // Each vertical strand crosses from one opening to the other in one Temple minute.
+    for (let i = 0; i < myriadMeridianCount; i++) {
+        const phase = ((i + .5) / myriadMeridianCount + turn / (2 * Math.PI)) % 1
+        const lane = (2 * phase - 1) * myriadLaneLimit
+        const fade = Math.min(1, (myriadLaneLimit - Math.abs(lane)) / spacing)
+        groups[i].opacity = fade * myriadRecession(lane)
+        groups[i].paths = projectMyriadStrands(meridian, lane)
+    }
     ctx.scale(radius, radius)
     ctx.strokeStyle = myriadSpectrum(ctx, width / (2 * radius), colorPhase)
     ctx.lineJoin = "round"
@@ -3942,9 +3940,8 @@ function drawMyriadInterior(ctx, turn, colorPhase) {
     for (let side = 0; side <= 1; side++) {
         const depthLight = side === 1 ? 1 : .36
         const core = Math.max(.75 / radius, side === 1 ? .004 : .0027)
-        for (let i = 0; i < myriadGrid.length; i++) {
-            const group = myriadGrid[i]
-            const path = paths[i][side]
+        for (const group of groups) {
+            const path = group.paths[side]
             const light = depthLight * group.opacity
             ctx.globalAlpha = .085 * light
             ctx.lineWidth = 4 * core
