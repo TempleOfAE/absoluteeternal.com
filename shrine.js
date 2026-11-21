@@ -952,7 +952,11 @@ function drawShrine() {
         const squareTop = squareBottom - squareWidth
         const clockTop = mother.height - clockBottom
         const pointerY = mouseY - (middle.y - mother.height / 2)
-        const opacity = shrineHasPointer ? Math.max(0, Math.min(1, (pointerY - clockTop) / (squareTop - clockTop))) : 1
+        let opacity = 1
+        if (shrineHasPointer && pointerY <= squareTop) {
+            const aboveSquare = Math.abs(mouseX - middle.x) <= squareWidth / 2
+            opacity = aboveSquare ? 0 : Math.max(0, (pointerY - clockTop) / (squareTop - clockTop))
+        }
         drawCompactMyriad(sourceX, sourceY)
         const lensSample = opacity > 0 || jackals ? drawEmanationBeam(sourceX, sourceY, clockBottom, opacity) : null
         emination(lensSample)
