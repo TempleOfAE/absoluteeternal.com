@@ -3840,10 +3840,10 @@ const myriadColorWheel = Array.from({ length: 64 }, (_, step) => {
     return [red, green, blue]
 })
 const myriadCompactColors = emanationColors.map((_, i) => myriadBeamColor(i / emanationColors.length))
-const myriadLinesPerFamily = 8
+const myriadLinesPerFamily = 64
 const myriadLaneLimit = stringsPerSide + 4
-// The two recessed openings sit just under halfway from the throat to the rim.
-const myriadFocusX = .46
+// Distance from the center to each recessed opening, in units of the outer radius.
+const myriadFocusX = .32
 const myriadFocus = myriadFocusX / (1 + Math.sqrt(1 - myriadFocusX ** 2))
 let myriadGrid
 
