@@ -4138,8 +4138,8 @@ function emanationArcHeight(lane) {
     return Math.sqrt(1 - sine * sine) - emanationEdgeCosine
 }
 
-function emanationLensPose(phase, reach, spread, station) {
-    const angle = -emanationHalfArc * Math.sin(2 * Math.PI * phase)
+function emanationLensPose(phase, reach, spread, station, halfArc = emanationHalfArc) {
+    const angle = -halfArc * Math.sin(2 * Math.PI * phase)
     const lane = Math.sin(angle) / emanationEdgeSine
     const arcHeight = emanationArcHeight(lane)
     const halfChord = spread * emanationSpread(station)
@@ -4320,7 +4320,20 @@ function drawExpandedRibbon(ctx) {
     pop()
     const reach = edgeReach - halfWidth * emanationBowRise
     ctx.translate(0, sourceY - height / 2)
-    drawEmanationRays(ctx, reach, halfWidth, emanationFlowPhase())
+    const phase = emanationFlowPhase()
+    drawEmanationRays(ctx, reach, halfWidth, phase)
+
+    // Track the displayed rays at this screen row while the lens climbs one viewport per minute.
+    // The first and last pixel centers keep the contact sample on the ribbon at the turn.
+    const y = .5 + (height - 1) * (1 - timeScale[1]) - sourceY
+    const station = y / edgeReach
+    const centerPose = emanationLensPose(0, reach, halfWidth, station)
+    const available = Math.max(0, width / 2 - emanationLensRadius(centerPose, reach) - 1)
+    const visibleLane = Math.min(1, available / (halfWidth * emanationSpread(station)))
+    const halfArc = Math.asin(visibleLane * emanationEdgeSine)
+    const pose = emanationLensPose(phase, reach, halfWidth, station, halfArc)
+    pose.y = y
+    drawEmanationLens(ctx, pose, reach)
 }
 
 function drawEmanationBeam(sourceX, sourceY, clockBottom, opacity) {
@@ -4370,9 +4383,14 @@ function drawLensContactColor(ctx, sample, x, y, radius) {
     ctx.restore()
 }
 
+const emanationLensSizeScale = .375
+
+function emanationLensRadius(pose, reach) {
+    return Math.max(9, reach * .038) * pose.scale * emanationLensSizeScale
+}
+
 function drawEmanationLens(ctx, pose, reach) {
-    const sizeScale = .375
-    const radius = Math.max(9, reach * .038) * pose.scale * sizeScale
+    const radius = emanationLensRadius(pose, reach)
     const minorRadius = radius * pose.axisRatio
     if (!emanationLensSample) {
         const canvas = document.createElement("canvas")
@@ -4385,6 +4403,7 @@ function drawEmanationLens(ctx, pose, reach) {
     const zoom = 2.75
     const transform = ctx.getTransform()
     const sampleRadius = radius * transform.a / zoom
+    emanationLensSample.clearRect(0, 0, sample.width, sample.height)
     emanationLensSample.drawImage(ctx.canvas, transform.e - sampleRadius, transform.f - sampleRadius,
         2 * sampleRadius, 2 * sampleRadius, 0, 0, sample.width, sample.height)
 
@@ -4406,7 +4425,7 @@ function drawEmanationLens(ctx, pose, reach) {
     ctx.restore()
 
     // Narrow the neutral rim near the source so it leaves room for the colored glass.
-    const rimScale = Math.min(sizeScale, minorRadius / 5)
+    const rimScale = Math.min(emanationLensSizeScale, minorRadius / 5)
     ctx.strokeStyle = "#313438"
     ctx.lineWidth = 2.2 * rimScale
     ctx.stroke()
