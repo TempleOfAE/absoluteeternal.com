@@ -3840,10 +3840,8 @@ const myriadColorWheel = Array.from({ length: 64 }, (_, step) => {
     return [red, green, blue]
 })
 const myriadCompactColors = emanationColors.map((_, i) => myriadBeamColor(i / emanationColors.length))
-const myriadLineCount = 8
+const myriadLinesPerFamily = 8
 const myriadLaneLimit = stringsPerSide + 4
-const myriadTransverseCount = myriadLineCount / 2
-const myriadMeridianCount = myriadLineCount - myriadTransverseCount - 1 // reserve one line for the rim
 // The two recessed openings sit just under halfway from the throat to the rim.
 const myriadFocusX = .46
 const myriadFocus = myriadFocusX / (1 + Math.sqrt(1 - myriadFocusX ** 2))
@@ -3878,19 +3876,20 @@ function myriadRecession(lane) {
 }
 
 function myriadStrandOpacity(lane) {
-    const spacing = 2 * myriadLaneLimit / myriadMeridianCount
-    return Math.min(1, (myriadLaneLimit - Math.abs(lane)) / spacing) * myriadRecession(lane)
+    // Let the small loops stay legible until they enter the recessed openings.
+    const distanceToOpening = myriadLaneLimit - Math.abs(lane)
+    return Math.min(1, distanceToOpening / .5) * Math.sqrt(myriadRecession(lane))
 }
 
 function makeMyriadGrid() {
     const meridianOrbits = Array.from({ length: 161 }, (_, j) => myriadOrbit(2 * Math.PI * j / 160))
     const meridian = [meridianOrbits.map((_, orbit) => ({ lane: 0, orbit }))]
-    const strands = Array.from({ length: myriadMeridianCount }, (_, i) => {
-        const color = myriadBeamColor((i + .5) / myriadMeridianCount)
+    const strands = Array.from({ length: myriadLinesPerFamily }, (_, i) => {
+        const color = myriadBeamColor((i + .5) / myriadLinesPerFamily)
         return { color, opacity: 0, paths: null }
     })
     // Each horizontal line follows one orbit angle across all the depth bands.
-    const guideAngles = Array.from({ length: myriadTransverseCount }, (_, i) => 2 * Math.PI * i / myriadTransverseCount)
+    const guideAngles = Array.from({ length: myriadLinesPerFamily }, (_, i) => 2 * Math.PI * i / myriadLinesPerFamily)
     const guideSections = guideAngles.map((_, orbit) => Array.from({ length: 7 }, (_, j) => ({ lane: j / 6, orbit })))
     const guides = Array.from({ length: 2 * myriadLaneLimit }, (_, i) => {
         const lane = i - myriadLaneLimit
@@ -3977,7 +3976,7 @@ function updateMyriadGlow(glow, travel) {
         const offset = 4 * (i + 1)
         const phase = position + travel
         writeMyriadColor(phase, palette, offset)
-        const strandPosition = phase * myriadMeridianCount - .5
+        const strandPosition = phase * myriadLinesPerFamily - .5
         const distance = Math.abs(strandPosition - Math.round(strandPosition))
         const halo = .20 + .18 * Math.exp(-((distance / .30) ** 2))
         palette[offset + 3] = 255 * halo * myriadStrandOpacity((2 * position - 1) * myriadLaneLimit)
