@@ -3857,7 +3857,14 @@ function myriadBeamColor(phase) {
 }
 
 function myriadOrbit(angle) {
-    return { sin: Math.sin(angle), cos: Math.cos(angle) }
+    const cos = Math.cos(angle)
+    const radius = myriadOrbitRadius(cos)
+    return { sin: Math.sin(angle), cos, radius, tangent: Math.sqrt(1 - radius * radius) }
+}
+
+// Radius of a horizontal section of the torus, in units of viewing distance.
+function myriadOrbitRadius(cos) {
+    return .48 + .40 * cos
 }
 
 // Space the last few loops farther apart in depth as they fade into each recess.
@@ -3883,9 +3890,18 @@ function myriadStrandOpacity(lane) {
 function makeMyriadGrid() {
     const meridianOrbits = Array.from({ length: 161 }, (_, j) => myriadOrbit(2 * Math.PI * j / 160))
     const meridian = [meridianOrbits.map((_, orbit) => ({ lane: 0, orbit }))]
+    const glow = makeMyriadGlow()
     const strands = Array.from({ length: myriadLinesPerFamily }, (_, i) => {
         const color = myriadBeamColor(i / myriadLinesPerFamily)
-        return { color, opacity: 0, path: null }
+        const canvas = glow.canvas.cloneNode(false)
+        const ctx = canvas.getContext("2d")
+        ctx.fillStyle = color
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.globalCompositeOperation = "destination-in"
+        ctx.drawImage(glow.canvas, 0, 0)
+        const ink = ctx.createPattern(canvas, "no-repeat")
+        ink.setTransform(new DOMMatrix([2 / canvas.width, 0, 0, 2 / canvas.height, -1, -1]))
+        return { ink, opacity: 0, path: null }
     })
     // Each horizontal line follows one orbit angle across all the depth bands.
     const guideAngles = Array.from({ length: myriadLinesPerFamily }, (_, i) => 2 * Math.PI * i / myriadLinesPerFamily)
@@ -3894,17 +3910,28 @@ function makeMyriadGrid() {
         const lane = i - myriadLaneLimit
         return { lane, opacity: myriadRecession(lane + .5), path: null }
     })
-    return { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow: makeMyriadGlow() }
+    return { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow }
 }
 
-function projectMyriadStrands(strands, laneOffset, orbits) {
+function projectMyriadStrands(strands, laneOffset, orbits, azimuth) {
     const path = new Path2D()
     const a = myriadFocus
     for (const strand of strands) {
-        let prevX, prevY, prevZ
+        let prevX, prevY, prevVisibility
         for (const point of strand) {
             const orbit = orbits[point.orbit]
-            const depth = myriadDepthAtLane(point.lane + laneOffset)
+            let lane = point.lane + laneOffset
+            let facing = 1
+            if (azimuth) {
+                // Rotate each section about the vertical axis, then perspective-project
+                // its X and Z. Normalize by its projected radius to retain the folded outline.
+                const sin = azimuth.sin * orbit.twistCos + azimuth.cos * orbit.twistSin
+                const cos = azimuth.cos * orbit.twistCos - azimuth.sin * orbit.twistSin
+                const z = orbit.radius * cos
+                lane = myriadLaneLimit * orbit.tangent * sin / (1 + z)
+                facing = (cos + orbit.radius) / (1 + z)
+            }
+            const depth = myriadDepthAtLane(lane)
             const ring = Math.cosh(depth)
             // From the center, the hemisphere at positive Z fills the circular field
             // of view. Clip at the viewer's horizon so nothing behind the eye overlays it.
@@ -3912,20 +3939,21 @@ function projectMyriadStrands(strands, laneOffset, orbits) {
             const x = 2 * a * Math.sinh(depth) / denominator
             const y = 2 * a * orbit.sin / denominator
             const z = ((1 - a * a) * ring - (1 + a * a) * orbit.cos) / denominator
-            if (prevZ !== undefined && (prevZ >= 0) !== (z >= 0)) {
-                const t = prevZ / (prevZ - z)
+            const visibility = Math.min(z, facing)
+            if (prevVisibility !== undefined && (prevVisibility >= 0) !== (visibility >= 0)) {
+                const t = prevVisibility / (prevVisibility - visibility)
                 const rimX = prevX + t * (x - prevX)
                 const rimY = prevY + t * (y - prevY)
-                if (z >= 0) path.moveTo(rimX, rimY)
+                if (visibility >= 0) path.moveTo(rimX, rimY)
                 else path.lineTo(rimX, rimY)
             }
-            if (z >= 0) {
-                if (prevZ === undefined) path.moveTo(x, y)
+            if (visibility >= 0) {
+                if (prevVisibility === undefined) path.moveTo(x, y)
                 else path.lineTo(x, y)
             }
             prevX = x
             prevY = y
-            prevZ = z
+            prevVisibility = visibility
         }
     }
     return path
@@ -3938,11 +3966,13 @@ function makeMyriadGlow() {
     canvas.height = size
     const ctx = canvas.getContext("2d")
     const image = ctx.createImageData(size, size)
-    const lanes = new Uint16Array(size * size)
+    const longitudes = new Uint16Array(size * size)
+    const tubeHeights = new Float32Array(size * size)
+    const recession = new Float32Array(size * size)
     const samples = 1024
-    const palette = new Uint8ClampedArray(4 * (samples + 1))
+    const palette = new Uint8ClampedArray(4 * samples)
     const a = myriadFocus
-    // Sample the same inward view for the glow. Index zero is empty space.
+    // The visible surface is stationary. Cache its material coordinates and depth fade.
     for (let row = 0; row < canvas.height; row++) {
         const y = 2 * (row + .5) / size - 1
         for (let col = 0; col < size; col++) {
@@ -3955,28 +3985,47 @@ function makeMyriadGlow() {
             const depth = .5 * Math.log((sum + 2 * a * x) / (sum - 2 * a * x))
             const lane = myriadLaneAtDepth(depth)
             if (Math.abs(lane) < myriadLaneLimit) {
-                lanes[row * size + col] = 1 + Math.round((lane / myriadLaneLimit + 1) * .5 * (samples - 1))
+                // Recover the visible longitude of this section using the inverse
+                // of the perspective projection used by the strand cores.
+                const orbit = Math.atan2(2 * a * y, nearPole - farPole)
+                const radius = myriadOrbitRadius(Math.cos(orbit))
+                const u = lane / myriadLaneLimit
+                const halfAngle = u / (1 + Math.sqrt(1 - u * u)) * Math.sqrt((1 + radius) / (1 - radius))
+                const longitude = Math.atan(halfAngle) / Math.PI
+                const index = row * size + col
+                longitudes[index] = Math.round((longitude + .5) * samples) % samples
+                tubeHeights[index] = Math.sin(orbit)
+                recession[index] = myriadStrandOpacity(lane)
+                image.data[4 * index + 3] = 255 * recession[index]
             }
         }
     }
-    return { canvas, ctx, image, lanes, palette, colors: new Uint32Array(palette.buffer),
+    // The cores use this static opacity mask before the canvas is reused for moving glow.
+    ctx.putImageData(image, 0, 0)
+    return { canvas, ctx, image, longitudes, tubeHeights, recession, palette, colors: new Uint32Array(palette.buffer),
         pixels: new Uint32Array(image.data.buffer) }
 }
 
-function updateMyriadGlow(glow, phaseAtLeft) {
-    const { palette, lanes, colors, pixels } = glow
-    const samples = colors.length - 1
+function updateMyriadGlow(glow, phaseAtCenter, twist) {
+    const { palette, longitudes, tubeHeights, recession, colors, pixels } = glow
+    const samples = colors.length
+    const twistBins = twist * samples / (2 * Math.PI)
     for (let i = 0; i < samples; i++) {
-        const position = i / (samples - 1)
-        const offset = 4 * (i + 1)
-        const phase = position + phaseAtLeft
+        const position = i / samples
+        const offset = 4 * i
+        const phase = position + .5 + phaseAtCenter
         writeMyriadColor(phase, palette, offset)
         const strandPosition = phase * myriadLinesPerFamily
         const distance = Math.abs(strandPosition - Math.round(strandPosition))
         const halo = .20 + .18 * Math.exp(-((distance / .30) ** 2))
-        palette[offset + 3] = 255 * halo * myriadStrandOpacity((2 * position - 1) * myriadLaneLimit)
+        palette[offset + 3] = 255 * halo
     }
-    for (let i = 0; i < pixels.length; i++) pixels[i] = colors[lanes[i]]
+    const rgba = glow.image.data
+    for (let i = 0; i < pixels.length; i++) {
+        const index = (samples + longitudes[i] - Math.round(twistBins * tubeHeights[i])) % samples
+        pixels[i] = colors[index]
+        rgba[4 * i + 3] = palette[4 * index + 3] * recession[i]
+    }
     glow.ctx.putImageData(glow.image, 0, 0)
 }
 
@@ -3985,14 +4034,19 @@ function drawMyriadInterior(ctx, turn) {
     // Put the circular edge just beyond the corners, including its antialiasing.
     const radius = Math.hypot(width, height) / 2 + 2
     const { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow } = myriadGrid
-    // The left opening is half a turn from the center, where yellow faces us at minute zero.
-    const phaseAtLeft = (turn / (2 * Math.PI) + myriadYellowStep / myriadColorWheel.length + .5) % 1
-    // Strands keep their assigned colors from the right opening to the left.
+    const phaseAtCenter = turn / (2 * Math.PI) + myriadYellowStep / myriadColorWheel.length
+    // The two shoulders lead and trail the waist during a fold. Each cross-section
+    // still turns in one direction and returns to its starting azimuth after a minute.
+    const twist = .78 * Math.sin(turn)
+    for (const orbit of meridianOrbits) {
+        orbit.twistSin = Math.sin(twist * orbit.sin)
+        orbit.twistCos = Math.cos(twist * orbit.sin)
+    }
     for (let i = 0; i < strands.length; i++) {
-        const phase = (1 + i / strands.length - phaseAtLeft) % 1
-        const lane = (2 * phase - 1) * myriadLaneLimit
-        strands[i].opacity = myriadStrandOpacity(lane)
-        strands[i].path = projectMyriadStrands(meridian, lane, meridianOrbits)
+        const angle = 2 * Math.PI * (i / strands.length - phaseAtCenter)
+        const azimuth = { sin: Math.sin(angle), cos: Math.cos(angle) }
+        strands[i].opacity = .25 + .375 * (1 + azimuth.cos)
+        strands[i].path = projectMyriadStrands(meridian, 0, meridianOrbits, azimuth)
     }
     // Space the guides by angle on the central great circle, including its far half.
     const guideOrbits = guideAngles.map(angle => {
@@ -4002,7 +4056,7 @@ function drawMyriadInterior(ctx, turn) {
     for (const guide of guides) {
         guide.path = projectMyriadStrands(guideSections, guide.lane, guideOrbits)
     }
-    updateMyriadGlow(glow, phaseAtLeft)
+    updateMyriadGlow(glow, phaseAtCenter, twist)
     ctx.scale(radius, radius)
     ctx.lineJoin = "round"
     ctx.lineCap = "round"
@@ -4019,7 +4073,7 @@ function drawMyriadInterior(ctx, turn) {
     }
     const core = Math.max(.75 / radius, .0028)
     for (const strand of strands) {
-        ctx.strokeStyle = strand.color
+        ctx.strokeStyle = strand.ink
         ctx.globalAlpha = .085 * strand.opacity
         ctx.lineWidth = 4 * core
         ctx.stroke(strand.path)
