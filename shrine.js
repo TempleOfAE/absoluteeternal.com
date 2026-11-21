@@ -3840,7 +3840,7 @@ const myriadColorWheel = Array.from({ length: 64 }, (_, step) => {
     return [red, green, blue]
 })
 const myriadCompactColors = emanationColors.map((_, i) => myriadBeamColor(i / emanationColors.length))
-const myriadLinesPerFamily = 64
+const myriadLinesPerFamily = 16
 const myriadLaneLimit = stringsPerSide + 4
 const myriadDepthSlope = .9
 const myriadDepthCurve = .5
@@ -3893,73 +3893,70 @@ function makeMyriadGrid() {
     const meridian = [meridianOrbits.map((_, orbit) => ({ lane: 0, orbit }))]
     const strands = Array.from({ length: myriadLinesPerFamily }, (_, i) => {
         const color = myriadBeamColor((i + .5) / myriadLinesPerFamily)
-        return { color, opacity: 0, paths: null }
+        return { color, opacity: 0, path: null }
     })
     // Each horizontal line follows one orbit angle across all the depth bands.
     const guideAngles = Array.from({ length: myriadLinesPerFamily }, (_, i) => 2 * Math.PI * i / myriadLinesPerFamily)
     const guideSections = guideAngles.map((_, orbit) => Array.from({ length: 7 }, (_, j) => ({ lane: j / 6, orbit })))
     const guides = Array.from({ length: 2 * myriadLaneLimit }, (_, i) => {
         const lane = i - myriadLaneLimit
-        return { lane, opacity: myriadRecession(lane + .5), paths: null }
+        return { lane, opacity: myriadRecession(lane + .5), path: null }
     })
     return { strands, meridian, meridianOrbits, guides, guideAngles, guideSections, glow: makeMyriadGlow() }
 }
 
 function projectMyriadStrands(strands, laneOffset, orbits) {
-    const paths = [new Path2D(), new Path2D()]
+    const path = new Path2D()
     const a = myriadFocus
     for (const strand of strands) {
-        let prevX, prevY, prevZ, prevSide
+        let prevX, prevY, prevZ
         for (const point of strand) {
             const orbit = orbits[point.orbit]
             const depth = myriadDepthAtLane(point.lane + laneOffset)
             const ring = Math.cosh(depth)
-            // Inverse stereographic projection of a bipolar grid. A strand turns onto
-            // the far face when its Z coordinate crosses zero at the spherical rim.
+            // From the center, the hemisphere at positive Z fills the circular field
+            // of view. Clip at the viewer's horizon so nothing behind the eye overlays it.
             const denominator = (1 + a * a) * ring - (1 - a * a) * orbit.cos
             const x = 2 * a * Math.sinh(depth) / denominator
             const y = 2 * a * orbit.sin / denominator
             const z = ((1 - a * a) * ring - (1 + a * a) * orbit.cos) / denominator
-            const side = z >= 0 ? 1 : 0
-            if (prevSide === undefined) {
-                paths[side].moveTo(x, y)
-            } else {
-                if (side !== prevSide) {
-                    const t = prevZ / (prevZ - z)
-                    const rimX = prevX + t * (x - prevX)
-                    const rimY = prevY + t * (y - prevY)
-                    paths[prevSide].lineTo(rimX, rimY)
-                    paths[side].moveTo(rimX, rimY)
-                }
-                paths[side].lineTo(x, y)
+            if (prevZ !== undefined && (prevZ >= 0) !== (z >= 0)) {
+                const t = prevZ / (prevZ - z)
+                const rimX = prevX + t * (x - prevX)
+                const rimY = prevY + t * (y - prevY)
+                if (z >= 0) path.moveTo(rimX, rimY)
+                else path.lineTo(rimX, rimY)
+            }
+            if (z >= 0) {
+                if (prevZ === undefined) path.moveTo(x, y)
+                else path.lineTo(x, y)
             }
             prevX = x
             prevY = y
             prevZ = z
-            prevSide = side
         }
     }
-    return paths
+    return path
 }
 
 function makeMyriadGlow() {
     const size = 320
     const canvas = document.createElement("canvas")
     canvas.width = size
-    canvas.height = 2 * size
+    canvas.height = size
     const ctx = canvas.getContext("2d")
-    const image = ctx.createImageData(size, 2 * size)
-    const lanes = new Uint16Array(size * size * 2)
+    const image = ctx.createImageData(size, size)
+    const lanes = new Uint16Array(size * size)
     const samples = 1024
     const palette = new Uint8ClampedArray(4 * (samples + 1))
     const a = myriadFocus
-    // Invert the strand projection once on each face. Index zero is empty space.
+    // Sample the same inward view for the glow. Index zero is empty space.
     for (let row = 0; row < canvas.height; row++) {
-        const y = 2 * ((row % size) + .5) / size - 1
+        const y = 2 * (row + .5) / size - 1
         for (let col = 0; col < size; col++) {
             const x = 2 * (col + .5) / size - 1
             // Extend the edge texels so interpolation stays smooth at the circular clip.
-            const z = (row < size ? -1 : 1) * Math.sqrt(Math.max(0, 1 - x * x - y * y))
+            const z = Math.sqrt(Math.max(0, 1 - x * x - y * y))
             const nearPole = 1 - z
             const farPole = a * a * (1 + z)
             const sum = nearPole + farPole
@@ -4001,7 +3998,7 @@ function drawMyriadInterior(ctx, turn) {
         const phase = (1 + (i + .5) / strands.length - travel) % 1
         const lane = (2 * phase - 1) * myriadLaneLimit
         strands[i].opacity = myriadStrandOpacity(lane)
-        strands[i].paths = projectMyriadStrands(meridian, lane, meridianOrbits)
+        strands[i].path = projectMyriadStrands(meridian, lane, meridianOrbits)
     }
     // Space the guides by angle on the central great circle, including its far half.
     const guideOrbits = guideAngles.map(angle => {
@@ -4009,45 +4006,35 @@ function drawMyriadInterior(ctx, turn) {
         return myriadOrbit(2 * Math.atan2(myriadFocus * Math.sin(half), Math.cos(half)))
     })
     for (const guide of guides) {
-        guide.paths = projectMyriadStrands(guideSections, guide.lane, guideOrbits)
+        guide.path = projectMyriadStrands(guideSections, guide.lane, guideOrbits)
     }
     updateMyriadGlow(glow, travel)
     ctx.scale(radius, radius)
-    ctx.strokeStyle = "white"
     ctx.lineJoin = "round"
     ctx.lineCap = "round"
     ctx.beginPath()
     ctx.arc(0, 0, 1, 0, 2 * Math.PI)
-    ctx.globalAlpha = .16
-    ctx.lineWidth = Math.max(1 / radius, .0027)
-    ctx.stroke()
     ctx.clip()
-    for (let side = 0; side <= 1; side++) {
-        const depthLight = side === 1 ? 1 : .5
-        const core = Math.max(.75 / radius, side === 1 ? .0028 : .0024)
-        const size = glow.canvas.width
-        ctx.globalAlpha = depthLight
-        ctx.drawImage(glow.canvas, 0, side * size, size, size, -1, -1, 2, 2)
-        ctx.strokeStyle = "white"
-        ctx.lineWidth = Math.max(.7 / radius, .002)
-        for (const guide of guides) {
-            ctx.globalAlpha = .22 * Math.sqrt(depthLight) * guide.opacity
-            ctx.stroke(guide.paths[side])
-        }
-        for (const strand of strands) {
-            const path = strand.paths[side]
-            const light = depthLight * strand.opacity
-            ctx.strokeStyle = strand.color
-            ctx.globalAlpha = .085 * light
-            ctx.lineWidth = 4 * core
-            ctx.stroke(path)
-            ctx.globalAlpha = .21 * light
-            ctx.lineWidth = 2.15 * core
-            ctx.stroke(path)
-            ctx.globalAlpha = .9 * light
-            ctx.lineWidth = core
-            ctx.stroke(path)
-        }
+    ctx.globalAlpha = 1
+    ctx.drawImage(glow.canvas, -1, -1, 2, 2)
+    ctx.strokeStyle = "white"
+    ctx.lineWidth = Math.max(.7 / radius, .002)
+    for (const guide of guides) {
+        ctx.globalAlpha = .22 * guide.opacity
+        ctx.stroke(guide.path)
+    }
+    const core = Math.max(.75 / radius, .0028)
+    for (const strand of strands) {
+        ctx.strokeStyle = strand.color
+        ctx.globalAlpha = .085 * strand.opacity
+        ctx.lineWidth = 4 * core
+        ctx.stroke(strand.path)
+        ctx.globalAlpha = .21 * strand.opacity
+        ctx.lineWidth = 2.15 * core
+        ctx.stroke(strand.path)
+        ctx.globalAlpha = .9 * strand.opacity
+        ctx.lineWidth = core
+        ctx.stroke(strand.path)
     }
 }
 
